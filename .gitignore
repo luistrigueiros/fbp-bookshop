@@ -6,3 +6,5 @@
 /packages/library-data-layer/drizzle/
 /packages/library-data-layer/.wrangler/
 /packages/library-data-layer/dist/
+/packages/library-excel-extractor/node_modules/
+/packages/library-excel-extractor/dist/

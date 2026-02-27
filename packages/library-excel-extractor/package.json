@@ -1,6 +1,42 @@
 {
     "name": "library-excel-extractor",
     "version": "1.0.0",
-    "main": "index.ts",
-    "type": "module"
+    "description": "Extract Books, Genders, and Publishers from FBP-DB.xlsx",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "rm -rf dist && bun run build:types && bun build ./src/index.ts --outdir ./dist --target bun --sourcemap=external",
+        "build:types": "bunx tsc --emitDeclarationOnly",
+        "typecheck": "bunx tsc --noEmit",
+        "test": "bun test",
+        "lint": "bunx eslint .",
+        "postinstall": "bun run build"
+    },
+    "keywords": [
+        "excel",
+        "xlsx",
+        "extractor",
+        "books",
+        "library"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/bun": "latest",
+        "@typescript-eslint/eslint-plugin": "^8.56.0",
+        "@typescript-eslint/parser": "^8.56.0",
+        "eslint": "^10.0.0",
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.56.0"
+    },
+    "dependencies": {
+        "xlsx": "^0.18.5"
+    }
 }

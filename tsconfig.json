@@ -18,6 +18,9 @@
         "paths": {
             "library-data-layer": [
                 "./packages/library-data-layer/src/index.ts"
+            ],
+            "library-excel-extractor": [
+                "./packages/library-excel-extractor/src/index.ts"
             ]
         }
     }
