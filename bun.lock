@@ -1,0 +1,55 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "fbp-bookshop",
+      "devDependencies": {
+        "bun-types": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/library-app": {
+      "name": "library-app",
+      "version": "1.0.0",
+      "dependencies": {
+        "library-data-layer": "workspace:*",
+      },
+    },
+    "packages/library-data-layer": {
+      "name": "library-data-layer",
+      "version": "1.0.0",
+    },
+    "packages/library-data-loader": {
+      "name": "library-data-loader",
+      "version": "1.0.0",
+      "dependencies": {
+        "library-data-layer": "workspace:*",
+        "library-excel-extractor": "workspace:*",
+      },
+    },
+    "packages/library-excel-extractor": {
+      "name": "library-excel-extractor",
+      "version": "1.0.0",
+    },
+  },
+  "packages": {
+    "@types/node": ["@types/node@25.3.2", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-RpV6r/ij22zRRdyBPcxDeKAzH43phWVKEjL2iksqo1Vz3CuBUrgmPpPhALKiRfU7OMCmeeO9vECBMsV0hMTG8Q=="],
+
+    "bun-types": ["bun-types@1.3.10", "", { "dependencies": { "@types/node": "*" } }, "sha512-tcpfCCl6XWo6nCVnpcVrxQ+9AYN1iqMIzgrSKYMB/fjLtV2eyAVEg7AxQJuCq/26R6HpKWykQXuSOq/21RYcbg=="],
+
+    "library-app": ["library-app@workspace:packages/library-app"],
+
+    "library-data-layer": ["library-data-layer@workspace:packages/library-data-layer"],
+
+    "library-data-loader": ["library-data-loader@workspace:packages/library-data-loader"],
+
+    "library-excel-extractor": ["library-excel-extractor@workspace:packages/library-excel-extractor"],
+
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
+    "undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
+  }
+}

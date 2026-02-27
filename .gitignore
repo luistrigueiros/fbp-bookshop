@@ -1,0 +1,4 @@
+/.idea/
+/node_modules/
+/packages/library-app/node_modules/
+/packages/library-data-loader/node_modules/
