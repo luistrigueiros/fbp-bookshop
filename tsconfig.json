@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "composite": true,
+        "types": [
+            "@cloudflare/workers-types"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "library-data-layer": [
+                "./packages/library-data-layer/src/index.ts"
+            ]
+        }
+    }
+}

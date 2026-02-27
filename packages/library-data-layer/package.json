@@ -1,6 +1,61 @@
 {
-    "name": "library-data-layer",
-    "version": "1.0.0",
-    "main": "index.ts",
-    "type": "module"
+  "name": "library-data-layer",
+  "version": "1.0.0",
+  "description": "Data access layer for Library book shop management system using Drizzle ORM and Cloudflare D1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "drizzle",
+    "README.md"
+  ],
+  "scripts": {
+    "prepare": "bun run build && bun run build:types",
+    "postinstall": "bun run build && bun run db:migrate:local",
+    "build:types": "bunx tsc --emitDeclarationOnly",
+    "typecheck": "bunx tsc --noEmit",
+    "build": "rm -rf dist && bun run build:types && bun build src/index.ts --outdir dist --target node",
+    "dev": "bun run src/index.ts",
+    "db:generate": "bun drizzle-kit generate",
+    "db:migrate:local": "bun run db:generate && bun wrangler d1 migrations apply library-db --local --remote=false",
+    "db:setup:local": "[ -d drizzle ] && bun wrangler d1 migrations apply library-db --local || echo 'No migrations to apply'",
+    "db:migrate:prod": "bun --env-file=$HOME/share/.library-project.env drizzle-kit push",
+    "db:studio": "bun --env-file=$HOME/share/.library-project.env drizzle-kit studio",
+    "lint": "bunx eslint .",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage || true",
+    "format": "bunx prettier --write ."
+  },
+  "keywords": [
+    "drizzle",
+    "cloudflare",
+    "d1",
+    "library",
+    "database"
+  ],
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260304.0",
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "^1.3.9",
+    "drizzle-kit": "^0.31.9",
+    "eslint": "^10.0.2",
+    "miniflare": "^4.20260302.0",
+    "tsx": "^4.21.0",
+    "typescript-eslint": "^8.56.1",
+    "wrangler": "^4.68.1"
+  },
+  "peerDependencies": {
+    "@cloudflare/workers-types": "^4.0.0"
+  }
 }
