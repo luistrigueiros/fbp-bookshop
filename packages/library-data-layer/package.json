@@ -19,7 +19,7 @@
   "scripts": {
     "prepare": "bun run build && bun run build:types",
     "postinstall": "bun run build && bun run db:migrate:local",
-    "build:types": "bunx tsc --emitDeclarationOnly",
+    "build:types": "bunx tsc --project tsconfig.build.json --emitDeclarationOnly",
     "typecheck": "bunx tsc --noEmit",
     "build": "rm -rf dist && bun run build:types && bun build src/index.ts --outdir dist --target node",
     "dev": "bun run src/index.ts",

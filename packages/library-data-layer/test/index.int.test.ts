@@ -5,7 +5,7 @@ import {
   BookRepository,
   GenderRepository,
   PublisherRepository,
-} from "../src";
+} from "../";
 
 describe("index.ts (integration, Miniflare D1)", () => {
   let testEnv: Awaited<ReturnType<typeof createD1TestEnv>>;

@@ -13,7 +13,7 @@
     },
     "scripts": {
         "build": "rm -rf dist && bun run build:types && bun build ./src/index.ts --outdir ./dist --target bun --sourcemap=external",
-        "build:types": "bunx tsc --emitDeclarationOnly",
+        "build:types": "bunx tsc --project tsconfig.build.json --emitDeclarationOnly",
         "typecheck": "bunx tsc --noEmit",
         "test": "bun test",
         "lint": "bunx eslint .",

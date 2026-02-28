@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { extractGender, extractPublisher, extractBook } from '../';
-import type { Gender, Publisher } from '../';
+import { extractGender, extractPublisher, extractBook } from '../src';
+import type { Gender, Publisher } from '../src';
 import { existsSync } from "node:fs";
 
 // Path to the Excel fixture — adjust if needed
