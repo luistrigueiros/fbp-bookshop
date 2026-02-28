@@ -2,7 +2,7 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./",
+        "rootDir": "../../",
         "types": [
             "@types/bun",
             "@cloudflare/workers-types"
@@ -10,7 +10,9 @@
     },
     "include": [
         "src/**/*",
-        "test/**/*"
+        "test/**/*",
+        "../library-data-layer/src/**/*",
+        "../library-excel-extractor/src/**/*"
     ],
     "exclude": [
         "node_modules",

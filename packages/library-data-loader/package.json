@@ -9,7 +9,8 @@
         "dev": "bunx wrangler dev",
         "deploy": "bunx wrangler deploy --minify",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-        "build": "bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types",
+        "build": "rm -rf dist && bun run build:types && bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types",
+        "build:types": "bunx tsc --project tsconfig.build.json --emitDeclarationOnly",
         "test": "bun test",
         "lint": "bunx eslint . --ext .ts",
         "lint:fix": "bunx eslint . --ext .ts --fix"
