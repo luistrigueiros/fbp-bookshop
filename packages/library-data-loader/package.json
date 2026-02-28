@@ -6,7 +6,7 @@
     "types": "src/index.ts",
     "scripts": {
         "typecheck": "bunx tsc --noEmit",
-        "preconfig": "node scripts/config.cjs",
+        "preconfig": "bun ../../scripts/config.ts",
         "dev": "bun run preconfig && bunx wrangler dev",
         "deploy": "bun run preconfig && bunx wrangler deploy --minify",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",

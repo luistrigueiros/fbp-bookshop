@@ -1,9 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
-const envPath = path.resolve(__dirname, '../../../.dev.vars');
-const templatePath = path.resolve(__dirname, '../wrangler.toml.template');
-const outputPath = path.resolve(__dirname, '../wrangler.toml');
+// This script should be run from the package directory (e.g., packages/library-data-loader)
+const packageDir = process.cwd();
+const rootDir = path.resolve(packageDir, '../../');
+const envPath = path.resolve(rootDir, '.dev.vars');
+const templatePath = path.resolve(packageDir, 'wrangler.toml.template');
+const outputPath = path.resolve(packageDir, 'wrangler.toml');
 
 if (!fs.existsSync(envPath)) {
     console.error(`.dev.vars not found at ${envPath}`);
@@ -34,4 +37,4 @@ for (const [key, value] of Object.entries(env)) {
 }
 
 fs.writeFileSync(outputPath, template);
-console.log(`Successfully generated wrangler.toml from template with ${Object.keys(env).length} variables.`);
+console.log(`Successfully generated wrangler.toml from template in ${path.basename(packageDir)} using ${Object.keys(env).length} variables.`);

@@ -23,7 +23,7 @@
     "typecheck": "bunx tsc --noEmit",
     "build": "rm -rf dist && bun run build:types && bun build src/index.ts --outdir dist --target node",
     "dev": "bun run src/index.ts",
-    "preconfig": "node scripts/config.cjs",
+    "preconfig": "bun ../../scripts/config.ts",
     "db:generate": "bun run preconfig && bun drizzle-kit generate",
     "db:migrate:local": "bun run db:generate && bun wrangler d1 migrations apply library-db --local --remote=false",
     "db:setup:local": "bun run preconfig && ([ -d drizzle ] && bun wrangler d1 migrations apply library-db --local || echo 'No migrations to apply')",

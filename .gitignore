@@ -13,3 +13,4 @@
 /packages/library-data-loader/.wrangler/
 .dev.vars
 /packages/library-data-loader/wrangler.toml
+/packages/library-data-layer/wrangler.toml
