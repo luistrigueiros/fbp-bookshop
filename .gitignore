@@ -10,3 +10,5 @@
 /packages/library-excel-extractor/dist/
 /packages/library-data-loader/dist/
 /packages/library-data-loader/drizzle/
+/packages/library-data-loader/.wrangler/
+.dev.vars
