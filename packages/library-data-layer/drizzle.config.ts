@@ -6,8 +6,8 @@ export default defineConfig({
   dialect: "sqlite",
   driver: "d1-http",
   dbCredentials: {
-    accountId: "placeholder", // Not needed for local generation
-    databaseId: "placeholder", // Not needed for local generation
-    token: "placeholder", // Not needed for local generation
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID || "placeholder",
+    databaseId: process.env.CLOUDFLARE_DATABASE_ID || "placeholder",
+    token: process.env.CLOUDFLARE_D1_TOKEN || "placeholder",
   },
 });
