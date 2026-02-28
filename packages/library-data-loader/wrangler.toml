@@ -1,0 +1,12 @@
+name = "library-data-loader-worker"
+main = "src/index.ts"
+compatibility_date = "2026-02-19"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "library-db"
+database_id = "ea623636-0e07-409c-a0e7-3b314406832a"
+migrations_dir = "drizzle"
+
+[observability]
+enabled = true
