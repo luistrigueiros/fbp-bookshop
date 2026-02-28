@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { extractGender, extractPublisher, extractBook } from './src';
-import type { Gender, Publisher } from './src';
-import { existsSync } from "fs";
+import { extractGender, extractPublisher, extractBook } from '../';
+import type { Gender, Publisher } from '../';
+import { existsSync } from "node:fs";
 
 // Path to the Excel fixture — adjust if needed
 const FIXTURE = "./FBP-DB.xlsx";

@@ -8,3 +8,5 @@
 /packages/library-data-layer/dist/
 /packages/library-excel-extractor/node_modules/
 /packages/library-excel-extractor/dist/
+/packages/library-data-loader/dist/
+/packages/library-data-loader/drizzle/

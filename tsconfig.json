@@ -21,6 +21,9 @@
             ],
             "library-excel-extractor": [
                 "./packages/library-excel-extractor/src/index.ts"
+            ],
+            "library-data-loader": [
+                "./packages/library-data-loader/src/index.ts"
             ]
         }
     }

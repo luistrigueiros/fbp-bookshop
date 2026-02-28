@@ -4,11 +4,12 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "types": [
-            "@types/bun"
+            "@cloudflare/workers-types"
         ]
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "test/**/*"
     ],
     "exclude": [
         "node_modules",

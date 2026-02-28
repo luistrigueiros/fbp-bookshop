@@ -1,0 +1,10 @@
+
+### Upload FBP-DB.xlsx
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="FBP-DB.xlsx"
+
+< ./FBP-DB.xlsx
+--WebAppBoundary--

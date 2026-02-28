@@ -1,0 +1,15 @@
+{
+  "name": "library-data-loader-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-19",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "library-db",
+      "database_id": "${CLOUDFLARE_DATABASE_ID}"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
