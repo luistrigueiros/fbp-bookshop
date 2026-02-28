@@ -8,7 +8,7 @@
         "bun-types": "latest",
       },
       "peerDependencies": {
-        "typescript": "^5.0.0",
+        "typescript": "^5.9.3",
       },
     },
     "packages/library-app": {
@@ -53,6 +53,7 @@
         "@cloudflare/workers-types": "catalog:",
         "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
+        "drizzle-kit": "catalog:",
         "eslint": "catalog:",
         "miniflare": "catalog:",
         "typescript-eslint": "catalog:",

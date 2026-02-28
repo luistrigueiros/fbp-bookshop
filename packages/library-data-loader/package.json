@@ -28,6 +28,7 @@
         "eslint": "catalog:",
         "miniflare": "catalog:",
         "typescript-eslint": "catalog:",
-        "wrangler": "catalog:"
+        "wrangler": "catalog:",
+        "drizzle-kit": "catalog:"
     }
 }
