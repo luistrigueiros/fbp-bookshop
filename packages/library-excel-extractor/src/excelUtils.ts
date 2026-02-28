@@ -78,10 +78,15 @@ export function getDataRowRange(sheet: XLSX.WorkSheet): {
 }
 
 /**
- * Loads an Excel workbook from a file path.
+ * Loads an Excel workbook from a file path or buffer.
  */
-export function loadWorkbook(filePath: string): XLSX.WorkBook {
-  return XLSX.readFile(filePath);
+export function loadWorkbook(
+  input: string | ArrayBuffer | Buffer
+): XLSX.WorkBook {
+  if (typeof input === "string") {
+    return XLSX.readFile(input);
+  }
+  return XLSX.read(input);
 }
 
 /**

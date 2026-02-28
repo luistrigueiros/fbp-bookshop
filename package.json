@@ -24,7 +24,14 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "eslint": "catalog:",
+    "@eslint/js": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "scripts": {
+    "lint": "bunx eslint .",
+    "lint:fix": "bunx eslint . --fix"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

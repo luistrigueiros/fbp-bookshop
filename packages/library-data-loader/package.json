@@ -24,11 +24,8 @@
     },
     "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
-        "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
-        "eslint": "catalog:",
         "miniflare": "catalog:",
-        "typescript-eslint": "catalog:",
         "wrangler": "catalog:",
         "drizzle-kit": "catalog:"
     }

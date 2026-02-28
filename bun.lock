@@ -5,7 +5,10 @@
     "": {
       "name": "fbp-bookshop",
       "devDependencies": {
+        "@eslint/js": "catalog:",
         "bun-types": "latest",
+        "eslint": "catalog:",
+        "typescript-eslint": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5.9.3",
@@ -27,13 +30,10 @@
       },
       "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
-        "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
-        "eslint": "catalog:",
         "miniflare": "catalog:",
         "tsx": "^4.21.0",
-        "typescript-eslint": "catalog:",
         "wrangler": "catalog:",
       },
       "peerDependencies": {
@@ -51,12 +51,9 @@
       },
       "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
-        "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
-        "eslint": "catalog:",
         "miniflare": "catalog:",
-        "typescript-eslint": "catalog:",
         "wrangler": "catalog:",
       },
     },
@@ -67,13 +64,8 @@
         "xlsx": "catalog:",
       },
       "devDependencies": {
-        "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
-        "@typescript-eslint/eslint-plugin": "catalog:",
-        "@typescript-eslint/parser": "catalog:",
-        "eslint": "catalog:",
         "typescript": "catalog:",
-        "typescript-eslint": "catalog:",
       },
     },
   },

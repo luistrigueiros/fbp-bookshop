@@ -12,7 +12,7 @@ export async function processUpload(
   db: D1Database
 ): Promise<ProcessUploadResult> {
   const arrayBuffer = await file.arrayBuffer()
-  const result = extractBook(arrayBuffer as any)
+  const result = extractBook(arrayBuffer)
 
   const d1 = initDB(db)
   const repos = createRepositories(d1)

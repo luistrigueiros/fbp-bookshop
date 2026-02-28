@@ -28,13 +28,8 @@
     ],
     "license": "MIT",
     "devDependencies": {
-        "@eslint/js": "catalog:",
         "@types/bun": "catalog:",
-        "@typescript-eslint/eslint-plugin": "catalog:",
-        "@typescript-eslint/parser": "catalog:",
-        "eslint": "catalog:",
-        "typescript": "catalog:",
-        "typescript-eslint": "catalog:"
+        "typescript": "catalog:"
     },
     "dependencies": {
         "xlsx": "catalog:"

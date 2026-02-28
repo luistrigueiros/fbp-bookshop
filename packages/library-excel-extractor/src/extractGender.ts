@@ -15,12 +15,14 @@ import {
  * then iterates every data row — skipping empty cells — and collects unique names.
  * Each Gender receives an auto-incremented numeric ID.
  *
- * @param filePath - Absolute or relative path to the .xlsx file
+ * @param input - Absolute or relative path to the .xlsx file, or its content as a buffer
  * @returns ExtractionResult containing the deduplicated Gender array and total count
  * @throws Error if the "género" column is not found in the header row
  */
-export function extractGender(filePath: string): ExtractionResult<Gender> {
-  const workbook: XLSX.WorkBook = loadWorkbook(filePath);
+export function extractGender(
+  input: string | ArrayBuffer | Buffer
+): ExtractionResult<Gender> {
+  const workbook: XLSX.WorkBook = loadWorkbook(input);
   const sheet: XLSX.WorkSheet = getFirstSheet(workbook);
 
   const headerMap = buildHeaderIndex(sheet);

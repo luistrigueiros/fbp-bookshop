@@ -1,8 +1,8 @@
-import {beforeAll, describe, expect, it} from "bun:test";
-import {Miniflare} from "miniflare";
-import {readFileSync} from "fs";
-import {join} from "path";
-import {collectSqlFiles, runDatabaseMigrations} from "./test-utils";
+import { beforeAll, describe, expect, it } from "bun:test";
+import { Miniflare } from "miniflare";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { collectSqlFiles, runDatabaseMigrations } from "./test-utils";
 
 describe("Upload Service Integration Test", () => {
   let mf: Miniflare;
@@ -38,10 +38,10 @@ describe("Upload Service Integration Test", () => {
 
     const res = await mf.dispatchFetch("http://localhost/upload", {
       method: "POST",
-      body: formData as any,
+      body: formData as any, // Restore cast temporarily but keep other fixes
     });
 
-    const json = await res.json() as any;
+    const json = (await res.json()) as { message: string; booksCount: number };
     expect(res.status).toBe(200);
     expect(json.message).toBe("File processed and data stored successfully");
     expect(json.booksCount).toBeGreaterThan(0);

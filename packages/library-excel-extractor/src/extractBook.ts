@@ -52,19 +52,21 @@ function buildLookupMap<T extends { name: string }>(
  *
  * Rows where the title cell is empty are silently skipped.
  *
- * @param filePath - Absolute or relative path to the .xlsx file
+ * @param input - Absolute or relative path to the .xlsx file, or its content as a buffer
  * @returns ExtractionResult containing the Book array and total inserted count
  */
-export function extractBook(filePath: string): ExtractionResult<Book> {
+export function extractBook(
+  input: string | ArrayBuffer | Buffer
+): ExtractionResult<Book> {
   // ── 1. Pre-load genders and publishers into memory ──────────────────────
-  const { items: genders } = extractGender(filePath);
-  const { items: publishers } = extractPublisher(filePath);
+  const { items: genders } = extractGender(input);
+  const { items: publishers } = extractPublisher(input);
 
   const genderByName = buildLookupMap(genders);
   const publisherByName = buildLookupMap(publishers);
 
   // ── 2. Open workbook and map columns ────────────────────────────────────
-  const workbook: XLSX.WorkBook = loadWorkbook(filePath);
+  const workbook: XLSX.WorkBook = loadWorkbook(input);
   const sheet: XLSX.WorkSheet = getFirstSheet(workbook);
   const headerMap = buildHeaderIndex(sheet);
 

@@ -47,13 +47,10 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "@eslint/js": "catalog:",
     "@types/bun": "catalog:",
     "drizzle-kit": "catalog:",
-    "eslint": "catalog:",
     "miniflare": "catalog:",
     "tsx": "^4.21.0",
-    "typescript-eslint": "catalog:",
     "wrangler": "catalog:"
   },
   "peerDependencies": {
