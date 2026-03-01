@@ -1,6 +1,5 @@
 import { extractBook } from 'library-excel-extractor'
-import { initDB, createRepositories } from 'library-data-layer'
-import { D1Database } from "@cloudflare/workers-types";
+import { createRepositories, type DB } from 'library-data-layer'
 
 export interface ProcessUploadResult {
   message: string
@@ -9,13 +8,12 @@ export interface ProcessUploadResult {
 
 export async function processUpload(
   file: File,
-  db: D1Database
+  db: DB
 ): Promise<ProcessUploadResult> {
   const arrayBuffer = await file.arrayBuffer()
   const result = extractBook(arrayBuffer)
 
-  const d1 = initDB(db)
-  const repos = createRepositories(d1)
+  const repos = createRepositories(db)
 
   const genderMap = new Map<string, number>()
   const publisherMap = new Map<string, number>()
