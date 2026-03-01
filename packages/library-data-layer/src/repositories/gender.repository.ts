@@ -2,16 +2,20 @@ import { eq, like } from "drizzle-orm";
 import type { DB } from "../db";
 import { gender } from "../schema";
 import type { Gender, GenderWithBooks, NewGender } from "../schema/types";
+import { layerLogger } from "../logging";
 
 export class GenderRepository {
-  constructor(private db: DB) {}
+  constructor(private db: DB) { }
 
   /**
    * Create a new gender
    */
   async create(data: NewGender): Promise<Gender> {
+    layerLogger.debug("Creating new gender: {name}", { name: data.name });
     const result = await this.db.insert(gender).values(data).returning();
-    return result[0]!;
+    const createdGender = result[0]!;
+    layerLogger.info("Created gender: {name} (ID: {id})", { name: createdGender.name, id: createdGender.id });
+    return createdGender;
   }
 
   /**
@@ -81,12 +85,17 @@ export class GenderRepository {
     id: number,
     data: Partial<NewGender>,
   ): Promise<Gender | undefined> {
+    layerLogger.debug("Updating gender ID: {id}", { id });
     const result = await this.db
       .update(gender)
       .set(data)
       .where(eq(gender.id, id))
       .returning();
-    return result[0];
+    const updatedGender = result[0];
+    if (updatedGender) {
+      layerLogger.info("Updated gender ID: {id}", { id });
+    }
+    return updatedGender;
   }
 
   /**

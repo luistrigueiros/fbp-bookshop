@@ -43,7 +43,8 @@
   ],
   "dependencies": {
     "dotenv": "catalog:",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "@logtape/logtape": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",

@@ -1,5 +1,5 @@
 import { extractBook } from 'library-excel-extractor'
-import { createRepositories, type DB } from 'library-data-layer'
+import { createRepositories, loaderLogger, type DB } from 'library-data-layer'
 
 export interface ProcessUploadResult {
   message: string
@@ -12,6 +12,7 @@ export async function processUpload(
 ): Promise<ProcessUploadResult> {
   const arrayBuffer = await file.arrayBuffer()
   const result = extractBook(arrayBuffer)
+  loaderLogger.info("Extracted {count} books from Excel file", { count: result.count });
 
   const repos = createRepositories(db)
 
@@ -46,6 +47,8 @@ export async function processUpload(
       publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
     })
   }
+
+  loaderLogger.info("Successfully processed upload with {count} books", { count: result.count });
 
   return {
     message: 'File processed and data stored successfully',

@@ -3,12 +3,20 @@ import { D1Database } from "@cloudflare/workers-types";
 import { processUpload } from './upload-service'
 import { landingPage } from './landing-page'
 import { dbValidationMiddleware, type Variables } from './db-middleware'
+import { setupLogging, loaderLogger } from 'library-data-layer'
+import { honoLogger } from '@logtape/hono'
+
+// Initialize logging
+setupLogging()
 
 type Bindings = {
   DB: D1Database
 }
 
 const app = new Hono<{ Bindings: Bindings, Variables: Variables }>()
+
+// Register LogTape middleware for request logging
+app.use('*', honoLogger())
 
 // Register database validation middleware for all routes
 app.use('*', dbValidationMiddleware())

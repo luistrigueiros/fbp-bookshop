@@ -19,6 +19,8 @@
     "dependencies": {
         "dotenv": "catalog:",
         "hono": "catalog:",
+        "@logtape/logtape": "catalog:",
+        "@logtape/hono": "catalog:",
         "library-excel-extractor": "workspace:*",
         "library-data-layer": "workspace:*"
     },

@@ -14,6 +14,9 @@ export * from "./schema/types";
 // Repository exports
 export * from "./repositories";
 
+// Logging exports
+export * from "./logging";
+
 // Utility function to create all repositories
 import type { DB } from "./db";
 import {

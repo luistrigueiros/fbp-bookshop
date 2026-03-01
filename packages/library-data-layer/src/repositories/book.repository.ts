@@ -2,16 +2,20 @@ import { eq, like, or } from "drizzle-orm";
 import type { DB } from "../db";
 import { book } from "../schema";
 import type { Book, BookWithRelations, NewBook } from "../schema/types";
+import { layerLogger } from "../logging";
 
 export class BookRepository {
-  constructor(private db: DB) {}
+  constructor(private db: DB) { }
 
   /**
    * Create a new book
    */
   async create(data: NewBook): Promise<Book> {
+    layerLogger.debug("Creating new book: {title}", { title: data.title });
     const result = await this.db.insert(book).values(data).returning();
-    return result[0]!;
+    const createdBook = result[0]!;
+    layerLogger.info("Created book: {title} (ID: {id})", { title: createdBook.title, id: createdBook.id });
+    return createdBook;
   }
 
   /**
@@ -106,12 +110,17 @@ export class BookRepository {
    * Update a book
    */
   async update(id: number, data: Partial<NewBook>): Promise<Book | undefined> {
+    layerLogger.debug("Updating book ID: {id}", { id });
     const result = await this.db
       .update(book)
       .set(data)
       .where(eq(book.id, id))
       .returning();
-    return result[0];
+    const updatedBook = result[0];
+    if (updatedBook) {
+      layerLogger.info("Updated book ID: {id}", { id });
+    }
+    return updatedBook;
   }
 
   /**

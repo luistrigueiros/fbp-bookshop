@@ -6,16 +6,20 @@ import type {
   Publisher,
   PublisherWithBooks,
 } from "../schema/types";
+import { layerLogger } from "../logging";
 
 export class PublisherRepository {
-  constructor(private db: DB) {}
+  constructor(private db: DB) { }
 
   /**
    * Create a new publisher
    */
   async create(data: NewPublisher): Promise<Publisher> {
+    layerLogger.debug("Creating new publisher: {name}", { name: data.name });
     const result = await this.db.insert(publisher).values(data).returning();
-    return result[0]!;
+    const createdPublisher = result[0]!;
+    layerLogger.info("Created publisher: {name} (ID: {id})", { name: createdPublisher.name, id: createdPublisher.id });
+    return createdPublisher;
   }
 
   /**
@@ -88,12 +92,17 @@ export class PublisherRepository {
     id: number,
     data: Partial<NewPublisher>,
   ): Promise<Publisher | undefined> {
+    layerLogger.debug("Updating publisher ID: {id}", { id });
     const result = await this.db
       .update(publisher)
       .set(data)
       .where(eq(publisher.id, id))
       .returning();
-    return result[0];
+    const updatedPublisher = result[0];
+    if (updatedPublisher) {
+      layerLogger.info("Updated publisher ID: {id}", { id });
+    }
+    return updatedPublisher;
   }
 
   /**
