@@ -17,18 +17,18 @@
         "lint:fix": "bunx eslint . --ext .ts --fix"
     },
     "dependencies": {
-        "dotenv": "catalog:",
-        "hono": "catalog:",
-        "@logtape/logtape": "catalog:",
-        "@logtape/hono": "catalog:",
+        "dotenv": "^17.3.1",
+        "hono": "^4.12.3",
+        "@logtape/logtape": "^2.0.4",
+        "@logtape/hono": "^2.0.4",
         "library-excel-extractor": "workspace:*",
         "library-data-layer": "workspace:*"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "catalog:",
-        "@types/bun": "catalog:",
-        "miniflare": "catalog:",
-        "wrangler": "catalog:",
-        "drizzle-kit": "catalog:"
+        "@cloudflare/workers-types": "^4.20260305.0",
+        "@types/bun": "^1.3.9",
+        "miniflare": "^4.20260305.0",
+        "wrangler": "^4.69.0",
+        "drizzle-kit": "^0.31.9"
     }
 }
