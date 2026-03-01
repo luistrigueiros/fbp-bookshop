@@ -6,8 +6,8 @@
     "types": "src/index.ts",
     "scripts": {
         "typecheck": "bunx tsc --noEmit",
-        "preconfig": "bun ../../scripts/config.ts",
-        "dev": "bun run preconfig && bunx wrangler dev",
+        "preconfig": "bun ../../scripts/config.ts && bun scripts/bundle-migrations.ts",
+        "dev": "bun run preconfig && bunx wrangler dev --var ENVIRONMENT:development",
         "deploy": "bun run preconfig && bunx wrangler deploy --minify",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",
         "build": "rm -rf dist && bun run build:types && bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types",

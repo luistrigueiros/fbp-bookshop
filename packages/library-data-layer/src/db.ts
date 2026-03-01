@@ -28,24 +28,33 @@ export async function validateDB(
     await db.run(sql`SELECT count(*) FROM ${schema.gender}`);
     await db.run(sql`SELECT count(*) FROM ${schema.publisher}`);
 
-    // 2. Check if drizzle migrations table exists and has at least one entry
-    // D1 uses __drizzle_migrations by default
+    // 2. Check if drizzle migrations table exists (fallback to checking for 'book' if missing)
     const migrationsTable = await db.run(
       sql`SELECT name FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'`,
     );
-    if (migrationsTable.results.length === 0) {
-      return {
-        success: false,
-        error: "Migrations table '__drizzle_migrations' not found.",
-      };
-    }
 
-    const migrationCount = await db.run(
-      sql`SELECT count(*) as count FROM __drizzle_migrations`,
-    );
-    const countResult = migrationCount.results[0] as { count: number };
-    if (Number(countResult.count) === 0) {
-      return { success: false, error: "No migrations have been applied." };
+    if (migrationsTable.results.length === 0) {
+      // If we have books, we probably have a schema but missing migrations table (common with raw SQL)
+      const bookTable = await db.run(
+        sql`SELECT name FROM sqlite_master WHERE type='table' AND name='book'`,
+      );
+      if (bookTable.results.length === 0) {
+        return {
+          success: false,
+          error: "Migrations table '__drizzle_migrations' not found.",
+        };
+      }
+      console.log(
+        "[VALIDATION] Migrations table missing but 'book' table found. Proceeding...",
+      );
+    } else {
+      const migrationCount = await db.run(
+        sql`SELECT count(*) as count FROM __drizzle_migrations`,
+      );
+      const countResult = migrationCount.results[0] as { count: number };
+      if (Number(countResult.count) === 0) {
+        return { success: false, error: "No migrations have been applied." };
+      }
     }
 
     return { success: true };
@@ -55,4 +64,42 @@ export async function validateDB(
       error: err instanceof Error ? err.message : String(err),
     };
   }
+}
+
+/**
+ * Runs SQL migrations against the D1 database.
+ * @param db - D1 database instance
+ * @param sqlStatements - Array of SQL statements to execute
+ */
+export async function runMigrations(
+  db: D1Database,
+  sqlStatements: string[],
+): Promise<void> {
+  for (const statement of sqlStatements) {
+    if (statement.trim().length > 0) {
+      try {
+        await db.prepare(statement).run();
+      } catch (err) {
+        // Ignore "table already exists" errors during auto-migration in dev
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes("already exists")) {
+          console.log(`[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+}
+
+/**
+ * Splits a Drizzle migration file content into individual statements.
+ * @param content - SQL migration file content
+ * @returns Array of SQL statements
+ */
+export function splitMigrationStatements(content: string): string[] {
+  return content
+    .split("--> statement-breakpoint")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 }

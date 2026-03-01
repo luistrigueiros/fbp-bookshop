@@ -2,7 +2,6 @@ import { beforeAll, describe, expect, it } from "bun:test";
 import { Miniflare } from "miniflare";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { collectSqlFiles, runDatabaseMigrations } from "./test-utils";
 
 describe("Upload Service Integration Test", () => {
   let mf: Miniflare;
@@ -13,16 +12,11 @@ describe("Upload Service Integration Test", () => {
       scriptPath: "dist/index.js",
       d1Databases: ["DB"],
       compatibilityDate: "2026-02-19",
+      compatibilityFlags: ["nodejs_compat"],
+      bindings: {
+        ENVIRONMENT: "development",
+      },
     });
-
-    // Initialize the database by applying Drizzle SQL migrations if available
-    const db = await mf.getD1Database("DB");
-
-    const drizzleDir = join(process.cwd(), "drizzle");
-    const migrationFiles = collectSqlFiles(drizzleDir);
-
-    expect(migrationFiles.length).toBeGreaterThan(0);
-    await runDatabaseMigrations(migrationFiles, db);
   });
 
   it("should process the Excel file and store data in D1", async () => {

@@ -1,5 +1,11 @@
 // Database initialization
-export { initDB, validateDB, type DB } from "./db";
+export {
+  initDB,
+  validateDB,
+  runMigrations,
+  splitMigrationStatements,
+  type DB,
+} from "./db";
 
 // Schema exports
 export * from "./schema";
