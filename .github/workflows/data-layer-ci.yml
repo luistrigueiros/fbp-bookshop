@@ -1,0 +1,70 @@
+name: Library Data Layer CI
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "packages/library-data-layer/**"
+      - "package.json"
+      - "bun.lock"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/library-data-layer/**"
+      - "package.json"
+      - "bun.lock"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: packages/library-data-layer
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: .
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Build
+        run: bun run build
+
+      - name: Run tests with coverage
+        run: bun test --coverage > coverage-report.txt
+
+      - name: Display coverage report
+        run: cat coverage-report.txt
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-layer-coverage-report
+          path: packages/library-data-layer/coverage-report.txt
+
+      - name: Linting Report
+        if: always()
+        run: bun run lint --format json > lint-report.json || true
+
+      - name: Upload Lint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-layer-lint-report
+          path: packages/library-data-layer/lint-report.json
