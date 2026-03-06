@@ -36,20 +36,28 @@ export function extractPublisher(
 
   const { startRow, endRow } = getDataRowRange(sheet);
   const seen = new Map<string, Publisher>();
+  const errors: { row: number; message: string }[] = [];
   let nextId = 1;
 
   for (let row = startRow; row <= endRow; row++) {
-    const name = getCellTrimmed(sheet, row, editoraColIndex);
-    if (!name) continue;
+    try {
+      const name = getCellTrimmed(sheet, row, editoraColIndex);
+      if (!name) continue;
 
-    const normalized = name.toLowerCase();
-    if (!seen.has(normalized)) {
-      seen.set(normalized, { id: nextId++, name });
+      const normalized = name.toLowerCase();
+      if (!seen.has(normalized)) {
+        seen.set(normalized, { id: nextId++, name });
+      }
+    } catch (e: any) {
+      errors.push({
+        row,
+        message: e.message || String(e),
+      });
     }
   }
 
   const items = Array.from(seen.values());
-  console.log(`[IMPORT] Extracted ${items.length} publishers`);
+  console.log(`[IMPORT] Extracted ${items.length} publishers, ${errors.length} errors`);
 
-  return { items, count: items.length };
+  return { items, count: items.length, errors };
 }

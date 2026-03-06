@@ -59,8 +59,8 @@ export function extractBook(
   input: string | ArrayBuffer | Buffer
 ): ExtractionResult<Book> {
   // ── 1. Pre-load genders and publishers into memory ──────────────────────
-  const { items: genders } = extractGender(input);
-  const { items: publishers } = extractPublisher(input);
+  const { items: genders, errors: genderErrors } = extractGender(input);
+  const { items: publishers, errors: publisherErrors } = extractPublisher(input);
 
   const genderByName = buildLookupMap(genders);
   const publisherByName = buildLookupMap(publishers);
@@ -91,80 +91,91 @@ export function extractBook(
   // ── 3. Iterate rows ──────────────────────────────────────────────────────
   const { startRow, endRow } = getDataRowRange(sheet);
   const books: Book[] = [];
+  const errors: { row: number; message: string }[] = [
+    ...genderErrors,
+    ...publisherErrors,
+  ];
 
   // Tracks (normalizedTitle + isbn) and (normalizedTitle + barcode) for dedup
   const seenIsbn = new Map<string, true>();
   const seenBarcode = new Map<string, true>();
 
   for (let row = startRow; row <= endRow; row++) {
-    const title = col.title !== undefined
-      ? getCellTrimmed(sheet, row, col.title)
-      : "";
+    try {
+      const title = col.title !== undefined
+        ? getCellTrimmed(sheet, row, col.title)
+        : "";
 
-    // Skip rows with no title
-    if (!title) continue;
+      // Skip rows with no title
+      if (!title) continue;
 
-    const titleLower = title.toLowerCase();
+      const titleLower = title.toLowerCase();
 
-    const isbn = col.isbn !== undefined
-      ? getCellTrimmed(sheet, row, col.isbn) || null
-      : null;
+      const isbn = col.isbn !== undefined
+        ? getCellTrimmed(sheet, row, col.isbn) || null
+        : null;
 
-    const barcode = col.barcode !== undefined
-      ? getCellTrimmed(sheet, row, col.barcode) || null
-      : null;
+      const barcode = col.barcode !== undefined
+        ? getCellTrimmed(sheet, row, col.barcode) || null
+        : null;
 
-    // ── Deduplication check ────────────────────────────────────────────────
-    if (isbn) {
-      const key = `${titleLower}|${isbn}`;
-      if (seenIsbn.has(key)) continue;
-      seenIsbn.set(key, true);
+      // ── Deduplication check ────────────────────────────────────────────────
+      if (isbn) {
+        const key = `${titleLower}|${isbn}`;
+        if (seenIsbn.has(key)) continue;
+        seenIsbn.set(key, true);
+      }
+
+      if (barcode) {
+        const key = `${titleLower}|${barcode}`;
+        if (seenBarcode.has(key)) continue;
+        seenBarcode.set(key, true);
+      }
+
+      // ── Map related entities by name ──────────────────────────────────────
+      const genderName = col.gender !== undefined
+        ? getCellTrimmed(sheet, row, col.gender)
+        : "";
+      const publisherName = col.publisher !== undefined
+        ? getCellTrimmed(sheet, row, col.publisher)
+        : "";
+
+      const gender: Gender | null = genderName
+        ? (genderByName.get(genderName.toLowerCase()) ?? null)
+        : null;
+
+      const publisher: Publisher | null = publisherName
+        ? (publisherByName.get(publisherName.toLowerCase()) ?? null)
+        : null;
+
+      // ── Build book object ─────────────────────────────────────────────────
+      const book: Book = {
+        title,
+        author: col.author !== undefined
+          ? getCellTrimmed(sheet, row, col.author) || null
+          : null,
+        isbn,
+        barcode,
+        price: col.price !== undefined
+          ? getCellAsNumber(sheet, row, col.price)
+          : null,
+        language: col.language !== undefined
+          ? getCellTrimmed(sheet, row, col.language) || null
+          : null,
+        gender,
+        publisher,
+      };
+
+      books.push(book);
+    } catch (e: any) {
+      errors.push({
+        row,
+        message: e.message || String(e),
+      });
     }
-
-    if (barcode) {
-      const key = `${titleLower}|${barcode}`;
-      if (seenBarcode.has(key)) continue;
-      seenBarcode.set(key, true);
-    }
-
-    // ── Map related entities by name ──────────────────────────────────────
-    const genderName = col.gender !== undefined
-      ? getCellTrimmed(sheet, row, col.gender)
-      : "";
-    const publisherName = col.publisher !== undefined
-      ? getCellTrimmed(sheet, row, col.publisher)
-      : "";
-
-    const gender: Gender | null = genderName
-      ? (genderByName.get(genderName.toLowerCase()) ?? null)
-      : null;
-
-    const publisher: Publisher | null = publisherName
-      ? (publisherByName.get(publisherName.toLowerCase()) ?? null)
-      : null;
-
-    // ── Build book object ─────────────────────────────────────────────────
-    const book: Book = {
-      title,
-      author: col.author !== undefined
-        ? getCellTrimmed(sheet, row, col.author) || null
-        : null,
-      isbn,
-      barcode,
-      price: col.price !== undefined
-        ? getCellAsNumber(sheet, row, col.price)
-        : null,
-      language: col.language !== undefined
-        ? getCellTrimmed(sheet, row, col.language) || null
-        : null,
-      gender,
-      publisher,
-    };
-
-    books.push(book);
   }
 
-  console.log(`[IMPORT] Extracted ${books.length} books`);
+  console.log(`[IMPORT] Extracted ${books.length} books, ${errors.length} errors`);
 
-  return { items: books, count: books.length };
+  return { items: books, count: books.length, errors };
 }

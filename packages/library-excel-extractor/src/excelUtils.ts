@@ -40,7 +40,10 @@ export function getCellAsNumber(
   }
 
   const parsed = parseFloat(String(cell.v));
-  return isNaN(parsed) ? null : parsed;
+  if (isNaN(parsed)) {
+    throw new Error(`Invalid numeric value: "${cell.v}"`);
+  }
+  return parsed;
 }
 
 /**

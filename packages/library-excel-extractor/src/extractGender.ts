@@ -36,20 +36,28 @@ export function extractGender(
 
   const { startRow, endRow } = getDataRowRange(sheet);
   const seen = new Map<string, Gender>();
+  const errors: { row: number; message: string }[] = [];
   let nextId = 1;
 
   for (let row = startRow; row <= endRow; row++) {
-    const name = getCellTrimmed(sheet, row, genreColIndex);
-    if (!name) continue;
+    try {
+      const name = getCellTrimmed(sheet, row, genreColIndex);
+      if (!name) continue;
 
-    const normalized = name.toLowerCase();
-    if (!seen.has(normalized)) {
-      seen.set(normalized, { id: nextId++, name });
+      const normalized = name.toLowerCase();
+      if (!seen.has(normalized)) {
+        seen.set(normalized, { id: nextId++, name });
+      }
+    } catch (e: any) {
+      errors.push({
+        row,
+        message: e.message || String(e),
+      });
     }
   }
 
   const items = Array.from(seen.values());
-  console.log(`[IMPORT] Extracted ${items.length} genders`);
+  console.log(`[IMPORT] Extracted ${items.length} genders, ${errors.length} errors`);
 
-  return { items, count: items.length };
+  return { items, count: items.length, errors };
 }

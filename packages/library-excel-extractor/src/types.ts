@@ -19,7 +19,13 @@ export interface Book {
   publisher: Publisher | null;
 }
 
+export interface ExtractionError {
+  row: number;
+  message: string;
+}
+
 export interface ExtractionResult<T> {
   items: T[];
   count: number;
+  errors: ExtractionError[];
 }
