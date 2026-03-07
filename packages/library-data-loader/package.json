@@ -24,7 +24,7 @@
         "lint:fix": "bunx eslint . --ext .ts --fix"
     },
     "dependencies": {
-        "dotenv": "^17.3.1",
+        "dotenv": "catalog:",
         "hono": "^4.12.3",
         "@logtape/logtape": "^2.0.4",
         "@logtape/hono": "^2.0.4",
