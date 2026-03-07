@@ -1,10 +1,14 @@
 import { configure, getConsoleSink, getLogger, type Logger } from "@logtape/logtape";
 
+let isLoggingConfigured = false;
+
 /**
  * Configure LogTape for the application.
  * This should be called once at the entry point of the application/worker.
  */
 export async function setupLogging() {
+    if (isLoggingConfigured) return;
+    
     await configure({
         sinks: {
             console: getConsoleSink(),
@@ -18,6 +22,8 @@ export async function setupLogging() {
             },
         ],
     });
+    
+    isLoggingConfigured = true;
 }
 
 /**

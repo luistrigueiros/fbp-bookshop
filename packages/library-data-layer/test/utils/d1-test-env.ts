@@ -3,7 +3,7 @@ import { mkdtemp, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { initDB, type DB } from "@/index";
+import { initDB, runMigrations, splitMigrationStatements, setupLogging, type DB } from "@/index";
 
 type TestEnv = {
   mf: Miniflare;
@@ -12,35 +12,30 @@ type TestEnv = {
 };
 
 async function readMigrationsSql(drizzleDirPath: string): Promise<string[]> {
-  // Drizzle generates .sql migration files in drizzle/
   const entries = await readdir(drizzleDirPath, { withFileTypes: true });
 
   const sqlFiles = entries
     .filter((e) => e.isFile() && e.name.endsWith(".sql"))
     .map((e) => e.name)
-    // Sort by filename to preserve migration order
     .sort((a, b) => a.localeCompare(b));
 
-  const fileContents = await Promise.all(
-    sqlFiles.map((f) => Bun.file(join(drizzleDirPath, f)).text()),
-  );
+  const statements: string[] = [];
+  for (const f of sqlFiles) {
+    const content = await Bun.file(join(drizzleDirPath, f)).text();
+    statements.push(...splitMigrationStatements(content));
+  }
 
-  // Flatten all statements
-  return fileContents
-    .flatMap((content) => content.split("--> statement-breakpoint"))
-    .map((stmt) => stmt.trim().replace(/\n/g, " "))
-    .filter((stmt) => stmt.length > 0);
+  return statements;
 }
 
 export async function createD1TestEnv(options?: {
   drizzleDirPath?: string;
 }): Promise<TestEnv> {
+  await setupLogging();
   const drizzleDirPath =
     options?.drizzleDirPath ?? join(process.cwd(), "drizzle");
   const baseTmp = await mkdtemp(join(tmpdir(), "mf-d1-"));
 
-  // Persist path makes D1 use SQLite on disk (still local), which is reliable for integration tests.
-  // Each test env gets its own temp directory -> isolated DB.
   const mf = new Miniflare({
     modules: true,
     script: "export default { fetch(){ return new Response('ok') } }",
@@ -53,15 +48,12 @@ export async function createD1TestEnv(options?: {
 
   const env = (await mf.getBindings()) as unknown as { DB: D1Database };
 
-  // Disable foreign keys for migrations as they might be out of order (circular dependencies etc)
+  // Disable foreign keys for migrations
   await env.DB.exec("PRAGMA foreign_keys = OFF;");
 
-  // Apply migrations
+  // Apply migrations using shared utility
   const migrationSqlList = await readMigrationsSql(drizzleDirPath);
-  for (const sql of migrationSqlList) {
-    // D1Database.exec runs raw SQL against the SQLite database.
-    await env.DB.exec(sql);
-  }
+  await runMigrations(env.DB, migrationSqlList);
 
   await env.DB.exec("PRAGMA foreign_keys = ON;");
 
