@@ -5,7 +5,7 @@ import type { Gender, GenderWithBooks, NewGender } from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class GenderRepository {
-  constructor(private db: DB) { }
+  constructor(private db: DB) {}
 
   /**
    * Create a new gender
@@ -14,7 +14,10 @@ export class GenderRepository {
     layerLogger.debug("Creating new gender: {name}", { name: data.name });
     const result = await this.db.insert(gender).values(data).returning();
     const createdGender = result[0]!;
-    layerLogger.info("Created gender: {name} (ID: {id})", { name: createdGender.name, id: createdGender.id });
+    layerLogger.info("Created gender: {name} (ID: {id})", {
+      name: createdGender.name,
+      id: createdGender.id,
+    });
     return createdGender;
   }
 

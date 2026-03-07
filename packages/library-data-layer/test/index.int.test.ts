@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { createD1TestEnv, disposeD1TestEnv } from "@test/utils/d1-test-env";
+import {
+  createD1TestEnv,
+  disposeD1TestEnv,
+  type TestEnv,
+} from "library-test-utils";
 import {
   createRepositories,
   BookRepository,

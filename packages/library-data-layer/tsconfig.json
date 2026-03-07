@@ -8,17 +8,8 @@
       "@/*": ["src/*"],
       "@test/*": ["test/*"]
     },
-    "types": [
-      "@types/bun",
-      "@cloudflare/workers-types"
-    ]
+    "types": ["@types/bun", "@cloudflare/workers-types"]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

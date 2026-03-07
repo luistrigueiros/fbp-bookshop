@@ -9,7 +9,7 @@ import type {
 import { layerLogger } from "../logging";
 
 export class PublisherRepository {
-  constructor(private db: DB) { }
+  constructor(private db: DB) {}
 
   /**
    * Create a new publisher
@@ -18,7 +18,10 @@ export class PublisherRepository {
     layerLogger.debug("Creating new publisher: {name}", { name: data.name });
     const result = await this.db.insert(publisher).values(data).returning();
     const createdPublisher = result[0]!;
-    layerLogger.info("Created publisher: {name} (ID: {id})", { name: createdPublisher.name, id: createdPublisher.id });
+    layerLogger.info("Created publisher: {name} (ID: {id})", {
+      name: createdPublisher.name,
+      id: createdPublisher.id,
+    });
     return createdPublisher;
   }
 

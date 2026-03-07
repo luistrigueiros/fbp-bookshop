@@ -1,5 +1,10 @@
 import { describe, it, expect } from "bun:test";
-import { setupLogging, getLibraryLogger, layerLogger, loaderLogger } from "@/index";
+import {
+  setupLogging,
+  getLibraryLogger,
+  layerLogger,
+  loaderLogger,
+} from "@/index";
 
 describe("Logging Utilities", () => {
   it("should be able to setup logging multiple times senza error", async () => {

@@ -4,8 +4,10 @@ import * as schema from "./schema";
  * @param d1 - Cloudflare D1 database instance from environment bindings
  * @returns Drizzle database instance with schema
  */
-export declare function initDB(d1: D1Database): import("drizzle-orm/d1").DrizzleD1Database<typeof schema> & {
-    $client: D1Database;
+export declare function initDB(
+  d1: D1Database,
+): import("drizzle-orm/d1").DrizzleD1Database<typeof schema> & {
+  $client: D1Database;
 };
 export type DB = ReturnType<typeof initDB>;
 /**
@@ -14,6 +16,6 @@ export type DB = ReturnType<typeof initDB>;
  * @returns Object containing validation result and potential error message
  */
 export declare function validateDB(db: DB): Promise<{
-    success: boolean;
-    error?: string;
+  success: boolean;
+  error?: string;
 }>;

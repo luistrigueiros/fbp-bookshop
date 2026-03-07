@@ -7,12 +7,12 @@ export type NewBook = InferInsertModel<typeof book>;
 export type NewGender = InferInsertModel<typeof gender>;
 export type NewPublisher = InferInsertModel<typeof publisher>;
 export type BookWithRelations = Book & {
-    gender?: Gender | null;
-    publisher?: Publisher | null;
+  gender?: Gender | null;
+  publisher?: Publisher | null;
 };
 export type GenderWithBooks = Gender & {
-    books?: Book[];
+  books?: Book[];
 };
 export type PublisherWithBooks = Publisher & {
-    books?: Book[];
+  books?: Book[];
 };

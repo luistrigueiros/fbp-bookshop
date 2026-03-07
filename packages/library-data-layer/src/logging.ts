@@ -1,4 +1,9 @@
-import { configure, getConsoleSink, getLogger, type Logger } from "@logtape/logtape";
+import {
+  configure,
+  getConsoleSink,
+  getLogger,
+  type Logger,
+} from "@logtape/logtape";
 
 let isLoggingConfigured = false;
 
@@ -7,23 +12,23 @@ let isLoggingConfigured = false;
  * This should be called once at the entry point of the application/worker.
  */
 export async function setupLogging() {
-    if (isLoggingConfigured) return;
-    
-    await configure({
-        sinks: {
-            console: getConsoleSink(),
-        },
-        filters: {},
-        loggers: [
-            {
-                category: ["library"],
-                lowestLevel: "debug",
-                sinks: ["console"],
-            },
-        ],
-    });
-    
-    isLoggingConfigured = true;
+  if (isLoggingConfigured) return;
+
+  await configure({
+    sinks: {
+      console: getConsoleSink(),
+    },
+    filters: {},
+    loggers: [
+      {
+        category: ["library"],
+        lowestLevel: "debug",
+        sinks: ["console"],
+      },
+    ],
+  });
+
+  isLoggingConfigured = true;
 }
 
 /**
@@ -31,7 +36,7 @@ export async function setupLogging() {
  * @param category - The logger category, e.g., ["library", "data-layer"]
  */
 export function getLibraryLogger(category: string[]): Logger {
-    return getLogger(category);
+  return getLogger(category);
 }
 
 // Pre-defined loggers for common components

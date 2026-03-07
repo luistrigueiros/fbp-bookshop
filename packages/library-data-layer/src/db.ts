@@ -83,7 +83,9 @@ export async function runMigrations(
         // Ignore "table already exists" errors during auto-migration in dev
         const message = err instanceof Error ? err.message : String(err);
         if (message.includes("already exists")) {
-          console.log(`[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`);
+          console.log(
+            `[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`,
+          );
           continue;
         }
         throw err;

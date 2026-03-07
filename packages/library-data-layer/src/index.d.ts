@@ -3,11 +3,15 @@ export * from "./schema";
 export * from "./schema/types";
 export * from "./repositories";
 import type { DB } from "./db";
-import { BookRepository, GenderRepository, PublisherRepository } from "./repositories";
+import {
+  BookRepository,
+  GenderRepository,
+  PublisherRepository,
+} from "./repositories";
 export interface LibraryRepositories {
-    books: BookRepository;
-    genders: GenderRepository;
-    publishers: PublisherRepository;
+  books: BookRepository;
+  genders: GenderRepository;
+  publishers: PublisherRepository;
 }
 /**
  * Create all repository instances for the library database

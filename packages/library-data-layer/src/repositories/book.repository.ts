@@ -5,7 +5,7 @@ import type { Book, BookWithRelations, NewBook } from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class BookRepository {
-  constructor(private db: DB) { }
+  constructor(private db: DB) {}
 
   /**
    * Create a new book
@@ -14,7 +14,10 @@ export class BookRepository {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
     const result = await this.db.insert(book).values(data).returning();
     const createdBook = result[0]!;
-    layerLogger.info("Created book: {title} (ID: {id})", { title: createdBook.title, id: createdBook.id });
+    layerLogger.info("Created book: {title} (ID: {id})", {
+      title: createdBook.title,
+      id: createdBook.id,
+    });
     return createdBook;
   }
 

@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { createD1TestEnv, disposeD1TestEnv } from "@test/utils/d1-test-env";
+import {
+  createD1TestEnv,
+  disposeD1TestEnv,
+  type TestEnv,
+} from "library-test-utils";
 import { validateDB } from "@/index";
 
 describe("Database Initialization and Validation", () => {
@@ -35,15 +39,19 @@ describe("Database Initialization and Validation", () => {
   it("should fail validation if migrations table is empty", async () => {
     // Create all core tables but empty migrations table
     await testEnv.mf.getBindings().then(async (bindings: any) => {
-        await bindings.DB.exec("DROP TABLE IF EXISTS book;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
-        
-        await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
-        await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
-        await bindings.DB.exec("CREATE TABLE publisher (id INTEGER PRIMARY KEY);");
-        await bindings.DB.exec("CREATE TABLE __drizzle_migrations (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("DROP TABLE IF EXISTS book;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
+
+      await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec(
+        "CREATE TABLE publisher (id INTEGER PRIMARY KEY);",
+      );
+      await bindings.DB.exec(
+        "CREATE TABLE __drizzle_migrations (id INTEGER PRIMARY KEY);",
+      );
     });
 
     const result = await validateDB(testEnv.db);
@@ -54,14 +62,16 @@ describe("Database Initialization and Validation", () => {
   it("should warn but succeed if migrations table is missing but book table exists", async () => {
     // Create all core tables but NO migrations table
     await testEnv.mf.getBindings().then(async (bindings: any) => {
-        await bindings.DB.exec("DROP TABLE IF EXISTS book;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
-        await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
-        
-        await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
-        await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
-        await bindings.DB.exec("CREATE TABLE publisher (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("DROP TABLE IF EXISTS book;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
+
+      await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec(
+        "CREATE TABLE publisher (id INTEGER PRIMARY KEY);",
+      );
     });
 
     const result = await validateDB(testEnv.db);

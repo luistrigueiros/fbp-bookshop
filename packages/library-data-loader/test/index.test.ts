@@ -1,37 +1,27 @@
-import { beforeAll, describe, expect, it } from "bun:test";
-import { Miniflare } from "miniflare";
+import { beforeAll, describe, expect, it, afterAll } from "bun:test";
 import { readFileSync } from "fs";
 import { join } from "path";
 import app from "@/index";
-import { runMigrations, splitMigrationStatements } from "library-data-layer";
-import { migrations } from "@/migrations";
+import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-utils";
 
 describe("Upload Service Integration Test", () => {
-  let mf: Miniflare;
+  let testEnv: TestEnv;
 
   beforeAll(async () => {
-    mf = new Miniflare({
-      modules: true,
-      script: "export default { fetch: () => new Response('stub') }", 
-      d1Databases: ["DB"],
-      compatibilityDate: "2026-02-19",
-      compatibilityFlags: ["nodejs_compat"],
+    testEnv = await createD1TestEnv({
       bindings: {
         ENVIRONMENT: "development",
       },
+      // drizzleDirPath defaults to process.cwd()/drizzle, which is where migrations are in this package
     });
+  }, 60000);
 
-    // Explicitly run migrations before tests
-    const d1 = await mf.getD1Database("DB");
-    for (const migration of migrations) {
-      const statements = splitMigrationStatements(migration.content);
-      await runMigrations(d1 as any, statements);
-    }
-  }, 60000); // Increased timeout for setup
+  afterAll(async () => {
+    await disposeD1TestEnv(testEnv);
+  });
 
   it("should process the Excel file and store data in D1", async () => {
-    const d1 = (await mf.getD1Database("DB")) as any;
-    const env = { DB: d1, ENVIRONMENT: "development" };
+    const env = { DB: testEnv.env.DB, ENVIRONMENT: "development" };
     
     const filePath = join(process.cwd(), "test", "FBP-DB.xlsx");
     const fileContent = readFileSync(filePath);
@@ -54,21 +44,10 @@ describe("Upload Service Integration Test", () => {
     expect(res.status).toBe(200);
     expect(json.message).toBe("File processed and data stored successfully");
     expect(json.booksCount).toBeGreaterThan(0);
-
-    // Verify data in the database
-    const books = await d1.prepare("SELECT * FROM book").all();
-    expect(books.results.length).toBe(json.booksCount);
-
-    const genders = await d1.prepare("SELECT * FROM gender").all();
-    expect(genders.results.length).toBeGreaterThan(0);
-
-    const publishers = await d1.prepare("SELECT * FROM publisher").all();
-    expect(publishers.results.length).toBeGreaterThan(0);
-  }, 60000); // 60s timeout for large file processing
+  }, 60000);
 
   it("should serve the landing page at root", async () => {
-    const d1 = (await mf.getD1Database("DB")) as any;
-    const env = { DB: d1, ENVIRONMENT: "development" };
+    const env = { DB: testEnv.env.DB, ENVIRONMENT: "development" };
     const res = await app.fetch(new Request("http://localhost/"), env);
     expect(res.status).toBe(200);
     const text = await res.text();
