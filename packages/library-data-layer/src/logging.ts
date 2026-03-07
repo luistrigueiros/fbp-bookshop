@@ -17,12 +17,19 @@ let isLoggingConfigured = false;
 export async function setupLogging(options?: { environment?: string }) {
   if (isLoggingConfigured) return;
 
-  const isProduction = options?.environment === "production";
+  // Detect if we are in a deployed Cloudflare environment
+  // Miniflare sets globalThis.MINIFLARE = true
+  // Cloudflare Workers (both Miniflare and Prod) set navigator.userAgent = "Cloudflare-Workers"
+  const isMiniflare = (globalThis as any).MINIFLARE === true;
+  const isCloudflare = (globalThis as any).navigator?.userAgent === "Cloudflare-Workers";
+  
+  // We want plain text only when deployed to Cloudflare production
+  const usePlainText = options?.environment === "production" || (isCloudflare && !isMiniflare);
 
   await configure({
     sinks: {
       console: getConsoleSink({
-        formatter: isProduction ? defaultTextFormatter : defaultConsoleFormatter,
+        formatter: usePlainText ? defaultTextFormatter : defaultConsoleFormatter,
       }),
     },
     filters: {},
