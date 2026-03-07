@@ -54,7 +54,7 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
       url: https://library-data-loader.${{ vars.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
