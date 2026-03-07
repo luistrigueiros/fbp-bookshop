@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import app from "@/index";
 import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-utils";
+import { createRepositories } from "library-data-layer";
 
 describe("Upload Service Integration Test", () => {
   let testEnv: TestEnv;
@@ -44,6 +45,18 @@ describe("Upload Service Integration Test", () => {
     expect(res.status).toBe(200);
     expect(json.message).toBe("File processed and data stored successfully");
     expect(json.booksCount).toBeGreaterThan(0);
+
+    // Verify data in the database using repositories
+    const repos = createRepositories(testEnv.db);
+    
+    const booksCount = await repos.books.count();
+    expect(booksCount).toBe(json.booksCount);
+
+    const gendersCount = await repos.genders.count();
+    expect(gendersCount).toBeGreaterThan(0);
+
+    const publishersCount = await repos.publishers.count();
+    expect(publishersCount).toBeGreaterThan(0);
   }, 60000);
 
   it("should serve the landing page at root", async () => {
