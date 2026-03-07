@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 
-import { createD1TestEnv, disposeD1TestEnv } from "../utils/d1-test-env";
+import { createD1TestEnv, disposeD1TestEnv } from "@test/utils/d1-test-env";
 import {
   BookRepository,
   GenderRepository,
   PublisherRepository,
-} from "../../src";
+} from "@/index";
 
 describe("BookRepository (integration, Miniflare D1)", () => {
   let testEnv: Awaited<ReturnType<typeof createD1TestEnv>>;

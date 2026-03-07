@@ -3,6 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
     "types": [
       "@types/bun",
       "@cloudflare/workers-types"

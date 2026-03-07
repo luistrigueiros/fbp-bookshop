@@ -3,7 +3,7 @@ import { mkdtemp, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { initDB, type DB } from "../../src";
+import { initDB, type DB } from "@/index";
 
 type TestEnv = {
   mf: Miniflare;

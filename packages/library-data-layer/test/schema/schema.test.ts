@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import * as schema from "../../src/schema";
+import * as schema from "@/schema";
 import path from "path";
-import { createD1TestEnv, disposeD1TestEnv } from "../utils/d1-test-env";
+import { createD1TestEnv, disposeD1TestEnv } from "@test/utils/d1-test-env";
 
 describe("Schema Definitions", () => {
   it("should have gender table defined correctly", () => {
