@@ -25,17 +25,17 @@
     },
     "dependencies": {
         "dotenv": "catalog:",
-        "hono": "^4.12.3",
+        "hono": "^4.12.5",
         "@logtape/logtape": "^2.0.4",
         "@logtape/hono": "^2.0.4",
         "library-excel-extractor": "workspace:*",
         "library-data-layer": "workspace:*"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260305.0",
-        "@types/bun": "^1.3.9",
+        "@cloudflare/workers-types": "^4.20260307.1",
+        "@types/bun": "^1.3.10",
         "miniflare": "^4.20260305.0",
-        "wrangler": "^4.69.0",
+        "wrangler": "^4.71.0",
         "drizzle-kit": "^0.31.9",
         "library-test-utils": "workspace:*"
     }
