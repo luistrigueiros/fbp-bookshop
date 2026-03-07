@@ -1,7 +1,7 @@
 name: Library Data Loader CI/CD
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     branches: [main, develop]
     paths:
@@ -57,7 +57,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
       name: staging
-      url: https://library-data-loader-staging.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
+      url: https://library-data-loader-staging.${{ vars.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
     
     defaults:
       run:
@@ -103,7 +103,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://library-data-loader.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
+      url: https://library-data-loader.${{ vars.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
     
     defaults:
       run:
