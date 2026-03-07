@@ -76,25 +76,13 @@ jobs:
         run: bun install
         working-directory: .
 
-      - name: Run preconfig
-        run: bun run preconfig
-        env:
-          DATABASE_ID: ${{ secrets.PRODUCTION_DATABASE_ID }}
 
-      - name: Run database migrations
-        run: |
-          bunx wrangler d1 migrations apply library-db --remote
+      - name: Deploy to production
+        run: bun run deploy:production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - name: Deploy to Cloudflare Workers (Production)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-          workingDirectory: packages/library-data-loader
 
 #  security-scan:
 #    name: Security Scan
