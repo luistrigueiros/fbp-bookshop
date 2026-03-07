@@ -47,7 +47,7 @@ jobs:
         run: bun run build
 
       - name: Run tests with coverage
-        run: test:coverage > coverage-report.txt
+        run: bun run test:coverage > coverage-report.txt
 
       - name: Display coverage report
         run: cat coverage-report.txt
