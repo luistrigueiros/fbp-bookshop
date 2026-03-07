@@ -1,8 +1,8 @@
-name: Library Data Layer CI
+name: Library Data Layer CI/CD
 
 on:
   push:
-    branches: ["**"]
+    branches: [main, develop]
     paths:
       - "packages/library-data-layer/**"
       - "package.json"
