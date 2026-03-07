@@ -56,3 +56,15 @@ export const genderRelations = relations(gender, ({ many }) => ({
 export const publisherRelations = relations(publisher, ({ many }) => ({
   books: many(book),
 }));
+
+// Upload Status table
+export const uploadStatus = sqliteTable("upload_status", {
+  key: text("key").primaryKey(), // R2 key
+  status: text("status", { enum: ["UPLOADED", "PROCESSING", "PROCESSED_SUCCESSFULLY", "PROCESSED_FAILED"] }).notNull(),
+  filename: text("filename"),
+  booksCount: integer("books_count").default(0),
+  processedCount: integer("processed_count").default(0),
+  error: text("error"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});

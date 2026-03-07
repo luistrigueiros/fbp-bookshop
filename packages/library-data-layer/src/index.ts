@@ -23,12 +23,14 @@ import {
   BookRepository,
   GenderRepository,
   PublisherRepository,
+  UploadStatusRepository,
 } from "./repositories";
 
 export interface LibraryRepositories {
   books: BookRepository;
   genders: GenderRepository;
   publishers: PublisherRepository;
+  uploads: UploadStatusRepository;
 }
 
 /**
@@ -41,5 +43,6 @@ export function createRepositories(db: DB): LibraryRepositories {
     books: new BookRepository(db),
     genders: new GenderRepository(db),
     publishers: new PublisherRepository(db),
+    uploads: new UploadStatusRepository(db),
   };
 }

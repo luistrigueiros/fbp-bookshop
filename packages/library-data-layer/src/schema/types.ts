@@ -24,3 +24,17 @@ export type GenderWithBooks = Gender & {
 export type PublisherWithBooks = Publisher & {
   books?: Book[];
 };
+
+// Upload Status types
+export { uploadStatus } from "./index";
+import { uploadStatus } from "./index";
+
+export enum UploadStatus {
+  UPLOADED = "UPLOADED",
+  PROCESSING = "PROCESSING",
+  PROCESSED_SUCCESSFULLY = "PROCESSED_SUCCESSFULLY",
+  PROCESSED_FAILED = "PROCESSED_FAILED",
+}
+
+export type UploadStatusRecord = InferSelectModel<typeof uploadStatus>;
+export type NewUploadStatus = InferInsertModel<typeof uploadStatus>;

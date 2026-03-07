@@ -27,6 +27,7 @@ export async function validateDB(
     await db.run(sql`SELECT count(*) FROM ${schema.book}`);
     await db.run(sql`SELECT count(*) FROM ${schema.gender}`);
     await db.run(sql`SELECT count(*) FROM ${schema.publisher}`);
+    await db.run(sql`SELECT count(*) FROM ${schema.uploadStatus}`);
 
     // 2. Check if drizzle migrations table exists (fallback to checking for 'book' if missing)
     const migrationsTable = await db.run(
