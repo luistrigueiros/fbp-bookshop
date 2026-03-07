@@ -3,6 +3,8 @@ import { Miniflare } from "miniflare";
 import { readFileSync } from "fs";
 import { join } from "path";
 import app from "@/index";
+import { runMigrations, splitMigrationStatements } from "library-data-layer";
+import { migrations } from "@/migrations";
 
 describe("Upload Service Integration Test", () => {
   let mf: Miniflare;
@@ -10,7 +12,7 @@ describe("Upload Service Integration Test", () => {
   beforeAll(async () => {
     mf = new Miniflare({
       modules: true,
-      script: "export default { fetch: () => new Response('stub') }", // Minimal script
+      script: "export default { fetch: () => new Response('stub') }", 
       d1Databases: ["DB"],
       compatibilityDate: "2026-02-19",
       compatibilityFlags: ["nodejs_compat"],
@@ -18,7 +20,14 @@ describe("Upload Service Integration Test", () => {
         ENVIRONMENT: "development",
       },
     });
-  });
+
+    // Explicitly run migrations before tests
+    const d1 = await mf.getD1Database("DB");
+    for (const migration of migrations) {
+      const statements = splitMigrationStatements(migration.content);
+      await runMigrations(d1 as any, statements);
+    }
+  }, 60000); // Increased timeout for setup
 
   it("should process the Excel file and store data in D1", async () => {
     const d1 = (await mf.getD1Database("DB")) as any;
@@ -55,7 +64,7 @@ describe("Upload Service Integration Test", () => {
 
     const publishers = await d1.prepare("SELECT * FROM publisher").all();
     expect(publishers.results.length).toBeGreaterThan(0);
-  });
+  }, 60000); // 60s timeout for large file processing
 
   it("should serve the landing page at root", async () => {
     const d1 = (await mf.getD1Database("DB")) as any;
