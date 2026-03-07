@@ -22,6 +22,17 @@ export class GenderRepository {
   }
 
   /**
+   * Create multiple genders in a single batch
+   */
+  async createMany(data: NewGender[]): Promise<Gender[]> {
+    if (data.length === 0) return [];
+    layerLogger.debug("Creating {count} new genders", { count: data.length });
+    const result = await this.db.insert(gender).values(data).returning();
+    layerLogger.info("Created {count} genders", { count: result.length });
+    return result;
+  }
+
+  /**
    * Get gender by ID
    */
   async findById(id: number): Promise<Gender | undefined> {

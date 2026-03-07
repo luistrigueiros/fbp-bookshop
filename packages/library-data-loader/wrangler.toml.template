@@ -9,5 +9,16 @@ database_name = "library-db"
 database_id = "${DATABASE_ID}"
 migrations_dir = "drizzle"
 
+[[r2_buckets]]
+binding = "UPLOADS_BUCKET"
+bucket_name = "library-uploads"
+
+[[queues.producers]]
+queue = "library-upload-queue"
+binding = "UPLOAD_QUEUE"
+
+[[queues.consumers]]
+queue = "library-upload-queue"
+
 [observability]
 enabled = true

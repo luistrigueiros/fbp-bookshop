@@ -7,7 +7,11 @@ import { initDB, runMigrations, splitMigrationStatements, setupLogging, type DB 
 
 export type TestEnv = {
   mf: Miniflare;
-  env: { DB: D1Database } & Record<string, any>;
+  env: { 
+    DB: D1Database;
+    UPLOADS_BUCKET?: R2Bucket;
+    UPLOAD_QUEUE?: Queue<any>;
+  } & Record<string, any>;
   db: DB;
 };
 
@@ -42,6 +46,9 @@ export async function createD1TestEnv(options?: {
   scriptPath?: string;
   bindings?: Record<string, any>;
   compatibilityDate?: string;
+  r2Buckets?: Record<string, string>;
+  queueProducers?: Record<string, string>;
+  queueConsumers?: Record<string, { maxBatchSize?: number; maxBatchTimeout?: number }>;
 }): Promise<TestEnv> {
   await setupLogging();
   
@@ -58,6 +65,10 @@ export async function createD1TestEnv(options?: {
       DB: "DB",
     },
     d1Persist: join(baseTmp, "d1"),
+    r2Buckets: options?.r2Buckets,
+    r2Persist: join(baseTmp, "r2"),
+    queueProducers: options?.queueProducers,
+    queueConsumers: options?.queueConsumers,
     compatibilityDate: options?.compatibilityDate ?? "2024-01-01",
     compatibilityFlags: ["nodejs_compat"],
     bindings: options?.bindings,

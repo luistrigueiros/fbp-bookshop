@@ -26,6 +26,17 @@ export class PublisherRepository {
   }
 
   /**
+   * Create multiple publishers in a single batch
+   */
+  async createMany(data: NewPublisher[]): Promise<Publisher[]> {
+    if (data.length === 0) return [];
+    layerLogger.debug("Creating {count} new publishers", { count: data.length });
+    const result = await this.db.insert(publisher).values(data).returning();
+    layerLogger.info("Created {count} publishers", { count: result.length });
+    return result;
+  }
+
+  /**
    * Get publisher by ID
    */
   async findById(id: number): Promise<Publisher | undefined> {

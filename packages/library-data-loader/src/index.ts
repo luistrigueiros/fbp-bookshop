@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
-import { D1Database } from "@cloudflare/workers-types";
-import { processUpload } from '@/upload-service'
+import { D1Database, R2Bucket, Queue } from "@cloudflare/workers-types";
+import { handleUpload, processQueueMessage } from '@/upload-service'
 import { landingPage } from '@/landing-page'
 import { dbValidationMiddleware, type Variables } from '@/db-middleware'
-import { setupLogging } from 'library-data-layer'
+import { setupLogging, initDB, loaderLogger } from 'library-data-layer'
 import { honoLogger } from '@logtape/hono'
 
 // Initialize logging
@@ -11,6 +11,9 @@ setupLogging()
 
 type Bindings = {
   DB: D1Database
+  UPLOADS_BUCKET: R2Bucket
+  UPLOAD_QUEUE: Queue<any>
+  ENVIRONMENT?: string
 }
 
 const app = new Hono<{ Bindings: Bindings, Variables: Variables }>()
@@ -34,11 +37,37 @@ app.post('/upload', async (c) => {
   }
 
   try {
-    const result = await processUpload(file, c.get('db'))
-    return c.json(result)
+    const result = await handleUpload(file, c.env.UPLOADS_BUCKET, c.env.UPLOAD_QUEUE)
+    return c.json(result, 202)
   } catch (error) {
+    loaderLogger.error("Upload handler failed: {error}", { error: (error as Error).message });
     return c.json({ error: (error as Error).message }, 500)
   }
 })
 
-export default app
+/**
+ * Cloudflare Queue consumer
+ */
+export default {
+  // Hono app fetch handler
+  fetch: app.fetch,
+
+  // Queue consumer handler
+  async queue(batch: MessageBatch<any>, env: Bindings): Promise<void> {
+    const db = initDB(env.DB);
+    
+    for (const message of batch.messages) {
+      try {
+        const { key } = message.body;
+        await processQueueMessage(key, env.UPLOADS_BUCKET, db);
+        message.ack();
+      } catch (error) {
+        loaderLogger.error("Queue processing failed for message {id}: {error}", { 
+          id: message.id, 
+          error: (error as Error).message 
+        });
+        // Message will be retried based on queue configuration if not acked
+      }
+    }
+  }
+}

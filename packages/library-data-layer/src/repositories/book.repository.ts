@@ -22,6 +22,17 @@ export class BookRepository {
   }
 
   /**
+   * Create multiple books in a single batch
+   */
+  async createMany(data: NewBook[]): Promise<Book[]> {
+    if (data.length === 0) return [];
+    layerLogger.debug("Creating {count} new books", { count: data.length });
+    const result = await this.db.insert(book).values(data).returning();
+    layerLogger.info("Created {count} books", { count: result.length });
+    return result;
+  }
+
+  /**
    * Get book by ID
    */
   async findById(id: number): Promise<Book | undefined> {
