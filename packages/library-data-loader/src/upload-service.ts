@@ -1,5 +1,5 @@
 import { extractBook } from 'library-excel-extractor'
-import { createRepositories, loaderLogger, type DB } from 'library-data-layer'
+import { createRepositories, loaderLogger, type DB, UploadStatus } from 'library-data-layer'
 import type { R2Bucket } from '@cloudflare/workers-types'
 
 export interface ProcessUploadResult {
@@ -8,16 +8,26 @@ export interface ProcessUploadResult {
 }
 
 /**
- * Handles the initial upload by storing the file in R2.
- * The actual processing happens asynchronously via a Queue.
+ * Handles the initial upload by storing the file in R2 and creating a status record.
  */
 export async function handleUpload(
   file: File,
   bucket: R2Bucket,
-  queue: Queue<any>
+  queue: Queue<any>,
+  db: DB
 ): Promise<ProcessUploadResult> {
   const key = `uploads/${Date.now()}-${file.name}`;
+  const repos = createRepositories(db);
   
+  // Create initial status record
+  await repos.uploads.create({
+    key,
+    filename: file.name,
+    status: UploadStatus.UPLOADED,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
   loaderLogger.info("Storing upload in R2: {key}", { key });
   await bucket.put(key, await file.arrayBuffer());
   
@@ -39,69 +49,90 @@ export async function processQueueMessage(
   db: DB
 ): Promise<void> {
   loaderLogger.info("Processing queue message for key: {key}", { key });
-
-  const object = await bucket.get(key);
-  if (!object) {
-    throw new Error(`Object not found in R2: ${key}`);
-  }
-
-  const arrayBuffer = await object.arrayBuffer();
-  const result = extractBook(arrayBuffer);
-  loaderLogger.info("Extracted {count} books from Excel file", { count: result.count });
-
   const repos = createRepositories(db);
 
-  const genderMap = new Map<string, number>();
-  const publisherMap = new Map<string, number>();
+  try {
+    // Update status to PROCESSING
+    await repos.uploads.update(key, { status: UploadStatus.PROCESSING });
 
-  // Extract unique genders and publishers first to minimize DB calls
-  const uniqueGenders = Array.from(new Set(result.items.map(i => i.gender?.name).filter(Boolean))) as string[];
-  const uniquePublishers = Array.from(new Set(result.items.map(i => i.publisher?.name).filter(Boolean))) as string[];
-
-  loaderLogger.debug("Ensuring {gCount} genders and {pCount} publishers exist", { 
-    gCount: uniqueGenders.length, 
-    pCount: uniquePublishers.length 
-  });
-
-  for (const name of uniqueGenders) {
-    let gender = await repos.genders.findByName(name);
-    if (!gender) {
-      gender = await repos.genders.create({ name });
+    const object = await bucket.get(key);
+    if (!object) {
+      throw new Error(`Object not found in R2: ${key}`);
     }
-    genderMap.set(name, gender.id);
-  }
 
-  for (const name of uniquePublishers) {
-    let publisher = await repos.publishers.findByName(name);
-    if (!publisher) {
-      publisher = await repos.publishers.create({ name });
+    const arrayBuffer = await object.arrayBuffer();
+    const result = extractBook(arrayBuffer);
+    loaderLogger.info("Extracted {count} books from Excel file", { count: result.count });
+
+    // Update expected books count
+    await repos.uploads.update(key, { booksCount: result.count });
+
+    const genderMap = new Map<string, number>();
+    const publisherMap = new Map<string, number>();
+
+    // Extract unique genders and publishers first
+    const uniqueGenders = Array.from(new Set(result.items.map(i => i.gender?.name).filter(Boolean))) as string[];
+    const uniquePublishers = Array.from(new Set(result.items.map(i => i.publisher?.name).filter(Boolean))) as string[];
+
+    for (const name of uniqueGenders) {
+      let gender = await repos.genders.findByName(name);
+      if (!gender) {
+        gender = await repos.genders.create({ name });
+      }
+      genderMap.set(name, gender.id);
     }
-    publisherMap.set(name, publisher.id);
-  }
 
-  // Batch insert books in chunks of 10 to avoid D1 limits (100 placeholders)
-  const BATCH_SIZE = 10;
-  for (let i = 0; i < result.items.length; i += BATCH_SIZE) {
-    const chunk = result.items.slice(i, i + BATCH_SIZE).map(item => ({
-      title: item.title,
-      author: item.author,
-      isbn: item.isbn,
-      barcode: item.barcode,
-      price: item.price,
-      language: item.language,
-      genderId: item.gender ? genderMap.get(item.gender.name) : null,
-      publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
-    }));
+    for (const name of uniquePublishers) {
+      let publisher = await repos.publishers.findByName(name);
+      if (!publisher) {
+        publisher = await repos.publishers.create({ name });
+      }
+      publisherMap.set(name, publisher.id);
+    }
+
+    // Batch insert books in chunks
+    let processedCount = 0;
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < result.items.length; i += BATCH_SIZE) {
+      const chunk = result.items.slice(i, i + BATCH_SIZE).map(item => ({
+        title: item.title,
+        author: item.author,
+        isbn: item.isbn,
+        barcode: item.barcode,
+        price: item.price,
+        language: item.language,
+        genderId: item.gender ? genderMap.get(item.gender.name) : null,
+        publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
+      }));
+      
+      await repos.books.createMany(chunk);
+      processedCount += chunk.length;
+      
+      // Update processed count in DB
+      await repos.uploads.update(key, { processedCount });
+      loaderLogger.debug("Inserted batch of {count} books. Total: {total}", { 
+        count: chunk.length,
+        total: processedCount 
+      });
+    }
+
+    // Mark as PROCESSED_SUCCESSFULLY
+    await repos.uploads.update(key, { status: UploadStatus.PROCESSED_SUCCESSFULLY });
+    loaderLogger.info("Successfully processed upload with {count} books from key: {key}", { 
+      count: result.count,
+      key 
+    });
+
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    loaderLogger.error("Failed to process upload {key}: {error}", { key, error: errorMessage });
     
-    await repos.books.createMany(chunk);
-    loaderLogger.debug("Inserted batch of {count} books", { count: chunk.length });
+    // Mark as PROCESSED_FAILED
+    await repos.uploads.update(key, { 
+      status: UploadStatus.PROCESSED_FAILED,
+      error: errorMessage
+    });
+    
+    throw error;
   }
-
-  loaderLogger.info("Successfully processed upload with {count} books from key: {key}", { 
-    count: result.count,
-    key 
-  });
-
-  // Optionally delete the object from R2 after processing
-  // await bucket.delete(key);
 }

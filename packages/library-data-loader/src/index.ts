@@ -3,7 +3,7 @@ import { D1Database, R2Bucket, Queue } from "@cloudflare/workers-types";
 import { handleUpload, processQueueMessage } from '@/upload-service'
 import { landingPage } from '@/landing-page'
 import { dbValidationMiddleware, type Variables } from '@/db-middleware'
-import { setupLogging, initDB, loaderLogger } from 'library-data-layer'
+import { setupLogging, initDB, loaderLogger, createRepositories } from 'library-data-layer'
 import { honoLogger } from '@logtape/hono'
 
 // Initialize logging
@@ -37,12 +37,24 @@ app.post('/upload', async (c) => {
   }
 
   try {
-    const result = await handleUpload(file, c.env.UPLOADS_BUCKET, c.env.UPLOAD_QUEUE)
+    const result = await handleUpload(file, c.env.UPLOADS_BUCKET, c.env.UPLOAD_QUEUE, c.get('db'))
     return c.json(result, 202)
   } catch (error) {
     loaderLogger.error("Upload handler failed: {error}", { error: (error as Error).message });
     return c.json({ error: (error as Error).message }, 500)
   }
+})
+
+app.get('/upload-status/:key{.+}', async (c) => {
+  const key = c.req.param('key')
+  const repos = createRepositories(c.get('db'))
+  
+  const status = await repos.uploads.findByKey(key)
+  if (!status) {
+    return c.json({ error: 'Upload not found' }, 404)
+  }
+  
+  return c.json(status)
 })
 
 /**

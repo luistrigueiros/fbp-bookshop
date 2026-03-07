@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import worker from "@/index"; // Import the worker object which includes fetch and queue
 import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-utils";
-import { createRepositories } from "library-data-layer";
+import { createRepositories, UploadStatus } from "library-data-layer";
 
 describe("Upload Service Integration Test (Async)", () => {
   let testEnv: TestEnv;
@@ -19,8 +19,7 @@ describe("Upload Service Integration Test (Async)", () => {
       queueProducers: {
         UPLOAD_QUEUE: "library-upload-queue",
       },
-      // In a real Miniflare setup, we might need queueConsumers too,
-      // but for this test we'll manually call the queue handler.
+      drizzleDirPath: join(process.cwd(), "..", "library-data-layer", "drizzle"),
     });
   }, 60000);
 
@@ -58,9 +57,16 @@ describe("Upload Service Integration Test (Async)", () => {
     expect(json.message).toBe("File upload accepted and queued for processing");
     expect(json.key).toBeDefined();
 
+    const key = json.key;
+
+    // Verify initial status is 'UPLOADED'
+    const statusRes = await worker.fetch(new Request(`http://localhost/upload-status/${key}`), env);
+    const statusJson = await statusRes.json() as any;
+    expect(statusRes.status).toBe(200);
+    expect(statusJson.status).toBe(UploadStatus.UPLOADED);
+    expect(statusJson.filename).toBe('FBP-DB.xlsx');
+
     // 2. Manually trigger the queue handler to simulate background processing
-    // In a full integration test with Miniflare running, this might happen automatically,
-    // but calling it directly ensures we can wait for it to finish.
     const batch = {
       messages: [
         {
@@ -74,8 +80,15 @@ describe("Upload Service Integration Test (Async)", () => {
       queue: "library-upload-queue",
     };
 
-    // We need to cast because our mock batch is minimal
     await worker.queue(batch as any, env as any);
+
+    // Verify final status is 'PROCESSED_SUCCESSFULLY'
+    const finalStatusRes = await worker.fetch(new Request(`http://localhost/upload-status/${key}`), env);
+    const finalStatusJson = await finalStatusRes.json() as any;
+    expect(finalStatusRes.status).toBe(200);
+    expect(finalStatusJson.status).toBe(UploadStatus.PROCESSED_SUCCESSFULLY);
+    expect(finalStatusJson.booksCount).toBeGreaterThan(0);
+    expect(finalStatusJson.processedCount).toBe(finalStatusJson.booksCount);
 
     // 3. Verify data in the database using repositories
     const repos = createRepositories(testEnv.db);
