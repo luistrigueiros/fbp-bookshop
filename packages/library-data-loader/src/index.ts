@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { D1Database } from "@cloudflare/workers-types";
-import { processUpload } from './upload-service'
-import { landingPage } from './landing-page'
-import { dbValidationMiddleware, type Variables } from './db-middleware'
+import { processUpload } from '@/upload-service'
+import { landingPage } from '@/landing-page'
+import { dbValidationMiddleware, type Variables } from '@/db-middleware'
 import { setupLogging } from 'library-data-layer'
 import { honoLogger } from '@logtape/hono'
 

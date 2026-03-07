@@ -1,7 +1,7 @@
 import { MiddlewareHandler } from 'hono'
 import { initDB, validateDB, runMigrations, splitMigrationStatements, type DB } from 'library-data-layer'
 import { D1Database } from "@cloudflare/workers-types"
-import { migrations } from './migrations'
+import { migrations } from '@/migrations'
 
 export type Variables = {
     db: DB
