@@ -6,8 +6,12 @@ import { dbValidationMiddleware, type Variables } from '@/db-middleware'
 import { setupLogging, initDB, loaderLogger, createRepositories } from 'library-data-layer'
 import { honoLogger } from '@logtape/hono'
 
-// Initialize logging
-setupLogging()
+function resolveEnvironment() {
+  return typeof process !== 'undefined' ? process.env.ENVIRONMENT : 'development';
+}
+
+// Initialize logging with default (development) settings
+setupLogging({ environment: resolveEnvironment() })
 
 type Bindings = {
   DB: D1Database
@@ -22,6 +26,11 @@ const app = new Hono<{ Bindings: Bindings, Variables: Variables }>()
 app.use('*', honoLogger())
 
 // Register database validation middleware for all routes
+app.use('*', async (c, next) => {
+  // Ensure logging is configured with the correct environment from bindings
+  await setupLogging({ environment: c.env.ENVIRONMENT });
+  await next();
+})
 app.use('*', dbValidationMiddleware())
 
 app.get('/', (c) => {
@@ -66,6 +75,7 @@ export default {
 
   // Queue consumer handler
   async queue(batch: MessageBatch<any>, env: Bindings): Promise<void> {
+    await setupLogging({ environment: env.ENVIRONMENT });
     const db = initDB(env.DB);
     
     for (const message of batch.messages) {

@@ -3,6 +3,8 @@ import {
   getConsoleSink,
   getLogger,
   type Logger,
+  defaultConsoleFormatter,
+  defaultTextFormatter,
 } from "@logtape/logtape";
 
 let isLoggingConfigured = false;
@@ -10,13 +12,18 @@ let isLoggingConfigured = false;
 /**
  * Configure LogTape for the application.
  * This should be called once at the entry point of the application/worker.
+ * @param options - Configuration options, e.g., { environment: "production" }
  */
-export async function setupLogging() {
+export async function setupLogging(options?: { environment?: string }) {
   if (isLoggingConfigured) return;
+
+  const isProduction = options?.environment === "production";
 
   await configure({
     sinks: {
-      console: getConsoleSink(),
+      console: getConsoleSink({
+        formatter: isProduction ? defaultTextFormatter : defaultConsoleFormatter,
+      }),
     },
     filters: {},
     loggers: [
