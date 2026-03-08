@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "composite": false,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "paths": {
+            "library-data-layer": [
+                "../library-data-layer/dist/index.d.ts"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "test/**/*"
+    ]
+}

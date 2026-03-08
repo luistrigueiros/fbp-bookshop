@@ -1,0 +1,311 @@
+openapi: 3.0.3
+info:
+  title: Library Manager API
+  version: 1.0.0
+servers:
+  - url: /
+tags:
+  - name: Books
+  - name: Genders
+  - name: Publishers
+  - name: Scan
+paths:
+  /api/books:
+    get:
+      tags: [Books]
+      operationId: listBooks
+      summary: List all books
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      tags: [Books]
+      operationId: createBook
+      summary: Create a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookUpsert'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+
+  /api/books/{id}:
+    get:
+      tags: [Books]
+      operationId: getBookById
+      summary: Get a book by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Not Found
+    put:
+      tags: [Books]
+      operationId: updateBook
+      summary: Update a book by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookUpsert'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Not Found
+    delete:
+      tags: [Books]
+      operationId: deleteBook
+      summary: Delete a book by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No Content
+
+  /api/genders:
+    get:
+      tags: [Genders]
+      operationId: listGenders
+      summary: List all genders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GenderRef'
+    post:
+      tags: [Genders]
+      operationId: createGender
+      summary: Create a gender
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NamePayload'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenderRef'
+
+  /api/publishers:
+    get:
+      tags: [Publishers]
+      operationId: listPublishers
+      summary: List all publishers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublisherRef'
+    post:
+      tags: [Publishers]
+      operationId: createPublisher
+      summary: Create a publisher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NamePayload'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherRef'
+
+  /api/scan:
+    post:
+      tags: [Scan]
+      operationId: scanImage
+      summary: Upload an image to decode ISBN/barcode and lookup metadata
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDraft'
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        isbn:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: double
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        genderId:
+          type: integer
+          format: int64
+          nullable: true
+        publisherId:
+          type: integer
+          format: int64
+          nullable: true
+      required: [title]
+
+    BookUpsert:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        isbn:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: double
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        genderId:
+          type: integer
+          format: int64
+          nullable: true
+        publisherId:
+          type: integer
+          format: int64
+          nullable: true
+      required: [title]
+
+    GenderRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        name:
+          type: string
+      required: [name]
+
+    PublisherRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        name:
+          type: string
+      required: [name]
+
+    NamePayload:
+      type: object
+      properties:
+        name:
+          type: string
+      required: [name]
+
+    BookDraft:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        author:
+          type: string
+          nullable: true
+        isbn:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        publisherName:
+          type: string
+          nullable: true
