@@ -27,6 +27,28 @@ export declare const BookUpsertSchema: z.ZodObject<{
     genderId?: number | null | undefined;
     publisherId?: number | null | undefined;
 }>;
+export declare const BookListQuerySchema: z.ZodObject<{
+    limit: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    offset: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    title: z.ZodOptional<z.ZodString>;
+    author: z.ZodOptional<z.ZodString>;
+    publisherId: z.ZodOptional<z.ZodNumber>;
+    genderId: z.ZodOptional<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    limit: number;
+    offset: number;
+    title?: string | undefined;
+    author?: string | undefined;
+    genderId?: number | undefined;
+    publisherId?: number | undefined;
+}, {
+    title?: string | undefined;
+    author?: string | undefined;
+    genderId?: number | undefined;
+    publisherId?: number | undefined;
+    limit?: number | undefined;
+    offset?: number | undefined;
+}>;
 export declare const booksRouter: import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
     ctx: {
         req: Request<unknown, CfProperties<unknown>>;
@@ -56,6 +78,7 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
             errorShape: import("@trpc/server").DefaultErrorShape;
             transformer: import("@trpc/server").DefaultDataTransformer;
         }>;
+        _meta: object;
         _ctx_out: {
             req: Request<unknown, CfProperties<unknown>>;
             resHeaders: Headers;
@@ -65,22 +88,28 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
             repositories: import("library-data-layer").LibraryRepositories;
             env: import("../context").Env;
         };
-        _input_in: typeof import("@trpc/server").unsetMarker;
-        _input_out: typeof import("@trpc/server").unsetMarker;
+        _input_in: {
+            title?: string | undefined;
+            author?: string | undefined;
+            genderId?: number | undefined;
+            publisherId?: number | undefined;
+            limit?: number | undefined;
+            offset?: number | undefined;
+        } | undefined;
+        _input_out: {
+            limit: number;
+            offset: number;
+            title?: string | undefined;
+            author?: string | undefined;
+            genderId?: number | undefined;
+            publisherId?: number | undefined;
+        };
         _output_in: typeof import("@trpc/server").unsetMarker;
         _output_out: typeof import("@trpc/server").unsetMarker;
-        _meta: object;
     }, {
-        id: number;
-        title: string;
-        author: string | null;
-        isbn: string | null;
-        barcode: string | null;
-        price: number | null;
-        language: string | null;
-        genderId: number | null;
-        publisherId: number | null;
-    }[]>;
+        data: import("library-data-layer").BookWithRelations[];
+        total: number;
+    }>;
     getById: import("@trpc/server").BuildProcedure<"query", {
         _config: import("@trpc/server").RootConfig<{
             ctx: {

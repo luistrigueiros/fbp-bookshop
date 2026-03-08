@@ -6686,9 +6686,17 @@ var BookUpsertSchema = exports_external.object({
   genderId: exports_external.number().nullable().optional(),
   publisherId: exports_external.number().nullable().optional()
 });
+var BookListQuerySchema = exports_external.object({
+  limit: exports_external.number().min(1).max(100).optional().default(20),
+  offset: exports_external.number().min(0).optional().default(0),
+  title: exports_external.string().optional(),
+  author: exports_external.string().optional(),
+  publisherId: exports_external.number().optional(),
+  genderId: exports_external.number().optional()
+});
 var booksRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.repositories.books.findAll();
+  list: publicProcedure.input(BookListQuerySchema.optional().default({ limit: 20, offset: 0 })).query(async ({ ctx, input }) => {
+    return ctx.repositories.books.findWithFilters(input);
   }),
   getById: publicProcedure.input(exports_external.number()).query(async ({ ctx, input }) => {
     const book = await ctx.repositories.books.findById(input);
@@ -6726,6 +6734,15 @@ var gendersRouter = router({
   }),
   create: publicProcedure.input(NamePayloadSchema).mutation(async ({ ctx, input }) => {
     return ctx.repositories.genders.create(input);
+  }),
+  update: publicProcedure.input(exports_external.object({
+    id: exports_external.number(),
+    data: NamePayloadSchema
+  })).mutation(async ({ ctx, input }) => {
+    return ctx.repositories.genders.update(input.id, input.data);
+  }),
+  delete: publicProcedure.input(exports_external.number()).mutation(async ({ ctx, input }) => {
+    return ctx.repositories.genders.delete(input);
   })
 });
 
@@ -6739,6 +6756,15 @@ var publishersRouter = router({
   }),
   create: publicProcedure.input(NamePayloadSchema2).mutation(async ({ ctx, input }) => {
     return ctx.repositories.publishers.create(input);
+  }),
+  update: publicProcedure.input(exports_external.object({
+    id: exports_external.number(),
+    data: NamePayloadSchema2
+  })).mutation(async ({ ctx, input }) => {
+    return ctx.repositories.publishers.update(input.id, input.data);
+  }),
+  delete: publicProcedure.input(exports_external.number()).mutation(async ({ ctx, input }) => {
+    return ctx.repositories.publishers.delete(input);
   })
 });
 
@@ -12410,6 +12436,37 @@ class BookRepository {
         publisher: true
       }
     });
+  }
+  async findWithFilters(params) {
+    const filters = [];
+    if (params.title) {
+      filters.push(like(book.title, `%${params.title}%`));
+    }
+    if (params.author) {
+      filters.push(like(book.author, `%${params.author}%`));
+    }
+    if (params.publisherId !== undefined) {
+      filters.push(eq(book.publisherId, params.publisherId));
+    }
+    if (params.genderId !== undefined) {
+      filters.push(eq(book.genderId, params.genderId));
+    }
+    const whereClause = filters.length > 0 ? and(...filters) : undefined;
+    const query = this.db.query.book.findMany({
+      where: whereClause,
+      with: {
+        gender: true,
+        publisher: true
+      },
+      limit: params.limit,
+      offset: params.offset
+    });
+    const countQuery = this.db.select({ count: sql`count(*)` }).from(book).where(whereClause);
+    const [data, countResult] = await Promise.all([query, countQuery]);
+    return {
+      data,
+      total: countResult[0]?.count || 0
+    };
   }
   async search(query) {
     const searchPattern = `%${query}%`;

@@ -16,6 +16,7 @@ export declare const trpc: {
                     errorShape: import("@trpc/server").DefaultErrorShape;
                     transformer: import("@trpc/server").DefaultDataTransformer;
                 }>;
+                _meta: object;
                 _ctx_out: {
                     req: Request<unknown, CfProperties<unknown>>;
                     resHeaders: Headers;
@@ -25,22 +26,28 @@ export declare const trpc: {
                     repositories: import("library-data-layer").LibraryRepositories;
                     env: import("../context").Env;
                 };
-                _input_in: typeof import("@trpc/server").unsetMarker;
-                _input_out: typeof import("@trpc/server").unsetMarker;
+                _input_in: {
+                    title?: string | undefined;
+                    author?: string | undefined;
+                    genderId?: number | undefined;
+                    publisherId?: number | undefined;
+                    limit?: number | undefined;
+                    offset?: number | undefined;
+                } | undefined;
+                _input_out: {
+                    limit: number;
+                    offset: number;
+                    title?: string | undefined;
+                    author?: string | undefined;
+                    genderId?: number | undefined;
+                    publisherId?: number | undefined;
+                };
                 _output_in: typeof import("@trpc/server").unsetMarker;
                 _output_out: typeof import("@trpc/server").unsetMarker;
-                _meta: object;
             }, {
-                id: number;
-                title: string;
-                author: string | null;
-                isbn: string | null;
-                barcode: string | null;
-                price: number | null;
-                language: string | null;
-                genderId: number | null;
-                publisherId: number | null;
-            }[]>>;
+                data: import("library-data-layer").BookWithRelations[];
+                total: number;
+            }>>;
         };
         getById: {
             query: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"query", {
@@ -318,6 +325,83 @@ export declare const trpc: {
                 name: string;
             }>>;
         };
+        update: {
+            mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
+                _config: import("@trpc/server").RootConfig<{
+                    ctx: {
+                        req: Request<unknown, CfProperties<unknown>>;
+                        resHeaders: Headers;
+                        db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                            $client: D1Database;
+                        };
+                        repositories: import("library-data-layer").LibraryRepositories;
+                        env: import("../context").Env;
+                    };
+                    meta: object;
+                    errorShape: import("@trpc/server").DefaultErrorShape;
+                    transformer: import("@trpc/server").DefaultDataTransformer;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    req: Request<unknown, CfProperties<unknown>>;
+                    resHeaders: Headers;
+                    db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                        $client: D1Database;
+                    };
+                    repositories: import("library-data-layer").LibraryRepositories;
+                    env: import("../context").Env;
+                };
+                _input_in: {
+                    id: number;
+                    data: {
+                        name: string;
+                    };
+                };
+                _input_out: {
+                    id: number;
+                    data: {
+                        name: string;
+                    };
+                };
+                _output_in: typeof import("@trpc/server").unsetMarker;
+                _output_out: typeof import("@trpc/server").unsetMarker;
+            }, {
+                id: number;
+                name: string;
+            } | undefined>>;
+        };
+        delete: {
+            mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
+                _config: import("@trpc/server").RootConfig<{
+                    ctx: {
+                        req: Request<unknown, CfProperties<unknown>>;
+                        resHeaders: Headers;
+                        db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                            $client: D1Database;
+                        };
+                        repositories: import("library-data-layer").LibraryRepositories;
+                        env: import("../context").Env;
+                    };
+                    meta: object;
+                    errorShape: import("@trpc/server").DefaultErrorShape;
+                    transformer: import("@trpc/server").DefaultDataTransformer;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    req: Request<unknown, CfProperties<unknown>>;
+                    resHeaders: Headers;
+                    db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                        $client: D1Database;
+                    };
+                    repositories: import("library-data-layer").LibraryRepositories;
+                    env: import("../context").Env;
+                };
+                _input_in: number;
+                _input_out: number;
+                _output_in: typeof import("@trpc/server").unsetMarker;
+                _output_out: typeof import("@trpc/server").unsetMarker;
+            }, boolean>>;
+        };
     };
     publishers: {
         list: {
@@ -393,6 +477,83 @@ export declare const trpc: {
                 id: number;
                 name: string;
             }>>;
+        };
+        update: {
+            mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
+                _config: import("@trpc/server").RootConfig<{
+                    ctx: {
+                        req: Request<unknown, CfProperties<unknown>>;
+                        resHeaders: Headers;
+                        db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                            $client: D1Database;
+                        };
+                        repositories: import("library-data-layer").LibraryRepositories;
+                        env: import("../context").Env;
+                    };
+                    meta: object;
+                    errorShape: import("@trpc/server").DefaultErrorShape;
+                    transformer: import("@trpc/server").DefaultDataTransformer;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    req: Request<unknown, CfProperties<unknown>>;
+                    resHeaders: Headers;
+                    db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                        $client: D1Database;
+                    };
+                    repositories: import("library-data-layer").LibraryRepositories;
+                    env: import("../context").Env;
+                };
+                _input_in: {
+                    id: number;
+                    data: {
+                        name: string;
+                    };
+                };
+                _input_out: {
+                    id: number;
+                    data: {
+                        name: string;
+                    };
+                };
+                _output_in: typeof import("@trpc/server").unsetMarker;
+                _output_out: typeof import("@trpc/server").unsetMarker;
+            }, {
+                id: number;
+                name: string;
+            } | undefined>>;
+        };
+        delete: {
+            mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
+                _config: import("@trpc/server").RootConfig<{
+                    ctx: {
+                        req: Request<unknown, CfProperties<unknown>>;
+                        resHeaders: Headers;
+                        db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                            $client: D1Database;
+                        };
+                        repositories: import("library-data-layer").LibraryRepositories;
+                        env: import("../context").Env;
+                    };
+                    meta: object;
+                    errorShape: import("@trpc/server").DefaultErrorShape;
+                    transformer: import("@trpc/server").DefaultDataTransformer;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    req: Request<unknown, CfProperties<unknown>>;
+                    resHeaders: Headers;
+                    db: import("drizzle-orm/d1").DrizzleD1Database<typeof import("../../../library-data-layer/dist/schema")> & {
+                        $client: D1Database;
+                    };
+                    repositories: import("library-data-layer").LibraryRepositories;
+                    env: import("../context").Env;
+                };
+                _input_in: number;
+                _input_out: number;
+                _output_in: typeof import("@trpc/server").unsetMarker;
+                _output_out: typeof import("@trpc/server").unsetMarker;
+            }, boolean>>;
         };
     };
 };
