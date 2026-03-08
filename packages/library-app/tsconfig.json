@@ -11,7 +11,9 @@
         "types": [
             "@types/bun",
             "@cloudflare/workers-types"
-        ]
+        ],
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js"
     },
     "include": [
         "src/**/*",

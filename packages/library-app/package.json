@@ -17,7 +17,9 @@
         "dev": "bun run preconfig && bunx wrangler dev --var ENVIRONMENT:development",
         "deploy": "bun run preconfig && bunx wrangler deploy --minify",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-        "build": "rm -rf dist && bun run build:types && bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types",
+        "build:frontend": "bunx vite build",
+        "build:worker": "bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types",
+        "build": "rm -rf dist && bun run build:types && bun run build:frontend && bun run build:worker",
         "build:types": "bunx tsc --project tsconfig.build.json --emitDeclarationOnly",
         "test": "bun test",
         "lint": "bunx eslint . --ext .ts",
@@ -31,6 +33,8 @@
         "@trpc/server": "^10.45.2",
         "@trpc/client": "^10.45.2",
         "zod": "^3.23.8",
+        "solid-js": "^1.9.3",
+        "@solidjs/router": "^0.15.2",
         "library-data-layer": "workspace:*"
     },
     "devDependencies": {
@@ -38,6 +42,8 @@
         "@types/bun": "^1.3.10",
         "miniflare": "^4.20260305.0",
         "wrangler": "^4.71.0",
+        "vite": "^6.1.1",
+        "vite-plugin-solid": "^2.11.10",
         "library-test-utils": "workspace:*"
     }
 }

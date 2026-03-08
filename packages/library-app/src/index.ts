@@ -9,6 +9,7 @@ import type { D1Database } from '@cloudflare/workers-types';
 type Bindings = {
   DB: D1Database;
   ENVIRONMENT?: string;
+  ASSETS?: { fetch: typeof fetch };
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -27,6 +28,16 @@ app.all('/api/*', (c) => {
     router: appRouter,
     createContext: (opts) => createContext({ ...opts, ...{ env: c.env } }),
   });
+});
+
+// SPA Fallback: Serve index.html for unknown routes (e.g., /books)
+app.get('*', async (c) => {
+  if (c.env.ASSETS) {
+    const url = new URL(c.req.url);
+    url.pathname = '/'; // Rewrite path to /index.html implicitly by requesting /
+    return await c.env.ASSETS.fetch(new Request(url.toString(), c.req as any));
+  }
+  return c.text('Not Found', 404);
 });
 
 export default {
