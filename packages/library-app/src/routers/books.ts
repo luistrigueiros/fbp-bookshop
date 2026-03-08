@@ -13,10 +13,21 @@ export const BookUpsertSchema = z.object({
   publisherId: z.number().nullable().optional(),
 });
 
+export const BookListQuerySchema = z.object({
+  limit: z.number().min(1).max(100).optional().default(20),
+  offset: z.number().min(0).optional().default(0),
+  title: z.string().optional(),
+  author: z.string().optional(),
+  publisherId: z.number().optional(),
+  genderId: z.number().optional(),
+});
+
 export const booksRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.repositories.books.findAll();
-  }),
+  list: publicProcedure
+    .input(BookListQuerySchema.optional().default({ limit: 20, offset: 0 }))
+    .query(async ({ ctx, input }) => {
+      return ctx.repositories.books.findWithFilters(input);
+    }),
   
   getById: publicProcedure
     .input(z.number())

@@ -14,10 +14,14 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 import { Route } from '@solidjs/router';
 import Dashboard from './routes/index';
 import BooksList from './routes/books';
+import PublishersList from './routes/publishers';
+import GendersList from './routes/genders';
 
 render(() => (
   <Router root={App}>
     <Route path="/" component={Dashboard} />
     <Route path="/books" component={BooksList} />
+    <Route path="/publishers" component={PublishersList} />
+    <Route path="/genders" component={GendersList} />
   </Router>
 ), root!);

@@ -8,6 +8,8 @@ const App: ParentComponent = (props) => {
         <div class="brand">LibraryManager</div>
         <A href="/">Dashboard</A>
         <A href="/books">Books</A>
+        <A href="/publishers">Publishers</A>
+        <A href="/genders">Genders</A>
       </nav>
       <main>
         {props.children}

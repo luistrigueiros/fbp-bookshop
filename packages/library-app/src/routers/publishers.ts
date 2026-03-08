@@ -15,4 +15,19 @@ export const publishersRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.repositories.publishers.create(input);
     }),
+    
+  update: publicProcedure
+    .input(z.object({
+      id: z.number(),
+      data: NamePayloadSchema
+    }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.repositories.publishers.update(input.id, input.data);
+    }),
+    
+  delete: publicProcedure
+    .input(z.number())
+    .mutation(async ({ ctx, input }) => {
+      return ctx.repositories.publishers.delete(input);
+    }),
 });

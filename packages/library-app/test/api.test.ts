@@ -80,7 +80,7 @@ describe("Library App API Tests", () => {
     expect(newBook.id).toBeGreaterThan(0);
 
     const list = await trpc.books.list.query();
-    const found = list.find(b => b.id === newBook.id);
+    const found = list.data.find(b => b.id === newBook.id);
     expect(found).toBeDefined();
     expect(found?.author).toBe("Frank Herbert");
 

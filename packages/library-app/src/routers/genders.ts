@@ -15,4 +15,19 @@ export const gendersRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.repositories.genders.create(input);
     }),
+
+  update: publicProcedure
+    .input(z.object({
+      id: z.number(),
+      data: NamePayloadSchema
+    }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.repositories.genders.update(input.id, input.data);
+    }),
+
+  delete: publicProcedure
+    .input(z.number())
+    .mutation(async ({ ctx, input }) => {
+      return ctx.repositories.genders.delete(input);
+    }),
 });

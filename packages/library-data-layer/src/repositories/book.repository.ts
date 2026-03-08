@@ -1,4 +1,4 @@
-import { eq, like, or } from "drizzle-orm";
+import { eq, like, or, and, sql } from "drizzle-orm";
 import type { DB } from "../db";
 import { book } from "../schema";
 import type { Book, BookWithRelations, NewBook } from "../schema/types";
@@ -72,6 +72,59 @@ export class BookRepository {
         publisher: true,
       },
     });
+  }
+
+  /**
+   * Search books with filters and pagination
+   */
+  async findWithFilters(params: {
+    limit?: number;
+    offset?: number;
+    title?: string;
+    author?: string;
+    publisherId?: number;
+    genderId?: number;
+  }): Promise<{ data: BookWithRelations[]; total: number }> {
+    const filters = [];
+
+    if (params.title) {
+      filters.push(like(book.title, `%${params.title}%`));
+    }
+    if (params.author) {
+      filters.push(like(book.author, `%${params.author}%`));
+    }
+    if (params.publisherId !== undefined) {
+      filters.push(eq(book.publisherId, params.publisherId));
+    }
+    if (params.genderId !== undefined) {
+      filters.push(eq(book.genderId, params.genderId));
+    }
+
+    const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+    // Get paginated data
+    const query = this.db.query.book.findMany({
+      where: whereClause,
+      with: {
+        gender: true,
+        publisher: true,
+      },
+      limit: params.limit,
+      offset: params.offset,
+    });
+
+    // Get total count for these filters
+    const countQuery = this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(book)
+      .where(whereClause);
+
+    const [data, countResult] = await Promise.all([query, countQuery]);
+
+    return {
+      data,
+      total: countResult[0]?.count || 0,
+    };
   }
 
   /**
