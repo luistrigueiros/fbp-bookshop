@@ -1,7 +1,10 @@
 import { createSignal, createResource, For, Show } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import { trpc } from '../trpc';
 
 const BooksList = () => {
+  const navigate = useNavigate();
+
   // Pagination & Filters State
   const [page, setPage] = createSignal(1);
   const [limit] = createSignal(10);
@@ -28,63 +31,12 @@ const BooksList = () => {
     }
   );
 
-  // Edit / Add modal state
-  const [isAdding, setIsAdding] = createSignal(false);
-  const [editingId, setEditingId] = createSignal<number | null>(null);
-  
-  const [title, setTitle] = createSignal('');
-  const [author, setAuthor] = createSignal('');
-  const [price, setPrice] = createSignal(0);
-  const [pubId, setPubId] = createSignal(0);
-  const [selectedGenderIds, setSelectedGenderIds] = createSignal<number[]>([]);
-  const [isbn, setIsbn] = createSignal('');
-  const [language, setLanguage] = createSignal('');
-
   const openAdd = () => {
-    setIsAdding(true);
-    setEditingId(null);
-    setTitle('');
-    setAuthor('');
-    setPrice(0);
-    setPubId(0);
-    setSelectedGenderIds([]);
-    setIsbn('');
-    setLanguage('');
+    navigate('/books/new');
   };
 
-  const openEdit = (book: any) => {
-    setIsAdding(true);
-    setEditingId(book.id);
-    setTitle(book.title || '');
-    setAuthor(book.author || '');
-    setPrice(book.price || 0);
-    setPubId(book.publisherId || 0);
-    const genderIds = book.bookGenders?.map((bg: any) => bg.genderId) || [];
-    setSelectedGenderIds(genderIds);
-    setIsbn(book.isbn || '');
-    setLanguage(book.language || '');
-  };
-
-  const handleSave = async (e: Event) => {
-    e.preventDefault();
-    const data = {
-      title: title(),
-      author: author() || null,
-      price: price() || null,
-      publisherId: pubId() || null,
-      genderIds: selectedGenderIds(),
-      isbn: isbn() || null,
-      language: language() || null,
-    };
-
-    if (editingId()) {
-      await trpc.books.update.mutate({ id: editingId()!, data });
-    } else {
-      await trpc.books.create.mutate(data);
-    }
-    
-    refetch();
-    setIsAdding(false);
+  const openEdit = (id: number) => {
+    navigate(`/books/${id}`);
   };
 
   const handleDelete = async (id: number, e: Event) => {
@@ -118,68 +70,6 @@ const BooksList = () => {
           Add New Book
         </button>
       </div>
-
-      <Show when={isAdding()}>
-        <form class="glass-panel" style={{ padding: '2rem', 'margin-bottom': '2rem' }} onSubmit={handleSave}>
-          <h3>{editingId() ? 'Edit Book' : 'Add New Book'}</h3>
-          <div style={{ display: 'grid', 'grid-template-columns': '1fr 1fr', gap: '1rem', 'margin-top': '1rem' }}>
-            <div>
-              <label>Title</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={title()} onInput={(e) => setTitle(e.target.value)} required />
-            </div>
-            <div>
-              <label>Author</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={author()} onInput={(e) => setAuthor(e.target.value)} />
-            </div>
-            <div>
-              <label>Price</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" step="0.01" value={price()} onInput={(e) => setPrice(parseFloat(e.target.value))} />
-            </div>
-            <div>
-              <label>ISBN</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={isbn()} onInput={(e) => setIsbn(e.target.value)} />
-            </div>
-            <div>
-              <label>Language</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={language()} onInput={(e) => setLanguage(e.target.value)} />
-            </div>
-            <div>
-              <label>Publisher</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={pubId()} onChange={(e) => setPubId(parseInt(e.target.value))}>
-                <option value={0}>No Publisher</option>
-                <For each={publishers()}>
-                  {(pub) => <option value={pub.id}>{pub.name}</option>}
-                </For>
-              </select>
-            </div>
-            <div>
-              <label>Genders</label>
-              <select 
-                multiple 
-                style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '100px' }} 
-                value={selectedGenderIds().map(String)} 
-                onChange={(e) => {
-                  const options = Array.from(e.target.selectedOptions);
-                  setSelectedGenderIds(options.map(o => parseInt(o.value)));
-                }}
-              >
-                <For each={genders()}>
-                  {(gen) => <option value={gen.id}>{gen.name}</option>}
-                </For>
-              </select>
-              <small style={{ color: 'var(--text-secondary)' }}>Hold Ctrl/Cmd to select multiple</small>
-            </div>
-          </div>
-          <div style={{ 'margin-top': '1.5rem', display: 'flex', gap: '1rem' }}>
-            <button type="submit" style={{ padding: '0.5rem 2rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>
-              Save
-            </button>
-            <button type="button" onClick={() => setIsAdding(false)} style={{ padding: '0.5rem 2rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: 'pointer' }}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      </Show>
 
       {/* FILTERING SECTION */}
       <div class="glass-panel" style={{ padding: '1.5rem', 'margin-bottom': '2rem' }}>
@@ -240,7 +130,7 @@ const BooksList = () => {
             </Show>
             <For each={booksData()?.data}>
               {(book) => (
-                <tr style={{ 'border-bottom': '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => openEdit(book)} class="table-row-hover">
+                <tr style={{ 'border-bottom': '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => openEdit(book.id)} class="table-row-hover">
                   <td style={{ padding: '1rem' }}>{book.id}</td>
                   <td style={{ padding: '1rem', 'font-weight': '500' }}>{book.title}</td>
                   <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{book.author || '-'}</td>
