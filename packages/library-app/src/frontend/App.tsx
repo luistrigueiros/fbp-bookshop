@@ -6,10 +6,12 @@ const App: ParentComponent = (props) => {
     <>
       <nav>
         <div class="brand">LibraryManager</div>
-        <A href="/">Dashboard</A>
-        <A href="/books">Books</A>
-        <A href="/publishers">Publishers</A>
-        <A href="/genders">Genders</A>
+        <div class="nav-links">
+          <A href="/">Dashboard</A>
+          <A href="/books">Books</A>
+          <A href="/publishers">Publishers</A>
+          <A href="/genders">Genders</A>
+        </div>
       </nav>
       <main>
         {props.children}

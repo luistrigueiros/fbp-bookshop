@@ -98,7 +98,7 @@ const BookDetail = () => {
 
       <Show when={!bookData.loading || !id()} fallback={<p>Loading book details...</p>}>
         <form onSubmit={handleSave}>
-          <div style={{ display: 'grid', 'grid-template-columns': '1fr 1fr', gap: '1rem', 'margin-top': '1rem' }}>
+          <div style={{ display: 'grid', 'grid-template-columns': 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', 'margin-top': '1rem' }}>
             <div>
               <label>Title</label>
               <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={title()} onInput={(e) => setTitle(e.target.value)} required />
@@ -128,11 +128,11 @@ const BookDetail = () => {
                 </For>
               </select>
             </div>
-            <div>
+            <div style={{ 'grid-column': '1 / -1' }}>
               <label>Genders</label>
               <select 
                 multiple 
-                style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '100px' }} 
+                style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '120px' }} 
                 value={selectedGenderIds().map(String)} 
                 onChange={(e) => {
                   const options = Array.from(e.target.selectedOptions);

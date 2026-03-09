@@ -74,7 +74,7 @@ const BooksList = () => {
       {/* FILTERING SECTION */}
       <div class="glass-panel" style={{ padding: '1.5rem', 'margin-bottom': '2rem' }}>
         <h4 style={{ 'margin-top': 0 }}>Filters</h4>
-        <form onSubmit={handleFilter} style={{ display: 'grid', 'grid-template-columns': '1fr 1fr 1fr 1fr auto', gap: '1rem', 'align-items': 'end' }}>
+        <form onSubmit={handleFilter} class="responsive-filters" style={{ display: 'grid', 'grid-template-columns': 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', 'align-items': 'end' }}>
           <div>
             <label style={{ 'font-size': '0.85rem' }}>Title</label>
             <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem' }} value={filterTitle()} onInput={(e) => setFilterTitle(e.target.value)} placeholder="Search title..." />
@@ -102,56 +102,58 @@ const BooksList = () => {
             </select>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="submit" style={{ padding: '0.5rem 1rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>Filter</button>
-            <button type="button" onClick={clearFilters} style={{ padding: '0.5rem 1rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: 'pointer' }}>Clear</button>
+            <button type="submit" style={{ flex: 1, padding: '0.5rem 1rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>Filter</button>
+            <button type="button" onClick={clearFilters} style={{ flex: 1, padding: '0.5rem 1rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: 'pointer' }}>Clear</button>
           </div>
         </form>
       </div>
 
       {/* DATA TABLE SECTION */}
       <div class="glass-panel" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', 'border-collapse': 'collapse' }}>
-          <thead>
-            <tr style={{ background: 'var(--secondary-bg)', 'text-align': 'left' }}>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>ID</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Title</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Author</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Publisher</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Gender</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Price</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <Show when={booksData.loading}>
-              <tr>
-                <td colspan="7" style={{ padding: '2rem', 'text-align': 'center' }}>Loading books...</td>
+        <div class="table-responsive">
+          <table style={{ width: '100%', 'border-collapse': 'collapse', 'min-width': '800px' }}>
+            <thead>
+              <tr style={{ background: 'var(--secondary-bg)', 'text-align': 'left' }}>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>ID</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Title</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Author</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Publisher</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Gender</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Price</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
               </tr>
-            </Show>
-            <For each={booksData()?.data}>
-              {(book) => (
-                <tr style={{ 'border-bottom': '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => openEdit(book.id)} class="table-row-hover">
-                  <td style={{ padding: '1rem' }}>{book.id}</td>
-                  <td style={{ padding: '1rem', 'font-weight': '500' }}>{book.title}</td>
-                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{book.author || '-'}</td>
-                  <td style={{ padding: '1rem' }}>{book.publisher?.name || '-'}</td>
-                  <td style={{ padding: '1rem' }}>
-                    {book.bookGenders?.map((bg: any) => bg.gender.name).join(', ') || '-'}
-                  </td>
-                  <td style={{ padding: '1rem' }}>{book.price ? `$${book.price.toFixed(2)}` : '-'}</td>
-                  <td style={{ padding: '1rem', 'text-align': 'right' }}>
-                    <button style={{ padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', 'border-radius': '4px' }} onClick={(e) => handleDelete(book.id, e)}>Delete</button>
-                  </td>
+            </thead>
+            <tbody>
+              <Show when={booksData.loading}>
+                <tr>
+                  <td colspan="7" style={{ padding: '2rem', 'text-align': 'center' }}>Loading books...</td>
                 </tr>
-              )}
-            </For>
-            <Show when={!booksData.loading && booksData()?.data.length === 0}>
-              <tr>
-                <td colspan="7" style={{ padding: '2rem', 'text-align': 'center' }}>No books found matching the filters.</td>
-              </tr>
-            </Show>
-          </tbody>
-        </table>
+              </Show>
+              <For each={booksData()?.data}>
+                {(book) => (
+                  <tr style={{ 'border-bottom': '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => openEdit(book.id)} class="table-row-hover">
+                    <td style={{ padding: '1rem' }}>{book.id}</td>
+                    <td style={{ padding: '1rem', 'font-weight': '500' }}>{book.title}</td>
+                    <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{book.author || '-'}</td>
+                    <td style={{ padding: '1rem' }}>{book.publisher?.name || '-'}</td>
+                    <td style={{ padding: '1rem' }}>
+                      {book.bookGenders?.map((bg: any) => bg.gender.name).join(', ') || '-'}
+                    </td>
+                    <td style={{ padding: '1rem' }}>{book.price ? `$${book.price.toFixed(2)}` : '-'}</td>
+                    <td style={{ padding: '1rem', 'text-align': 'right' }}>
+                      <button style={{ padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', 'border-radius': '4px' }} onClick={(e) => handleDelete(book.id, e)}>Delete</button>
+                    </td>
+                  </tr>
+                )}
+              </For>
+              <Show when={!booksData.loading && booksData()?.data.length === 0}>
+                <tr>
+                  <td colspan="7" style={{ padding: '2rem', 'text-align': 'center' }}>No books found matching the filters.</td>
+                </tr>
+              </Show>
+            </tbody>
+          </table>
+        </div>
 
         {/* PAGINATION CONTROLS */}
         <div style={{ padding: '1rem', display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'border-top': '1px solid var(--border-color)' }}>

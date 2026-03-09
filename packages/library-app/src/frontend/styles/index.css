@@ -51,11 +51,16 @@ nav {
   border-bottom: 1px solid var(--border-color);
 }
 
+nav .nav-links {
+  display: flex;
+  align-items: center;
+}
+
 nav a {
   text-decoration: none;
   color: var(--text-primary);
   font-weight: 500;
-  margin-right: 1.5rem;
+  margin-left: 1.5rem;
   transition: color 0.2s;
 }
 
@@ -74,4 +79,71 @@ main {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  nav {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .brand {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  nav a {
+    margin-right: 1rem;
+    font-size: 0.9rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+  
+  .glass-panel {
+    padding: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    justify-content: center;
+  }
+  
+  nav a {
+    margin: 0.25rem 0.5rem;
+  }
+}
+
+/* Utility classes for responsive design */
+.container {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 576px) {
+  .container { max-width: 540px; }
+}
+@media (min-width: 768px) {
+  .container { max-width: 720px; }
+}
+@media (min-width: 992px) {
+  .container { max-width: 960px; }
+}
+@media (min-width: 1200px) {
+  .container { max-width: 1140px; }
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }

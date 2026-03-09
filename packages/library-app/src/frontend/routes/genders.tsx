@@ -40,8 +40,8 @@ const GendersList = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '2rem' }}>
-        <h2>Genders Directory</h2>
+      <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '2rem', 'flex-wrap': 'wrap', gap: '1rem' }}>
+        <h2 style={{ margin: 0 }}>Genders Directory</h2>
         <button class="glass-panel" style={{ padding: '0.5rem 1rem', cursor: 'pointer' }} onClick={() => setIsAdding(true)}>
           Add Gender
         </button>
@@ -65,39 +65,41 @@ const GendersList = () => {
       </Show>
 
       <div class="glass-panel" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', 'border-collapse': 'collapse' }}>
-          <thead>
-            <tr style={{ background: 'var(--secondary-bg)', 'text-align': 'left' }}>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>ID</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Name</th>
-              <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <Show when={genders.loading}>
-              <tr>
-                <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>Loading genders...</td>
+        <div class="table-responsive">
+          <table style={{ width: '100%', 'border-collapse': 'collapse', 'min-width': '600px' }}>
+            <thead>
+              <tr style={{ background: 'var(--secondary-bg)', 'text-align': 'left' }}>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>ID</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Name</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
               </tr>
-            </Show>
-            <For each={genders()}>
-              {(gen) => (
-                <tr style={{ 'border-bottom': '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem' }}>{gen.id}</td>
-                  <td style={{ padding: '1rem' }}>{gen.name}</td>
-                  <td style={{ padding: '1rem', 'text-align': 'right' }}>
-                    <button style={{ 'margin-right': '0.5rem', padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', 'border-radius': '4px' }} onClick={() => openEdit(gen)}>Edit</button>
-                    <button style={{ padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', 'border-radius': '4px' }} onClick={() => handleDelete(gen.id)}>Delete</button>
-                  </td>
+            </thead>
+            <tbody>
+              <Show when={genders.loading}>
+                <tr>
+                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>Loading genders...</td>
                 </tr>
-              )}
-            </For>
-            <Show when={!genders.loading && genders()?.length === 0}>
-              <tr>
-                <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>No genders found.</td>
-              </tr>
-            </Show>
-          </tbody>
-        </table>
+              </Show>
+              <For each={genders()}>
+                {(gen) => (
+                  <tr style={{ 'border-bottom': '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '1rem' }}>{gen.id}</td>
+                    <td style={{ padding: '1rem' }}>{gen.name}</td>
+                    <td style={{ padding: '1rem', 'text-align': 'right' }}>
+                      <button style={{ 'margin-right': '0.5rem', padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', 'border-radius': '4px' }} onClick={() => openEdit(gen)}>Edit</button>
+                      <button style={{ padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', 'border-radius': '4px' }} onClick={() => handleDelete(gen.id)}>Delete</button>
+                    </td>
+                  </tr>
+                )}
+              </For>
+              <Show when={!genders.loading && genders()?.length === 0}>
+                <tr>
+                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>No genders found.</td>
+                </tr>
+              </Show>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

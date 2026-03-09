@@ -17,3 +17,5 @@
 .DS_Store
 /packages/library-test-utils/node_modules/
 /packages/library-app/dist/
+/packages/library-app/.wrangler/
+/packages/library-app/wrangler.toml
