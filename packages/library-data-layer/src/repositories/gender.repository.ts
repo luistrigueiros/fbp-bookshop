@@ -44,7 +44,7 @@ export class GenderRepository {
    * Get gender by ID with books
    */
   async findByIdWithBooks(id: number): Promise<GenderWithBooks | undefined> {
-    return this.db.query.gender.findFirst({
+    const result = await this.db.query.gender.findFirst({
       where: eq(gender.id, id),
       with: {
         bookGenders: {
@@ -54,6 +54,13 @@ export class GenderRepository {
         },
       },
     });
+
+    if (!result) return undefined;
+
+    return {
+      ...result,
+      books: result.bookGenders?.map((bg) => bg.book).filter(Boolean) as Book[],
+    };
   }
 
   /**
@@ -78,7 +85,7 @@ export class GenderRepository {
    * Get all genders with their books
    */
   async findAllWithBooks(): Promise<GenderWithBooks[]> {
-    return this.db.query.gender.findMany({
+    const results = await this.db.query.gender.findMany({
       with: {
         bookGenders: {
           with: {
@@ -87,6 +94,11 @@ export class GenderRepository {
         },
       },
     });
+
+    return results.map((result) => ({
+      ...result,
+      books: result.bookGenders?.map((bg) => bg.book).filter(Boolean) as Book[],
+    }));
   }
 
   /**

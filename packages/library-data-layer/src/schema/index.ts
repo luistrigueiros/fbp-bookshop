@@ -1,4 +1,10 @@
-import { sqliteTable, integer, text, real, primaryKey } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  integer,
+  text,
+  real,
+  primaryKey,
+} from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 // Gender table (genre/category)
@@ -34,12 +40,20 @@ export const book = sqliteTable("book", {
   }),
 });
 
-export const bookGender = sqliteTable("book_gender", {
-  bookId: integer("book_id").notNull().references(() => book.id, { onDelete: "cascade" }),
-  genderId: integer("gender_id").notNull().references(getGenderId, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.bookId, t.genderId] }),
-}));
+export const bookGender = sqliteTable(
+  "book_gender",
+  {
+    bookId: integer("book_id")
+      .notNull()
+      .references(() => book.id, { onDelete: "cascade" }),
+    genderId: integer("gender_id")
+      .notNull()
+      .references(getGenderId, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.bookId, t.genderId] }),
+  }),
+);
 
 // Define relations for better TypeScript support and joins
 export const bookRelations = relations(book, ({ one, many }) => ({
@@ -72,7 +86,14 @@ export const bookGenderRelations = relations(bookGender, ({ one }) => ({
 // Upload Status table
 export const uploadStatus = sqliteTable("upload_status", {
   key: text("key").primaryKey(), // R2 key
-  status: text("status", { enum: ["UPLOADED", "PROCESSING", "PROCESSED_SUCCESSFULLY", "PROCESSED_FAILED"] }).notNull(),
+  status: text("status", {
+    enum: [
+      "UPLOADED",
+      "PROCESSING",
+      "PROCESSED_SUCCESSFULLY",
+      "PROCESSED_FAILED",
+    ],
+  }).notNull(),
   filename: text("filename"),
   booksCount: integer("books_count").default(0),
   processedCount: integer("processed_count").default(0),

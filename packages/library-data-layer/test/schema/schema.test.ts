@@ -25,7 +25,7 @@ describe("Schema Definitions", () => {
     expect(schema.book.barcode).toBeDefined();
     expect(schema.book.price).toBeDefined();
     expect(schema.book.language).toBeDefined();
-    expect(schema.book.genderId).toBeDefined();
+    expect(schema.bookGender).toBeDefined();
     expect(schema.book.publisherId).toBeDefined();
   });
 

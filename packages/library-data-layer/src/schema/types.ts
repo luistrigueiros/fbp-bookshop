@@ -21,6 +21,7 @@ export type BookWithRelations = Book & {
 
 export type GenderWithBooks = Gender & {
   bookGenders?: (BookGender & { book: Book })[];
+  books?: Book[];
 };
 
 export type PublisherWithBooks = Publisher & {

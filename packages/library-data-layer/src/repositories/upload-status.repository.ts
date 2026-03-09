@@ -11,15 +11,23 @@ export class UploadStatusRepository {
    * Create a new upload status record
    */
   async create(data: NewUploadStatus): Promise<UploadStatusRecord> {
-    layerLogger.debug("Creating upload status for key: {key}", { key: data.key });
-    const [result] = await this.db.insert(uploadStatus).values(data).returning();
+    layerLogger.debug("Creating upload status for key: {key}", {
+      key: data.key,
+    });
+    const [result] = await this.db
+      .insert(uploadStatus)
+      .values(data)
+      .returning();
     return result as UploadStatusRecord;
   }
 
   /**
    * Update an existing upload status record
    */
-  async update(key: string, data: Partial<NewUploadStatus>): Promise<UploadStatusRecord | undefined> {
+  async update(
+    key: string,
+    data: Partial<NewUploadStatus>,
+  ): Promise<UploadStatusRecord | undefined> {
     layerLogger.debug("Updating upload status for key: {key}", { key });
     const [result] = await this.db
       .update(uploadStatus)

@@ -81,9 +81,11 @@ describe("BookRepository (integration, Miniflare D1)", () => {
     expect(withRel?.publisher?.name).toBe("Big Publisher");
 
     const allWithRel = await books.findAllWithRelations();
-    expect(allWithRel.some((x) => x.id === b.id && x.bookGenders?.[0]?.gender?.id === g.id)).toBe(
-      true,
-    );
+    expect(
+      allWithRel.some(
+        (x) => x.id === b.id && x.bookGenders?.[0]?.gender?.id === g.id,
+      ),
+    ).toBe(true);
   });
 
   it("Find by gender and publisher ID", async () => {

@@ -1,4 +1,4 @@
-import { eq, like, or, and, sql, In } from "drizzle-orm";
+import { eq, like, or, and, sql, inArray } from "drizzle-orm";
 import type { DB } from "../db";
 import { book, bookGender } from "../schema";
 import type { Book, BookWithRelations, NewBook } from "../schema/types";
@@ -41,7 +41,10 @@ export class BookRepository {
     layerLogger.debug("Creating {count} new books", { count: data.length });
 
     const booksToInsert = data.map(({ genderIds, ...bookData }) => bookData);
-    const createdBooks = await this.db.insert(book).values(booksToInsert).returning();
+    const createdBooks = await this.db
+      .insert(book)
+      .values(booksToInsert)
+      .returning();
 
     const bookGendersToInsert: { bookId: number; genderId: number }[] = [];
     data.forEach((item, index) => {
@@ -144,13 +147,13 @@ export class BookRepository {
         .from(bookGender)
         .where(eq(bookGender.genderId, params.genderId));
       bookIdsByGender = bookGendersResults.map((bg) => bg.bookId);
-      
+
       // If no books found for this gender, return empty result
       if (bookIdsByGender.length === 0) {
         return { data: [], total: 0 };
       }
-      
-      filters.push(sql`${book.id} IN (${bookIdsByGender.join(",")})`);
+
+      filters.push(inArray(book.id, bookIdsByGender));
     }
 
     const finalWhereClause = filters.length > 0 ? and(...filters) : undefined;
@@ -205,13 +208,18 @@ export class BookRepository {
       .select({ bookId: bookGender.bookId })
       .from(bookGender)
       .where(eq(bookGender.genderId, genderId));
-    
+
     if (bookIds.length === 0) return [];
-    
+
     return this.db
       .select()
       .from(book)
-      .where(sql`${book.id} IN (${bookIds.map(b => b.bookId).join(",")})`);
+      .where(
+        inArray(
+          book.id,
+          bookIds.map((b) => b.bookId),
+        ),
+      );
   }
 
   /**
@@ -249,18 +257,18 @@ export class BookRepository {
   ): Promise<Book | undefined> {
     layerLogger.debug("Updating book ID: {id}", { id });
     const { genderIds, ...bookData } = data;
-    
+
     const result = await this.db
       .update(book)
       .set(bookData)
       .where(eq(book.id, id))
       .returning();
     const updatedBook = result[0];
-    
+
     if (updatedBook && genderIds !== undefined) {
       // Delete existing associations
       await this.db.delete(bookGender).where(eq(bookGender.bookId, id));
-      
+
       // Add new associations
       if (genderIds.length > 0) {
         const bookGenders = genderIds.map((genderId) => ({

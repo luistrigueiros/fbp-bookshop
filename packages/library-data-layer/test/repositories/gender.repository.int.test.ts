@@ -62,7 +62,7 @@ describe("GenderRepository (integration, Miniflare D1)", () => {
       barcode: "BARCODE-MYSTERY-1",
       price: 9.99,
       language: "English",
-      genderId: g.id,
+      genderIds: [g.id],
       publisherId: null,
     });
 
@@ -83,7 +83,7 @@ describe("GenderRepository (integration, Miniflare D1)", () => {
       barcode: `BARCODE-${Date.now()}`,
       price: 10,
       language: "English",
-      genderId: g.id,
+      genderIds: [g.id],
       publisherId: null,
     });
 
