@@ -15,7 +15,7 @@ export interface Book {
   barcode: string | null;
   price: number | null;
   language: string | null;
-  gender: Gender | null;
+  genders: Gender[];
   publisher: Publisher | null;
 }
 

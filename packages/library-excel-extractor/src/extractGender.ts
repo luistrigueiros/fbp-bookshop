@@ -41,12 +41,15 @@ export function extractGender(
 
   for (let row = startRow; row <= endRow; row++) {
     try {
-      const name = getCellTrimmed(sheet, row, genreColIndex);
-      if (!name) continue;
+      const cellValue = getCellTrimmed(sheet, row, genreColIndex);
+      if (!cellValue) continue;
 
-      const normalized = name.toLowerCase();
-      if (!seen.has(normalized)) {
-        seen.set(normalized, { id: nextId++, name });
+      const names = cellValue.split("/").map((s) => s.trim()).filter(Boolean);
+      for (const name of names) {
+        const normalized = name.toLowerCase();
+        if (!seen.has(normalized)) {
+          seen.set(normalized, { id: nextId++, name });
+        }
       }
     } catch (e: any) {
       errors.push({

@@ -36,7 +36,7 @@ const BooksList = () => {
   const [author, setAuthor] = createSignal('');
   const [price, setPrice] = createSignal(0);
   const [pubId, setPubId] = createSignal(0);
-  const [genId, setGenId] = createSignal(0);
+  const [selectedGenderIds, setSelectedGenderIds] = createSignal<number[]>([]);
   const [isbn, setIsbn] = createSignal('');
   const [language, setLanguage] = createSignal('');
 
@@ -47,7 +47,7 @@ const BooksList = () => {
     setAuthor('');
     setPrice(0);
     setPubId(0);
-    setGenId(0);
+    setSelectedGenderIds([]);
     setIsbn('');
     setLanguage('');
   };
@@ -59,7 +59,8 @@ const BooksList = () => {
     setAuthor(book.author || '');
     setPrice(book.price || 0);
     setPubId(book.publisherId || 0);
-    setGenId(book.genderId || 0);
+    const genderIds = book.bookGenders?.map((bg: any) => bg.genderId) || [];
+    setSelectedGenderIds(genderIds);
     setIsbn(book.isbn || '');
     setLanguage(book.language || '');
   };
@@ -71,7 +72,7 @@ const BooksList = () => {
       author: author() || null,
       price: price() || null,
       publisherId: pubId() || null,
-      genderId: genId() || null,
+      genderIds: selectedGenderIds(),
       isbn: isbn() || null,
       language: language() || null,
     };
@@ -152,13 +153,21 @@ const BooksList = () => {
               </select>
             </div>
             <div>
-              <label>Gender</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={genId()} onChange={(e) => setGenId(parseInt(e.target.value))}>
-                <option value={0}>No Gender</option>
+              <label>Genders</label>
+              <select 
+                multiple 
+                style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '100px' }} 
+                value={selectedGenderIds().map(String)} 
+                onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions);
+                  setSelectedGenderIds(options.map(o => parseInt(o.value)));
+                }}
+              >
                 <For each={genders()}>
                   {(gen) => <option value={gen.id}>{gen.name}</option>}
                 </For>
               </select>
+              <small style={{ color: 'var(--text-secondary)' }}>Hold Ctrl/Cmd to select multiple</small>
             </div>
           </div>
           <div style={{ 'margin-top': '1.5rem', display: 'flex', gap: '1rem' }}>
@@ -236,7 +245,9 @@ const BooksList = () => {
                   <td style={{ padding: '1rem', 'font-weight': '500' }}>{book.title}</td>
                   <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{book.author || '-'}</td>
                   <td style={{ padding: '1rem' }}>{book.publisher?.name || '-'}</td>
-                  <td style={{ padding: '1rem' }}>{book.gender?.name || '-'}</td>
+                  <td style={{ padding: '1rem' }}>
+                    {book.bookGenders?.map((bg: any) => bg.gender.name).join(', ') || '-'}
+                  </td>
                   <td style={{ padding: '1rem' }}>{book.price ? `$${book.price.toFixed(2)}` : '-'}</td>
                   <td style={{ padding: '1rem', 'text-align': 'right' }}>
                     <button style={{ padding: '0.25rem 0.5rem', cursor: 'pointer', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', 'border-radius': '4px' }} onClick={(e) => handleDelete(book.id, e)}>Delete</button>

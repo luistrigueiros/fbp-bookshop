@@ -70,7 +70,7 @@ describe("Library App API Tests", () => {
       title: "Dune",
       author: "Frank Herbert",
       isbn: "978-0441172719",
-      genderId: gender.id,
+      genderIds: [gender.id],
       publisherId: publisher.id,
       price: 19.99,
       language: "English"
@@ -93,7 +93,7 @@ describe("Library App API Tests", () => {
         title: "Dune: Deluxe Edition",
         author: "Frank Herbert",
         isbn: "978-0441172719",
-        genderId: gender.id,
+        genderIds: [gender.id],
         publisherId: publisher.id,
         price: 25.99,
         language: "English"

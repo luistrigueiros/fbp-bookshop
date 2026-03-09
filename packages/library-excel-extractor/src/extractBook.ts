@@ -133,16 +133,20 @@ export function extractBook(
       }
 
       // ── Map related entities by name ──────────────────────────────────────
-      const genderName = col.gender !== undefined
+      const genderCellValue = col.gender !== undefined
         ? getCellTrimmed(sheet, row, col.gender)
         : "";
       const publisherName = col.publisher !== undefined
         ? getCellTrimmed(sheet, row, col.publisher)
         : "";
 
-      const gender: Gender | null = genderName
-        ? (genderByName.get(genderName.toLowerCase()) ?? null)
-        : null;
+      const genderNames = genderCellValue
+        ? genderCellValue.split("/").map((s) => s.trim()).filter(Boolean)
+        : [];
+
+      const genders: Gender[] = genderNames
+        .map((name) => genderByName.get(name.toLowerCase()) ?? null)
+        .filter((g): g is Gender => g !== null);
 
       const publisher: Publisher | null = publisherName
         ? (publisherByName.get(publisherName.toLowerCase()) ?? null)
@@ -162,7 +166,7 @@ export function extractBook(
         language: col.language !== undefined
           ? getCellTrimmed(sheet, row, col.language) || null
           : null,
-        gender,
+        genders,
         publisher,
       };
 

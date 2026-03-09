@@ -47,7 +47,11 @@ export class GenderRepository {
     return this.db.query.gender.findFirst({
       where: eq(gender.id, id),
       with: {
-        books: true,
+        bookGenders: {
+          with: {
+            book: true,
+          },
+        },
       },
     });
   }
@@ -76,7 +80,11 @@ export class GenderRepository {
   async findAllWithBooks(): Promise<GenderWithBooks[]> {
     return this.db.query.gender.findMany({
       with: {
-        books: true,
+        bookGenders: {
+          with: {
+            book: true,
+          },
+        },
       },
     });
   }

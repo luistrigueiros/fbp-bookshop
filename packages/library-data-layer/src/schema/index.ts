@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, real, primaryKey } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 // Gender table (genre/category)
@@ -29,32 +29,44 @@ export const book = sqliteTable("book", {
   barcode: text("barcode", { length: 50 }),
   price: real("price"), // SQLite uses REAL for decimal numbers
   language: text("language", { length: 50 }),
-  genderId: integer("gender_id").references(getGenderId, {
-    onDelete: "set null",
-  }),
   publisherId: integer("publisher_id").references(getPublisherId, {
     onDelete: "set null",
   }),
 });
 
+export const bookGender = sqliteTable("book_gender", {
+  bookId: integer("book_id").notNull().references(() => book.id, { onDelete: "cascade" }),
+  genderId: integer("gender_id").notNull().references(getGenderId, { onDelete: "cascade" }),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.bookId, t.genderId] }),
+}));
+
 // Define relations for better TypeScript support and joins
-export const bookRelations = relations(book, ({ one }) => ({
-  gender: one(gender, {
-    fields: [book.genderId],
-    references: [gender.id],
-  }),
+export const bookRelations = relations(book, ({ one, many }) => ({
   publisher: one(publisher, {
     fields: [book.publisherId],
     references: [publisher.id],
   }),
+  bookGenders: many(bookGender),
 }));
 
 export const genderRelations = relations(gender, ({ many }) => ({
-  books: many(book),
+  bookGenders: many(bookGender),
 }));
 
 export const publisherRelations = relations(publisher, ({ many }) => ({
   books: many(book),
+}));
+
+export const bookGenderRelations = relations(bookGender, ({ one }) => ({
+  book: one(book, {
+    fields: [bookGender.bookId],
+    references: [book.id],
+  }),
+  gender: one(gender, {
+    fields: [bookGender.genderId],
+    references: [gender.id],
+  }),
 }));
 
 // Upload Status table

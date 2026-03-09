@@ -71,7 +71,7 @@ export async function processQueueMessage(
     const publisherMap = new Map<string, number>();
 
     // Extract unique genders and publishers first
-    const uniqueGenders = Array.from(new Set(result.items.map(i => i.gender?.name).filter(Boolean))) as string[];
+    const uniqueGenders = Array.from(new Set(result.items.flatMap(i => i.genders.map(g => g.name)).filter(Boolean)));
     const uniquePublishers = Array.from(new Set(result.items.map(i => i.publisher?.name).filter(Boolean))) as string[];
 
     for (const name of uniqueGenders) {
@@ -101,7 +101,7 @@ export async function processQueueMessage(
         barcode: item.barcode,
         price: item.price,
         language: item.language,
-        genderId: item.gender ? genderMap.get(item.gender.name) : null,
+        genderIds: item.genders.map(g => genderMap.get(g.name)).filter((id): id is number => id !== undefined),
         publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
       }));
       

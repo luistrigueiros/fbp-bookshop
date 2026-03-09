@@ -84,8 +84,10 @@ describe("extractBook", () => {
     const { items: books } = extractBook(FIXTURE);
 
     for (const book of books) {
-      if (book.gender !== null) {
-        expect(genderNames.has(book.gender.name.toLowerCase())).toBe(true);
+      if (book.genders.length > 0) {
+        for (const gender of book.genders) {
+          expect(genderNames.has(gender.name.toLowerCase())).toBe(true);
+        }
       }
     }
   });

@@ -72,16 +72,16 @@ describe("BookRepository (integration, Miniflare D1)", () => {
     const b = await books.create({
       title: "Relational Book",
       author: "Author",
-      genderId: g.id,
+      genderIds: [g.id],
       publisherId: p.id,
     });
 
     const withRel = await books.findByIdWithRelations(b.id);
-    expect(withRel?.gender?.name).toBe("Fiction");
+    expect(withRel?.bookGenders?.[0]?.gender?.name).toBe("Fiction");
     expect(withRel?.publisher?.name).toBe("Big Publisher");
 
     const allWithRel = await books.findAllWithRelations();
-    expect(allWithRel.some((x) => x.id === b.id && x.gender?.id === g.id)).toBe(
+    expect(allWithRel.some((x) => x.id === b.id && x.bookGenders?.[0]?.gender?.id === g.id)).toBe(
       true,
     );
   });
@@ -90,7 +90,7 @@ describe("BookRepository (integration, Miniflare D1)", () => {
     const g = await genders.create({ name: "Sci-Fi" });
     const p = await publishers.create({ name: "Tech Press" });
 
-    await books.create({ title: "B1", author: "A1", genderId: g.id });
+    await books.create({ title: "B1", author: "A1", genderIds: [g.id] });
     await books.create({ title: "B2", author: "A2", publisherId: p.id });
 
     const byGender = await books.findByGenderId(g.id);

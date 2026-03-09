@@ -9,7 +9,7 @@ export const BookUpsertSchema = z.object({
   barcode: z.string().nullable().optional(),
   price: z.number().nullable().optional(),
   language: z.string().nullable().optional(),
-  genderId: z.number().nullable().optional(),
+  genderIds: z.array(z.number()).optional(),
   publisherId: z.number().nullable().optional(),
 });
 

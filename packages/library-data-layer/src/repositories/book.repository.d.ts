@@ -6,7 +6,15 @@ export declare class BookRepository {
   /**
    * Create a new book
    */
-  create(data: NewBook): Promise<Book>;
+  create(data: NewBook & {
+    genderIds?: number[];
+  }): Promise<Book>;
+  /**
+   * Create multiple books in a single batch
+   */
+  createMany(data: (NewBook & {
+    genderIds?: number[];
+  })[]): Promise<Book[]>;
   /**
    * Get book by ID
    */
@@ -46,7 +54,9 @@ export declare class BookRepository {
   /**
    * Update a book
    */
-  update(id: number, data: Partial<NewBook>): Promise<Book | undefined>;
+  update(id: number, data: Partial<NewBook> & {
+    genderIds?: number[];
+  }): Promise<Book | undefined>;
   /**
    * Delete a book
    */

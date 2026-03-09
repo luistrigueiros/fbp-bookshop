@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { book, gender, publisher } from "./index";
+import { book, gender, publisher, bookGender } from "./index";
 
 // Select types (for data retrieved from DB)
 export type Book = InferSelectModel<typeof book>;
@@ -12,13 +12,15 @@ export type NewGender = InferInsertModel<typeof gender>;
 export type NewPublisher = InferInsertModel<typeof publisher>;
 
 // Extended types with relations
+export type BookGender = InferSelectModel<typeof bookGender>;
+
 export type BookWithRelations = Book & {
-  gender?: Gender | null;
+  bookGenders?: (BookGender & { gender: Gender })[];
   publisher?: Publisher | null;
 };
 
 export type GenderWithBooks = Gender & {
-  books?: Book[];
+  bookGenders?: (BookGender & { book: Book })[];
 };
 
 export type PublisherWithBooks = Publisher & {
