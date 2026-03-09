@@ -1,8 +1,8 @@
 import { createSignal, createResource, For, Show } from 'solid-js';
 import { trpc } from '../trpc';
 
-const GendersList = () => {
-  const [genders, { refetch }] = createResource(async () => await trpc.genders.list.query());
+const GenresList = () => {
+  const [genres, { refetch }] = createResource(async () => await trpc.genres.list.query());
 
   const [isAdding, setIsAdding] = createSignal(false);
   const [editingId, setEditingId] = createSignal<number | null>(null);
@@ -11,17 +11,17 @@ const GendersList = () => {
   const handleSave = async (e: Event) => {
     e.preventDefault();
     if (editingId()) {
-      await trpc.genders.update.mutate({ id: editingId()!, data: { name: name() } });
+      await trpc.genres.update.mutate({ id: editingId()!, data: { name: name() } });
     } else {
-      await trpc.genders.create.mutate({ name: name() });
+      await trpc.genres.create.mutate({ name: name() });
     }
     refetch();
     closeModal();
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this gender?')) {
-      await trpc.genders.delete.mutate(id);
+    if (confirm('Are you sure you want to delete this genre?')) {
+      await trpc.genres.delete.mutate(id);
       refetch();
     }
   };
@@ -41,16 +41,16 @@ const GendersList = () => {
   return (
     <div>
       <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '2rem', 'flex-wrap': 'wrap', gap: '1rem' }}>
-        <h2 style={{ margin: 0 }}>Genders Directory</h2>
+        <h2 style={{ margin: 0 }}>Genres Directory</h2>
         <button class="glass-panel" style={{ padding: '0.5rem 1rem', cursor: 'pointer' }} onClick={() => setIsAdding(true)}>
-          Add Gender
+          Add Genre
         </button>
       </div>
 
       <Show when={isAdding()}>
         <form class="glass-panel" style={{ padding: '2rem', 'margin-bottom': '2rem' }} onSubmit={handleSave}>
           <div style={{ 'margin-bottom': '1rem' }}>
-            <label>Gender Name</label>
+            <label>Genre Name</label>
             <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={name()} onInput={(e) => setName(e.target.value)} required />
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -75,12 +75,12 @@ const GendersList = () => {
               </tr>
             </thead>
             <tbody>
-              <Show when={genders.loading}>
+              <Show when={genres.loading}>
                 <tr>
-                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>Loading genders...</td>
+                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>Loading genres...</td>
                 </tr>
               </Show>
-              <For each={genders()}>
+              <For each={genres()}>
                 {(gen) => (
                   <tr style={{ 'border-bottom': '1px solid var(--border-color)' }}>
                     <td style={{ padding: '1rem' }}>{gen.id}</td>
@@ -92,9 +92,9 @@ const GendersList = () => {
                   </tr>
                 )}
               </For>
-              <Show when={!genders.loading && genders()?.length === 0}>
+              <Show when={!genres.loading && genres()?.length === 0}>
                 <tr>
-                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>No genders found.</td>
+                  <td colspan="3" style={{ padding: '2rem', 'text-align': 'center' }}>No genres found.</td>
                 </tr>
               </Show>
             </tbody>
@@ -105,4 +105,4 @@ const GendersList = () => {
   );
 };
 
-export default GendersList;
+export default GenresList;

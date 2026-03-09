@@ -25,7 +25,7 @@ export async function validateDB(
     // 1. Check if the core tables exist by running a simple count query
     // This confirms the schema is present and accessible.
     await db.run(sql`SELECT count(*) FROM ${schema.book}`);
-    await db.run(sql`SELECT count(*) FROM ${schema.gender}`);
+    await db.run(sql`SELECT count(*) FROM ${schema.genre}`);
     await db.run(sql`SELECT count(*) FROM ${schema.publisher}`);
     await db.run(sql`SELECT count(*) FROM ${schema.uploadStatus}`);
 

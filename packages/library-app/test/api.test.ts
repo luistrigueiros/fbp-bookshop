@@ -41,12 +41,12 @@ describe("Library App API Tests", () => {
     await disposeD1TestEnv(testEnv);
   });
 
-  it("should create and list genders", async () => {
-    const created = await trpc.genders.create.mutate({ name: "Fiction" });
+  it("should create and list genres", async () => {
+    const created = await trpc.genres.create.mutate({ name: "Fiction" });
     expect(created.name).toBe("Fiction");
     expect(created.id).toBeGreaterThan(0);
 
-    const list = await trpc.genders.list.query();
+    const list = await trpc.genres.list.query();
     expect(list.length).toBe(1);
     expect(list[0].name).toBe("Fiction");
   });
@@ -62,15 +62,15 @@ describe("Library App API Tests", () => {
   });
 
   it("should create, list, and modify books", async () => {
-    // Need gender and publisher
-    const gender = await trpc.genders.create.mutate({ name: "Sci-Fi" });
+    // Need genre and publisher
+    const genre = await trpc.genres.create.mutate({ name: "Sci-Fi" });
     const publisher = await trpc.publishers.create.mutate({ name: "Tor Books" });
 
     const newBook = await trpc.books.create.mutate({
       title: "Dune",
       author: "Frank Herbert",
       isbn: "978-0441172719",
-      genderIds: [gender.id],
+      genreIds: [genre.id],
       publisherId: publisher.id,
       price: 19.99,
       language: "English"
@@ -93,7 +93,7 @@ describe("Library App API Tests", () => {
         title: "Dune: Deluxe Edition",
         author: "Frank Herbert",
         isbn: "978-0441172719",
-        genderIds: [gender.id],
+        genreIds: [genre.id],
         publisherId: publisher.id,
         price: 25.99,
         language: "English"

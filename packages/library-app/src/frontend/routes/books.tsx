@@ -11,11 +11,11 @@ const BooksList = () => {
   const [filterTitle, setFilterTitle] = createSignal('');
   const [filterAuthor, setFilterAuthor] = createSignal('');
   const [filterPubId, setFilterPubId] = createSignal(0);
-  const [filterGenId, setFilterGenId] = createSignal(0);
+  const [filterGenreId, setFilterGenreId] = createSignal(0);
 
   // Data fetching
   const [publishers] = createResource(async () => trpc.publishers.list.query());
-  const [genders] = createResource(async () => trpc.genders.list.query());
+  const [genres] = createResource(async () => trpc.genres.list.query());
   
   const [booksData, { refetch }] = createResource(
     () => ({
@@ -24,7 +24,7 @@ const BooksList = () => {
       title: filterTitle() || undefined,
       author: filterAuthor() || undefined,
       publisherId: filterPubId() || undefined,
-      genderId: filterGenId() || undefined,
+      genreId: filterGenreId() || undefined,
     }),
     async (params) => {
       return await trpc.books.list.query(params);
@@ -57,7 +57,7 @@ const BooksList = () => {
     setFilterTitle('');
     setFilterAuthor('');
     setFilterPubId(0);
-    setFilterGenId(0);
+    setFilterGenreId(0);
     setPage(1);
     refetch();
   };
@@ -93,10 +93,10 @@ const BooksList = () => {
             </select>
           </div>
           <div>
-            <label style={{ 'font-size': '0.85rem' }}>Gender</label>
-            <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem' }} value={filterGenId()} onChange={(e) => setFilterGenId(parseInt(e.target.value))}>
-              <option value={0}>All Genders</option>
-              <For each={genders()}>
+            <label style={{ 'font-size': '0.85rem' }}>Genre</label>
+            <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem' }} value={filterGenreId()} onChange={(e) => setFilterGenreId(parseInt(e.target.value))}>
+              <option value={0}>All Genres</option>
+              <For each={genres()}>
                 {(gen) => <option value={gen.id}>{gen.name}</option>}
               </For>
             </select>
@@ -118,7 +118,7 @@ const BooksList = () => {
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Title</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Author</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Publisher</th>
-                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Gender</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Genre</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Price</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
               </tr>
@@ -137,7 +137,7 @@ const BooksList = () => {
                     <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{book.author || '-'}</td>
                     <td style={{ padding: '1rem' }}>{book.publisher?.name || '-'}</td>
                     <td style={{ padding: '1rem' }}>
-                      {book.bookGenders?.map((bg: any) => bg.gender.name).join(', ') || '-'}
+                      {book.bookGenres?.map((bg: any) => bg.genre.name).join(', ') || '-'}
                     </td>
                     <td style={{ padding: '1rem' }}>{book.price ? `$${book.price.toFixed(2)}` : '-'}</td>
                     <td style={{ padding: '1rem', 'text-align': 'right' }}>

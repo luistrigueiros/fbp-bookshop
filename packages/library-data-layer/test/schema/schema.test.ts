@@ -4,10 +4,10 @@ import path from "path";
 import { createD1TestEnv, disposeD1TestEnv } from "library-test-utils";
 
 describe("Schema Definitions", () => {
-  it("should have gender table defined correctly", () => {
-    expect(schema.gender).toBeDefined();
-    expect(schema.gender.id).toBeDefined();
-    expect(schema.gender.name).toBeDefined();
+  it("should have genre table defined correctly", () => {
+    expect(schema.genre).toBeDefined();
+    expect(schema.genre.id).toBeDefined();
+    expect(schema.genre.name).toBeDefined();
   });
 
   it("should have publisher table defined correctly", () => {
@@ -25,19 +25,19 @@ describe("Schema Definitions", () => {
     expect(schema.book.barcode).toBeDefined();
     expect(schema.book.price).toBeDefined();
     expect(schema.book.language).toBeDefined();
-    expect(schema.bookGender).toBeDefined();
+    expect(schema.bookGenre).toBeDefined();
     expect(schema.book.publisherId).toBeDefined();
   });
 
   it("should exercise relation definitions", () => {
     // These calls trigger the arrow functions passed to relations()
     expect(schema.bookRelations).toBeDefined();
-    expect(schema.genderRelations).toBeDefined();
+    expect(schema.genreRelations).toBeDefined();
     expect(schema.publisherRelations).toBeDefined();
   });
 
   it("should exercise references functions", () => {
-    expect(schema.getGenderId()).toBeDefined();
+    expect(schema.getGenreId()).toBeDefined();
     expect(schema.getPublisherId()).toBeDefined();
   });
 

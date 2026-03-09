@@ -5,16 +5,16 @@ import {
   disposeD1TestEnv,
   type TestEnv,
 } from "library-test-utils";
-import { GenderRepository, BookRepository } from "@/index";
+import { GenreRepository, BookRepository } from "@/index";
 
-describe("GenderRepository (integration, Miniflare D1)", () => {
+describe("GenreRepository (integration, Miniflare D1)", () => {
   let testEnv: Awaited<ReturnType<typeof createD1TestEnv>>;
-  let genders: GenderRepository;
+  let genres: GenreRepository;
   let books: BookRepository;
 
   beforeAll(async () => {
     testEnv = await createD1TestEnv();
-    genders = new GenderRepository(testEnv.db);
+    genres = new GenreRepository(testEnv.db);
     books = new BookRepository(testEnv.db);
   });
 
@@ -23,37 +23,37 @@ describe("GenderRepository (integration, Miniflare D1)", () => {
   });
 
   it("CRUD + count", async () => {
-    const created = await genders.create({ name: "Science Fiction" });
+    const created = await genres.create({ name: "Science Fiction" });
     expect(created.id).toBeTruthy();
     expect(created.name).toBe("Science Fiction");
 
-    const byId = await genders.findById(created.id);
+    const byId = await genres.findById(created.id);
     expect(byId?.name).toBe("Science Fiction");
 
-    const byName = await genders.findByName("Science Fiction");
+    const byName = await genres.findByName("Science Fiction");
     expect(byName?.id).toBe(created.id);
 
-    const all = await genders.findAll();
+    const all = await genres.findAll();
     expect(all.length).toBeGreaterThanOrEqual(1);
 
-    const searched = await genders.search("Science");
+    const searched = await genres.search("Science");
     expect(searched.some((g) => g.id === created.id)).toBe(true);
 
-    const updated = await genders.update(created.id, { name: "Sci-Fi" });
+    const updated = await genres.update(created.id, { name: "Sci-Fi" });
     expect(updated?.name).toBe("Sci-Fi");
 
-    const countBeforeDelete = await genders.count();
+    const countBeforeDelete = await genres.count();
     expect(countBeforeDelete).toBeGreaterThanOrEqual(1);
 
-    const deleted = await genders.delete(created.id);
+    const deleted = await genres.delete(created.id);
     expect(deleted).toBe(true);
 
-    const afterDelete = await genders.findById(created.id);
+    const afterDelete = await genres.findById(created.id);
     expect(afterDelete).toBeUndefined();
   });
 
   it("findByIdWithBooks returns books relation", async () => {
-    const g = await genders.create({ name: "Mystery" });
+    const g = await genres.create({ name: "Mystery" });
 
     const b = await books.create({
       title: "The Mystery Book",
@@ -62,19 +62,19 @@ describe("GenderRepository (integration, Miniflare D1)", () => {
       barcode: "BARCODE-MYSTERY-1",
       price: 9.99,
       language: "English",
-      genderIds: [g.id],
+      genreIds: [g.id],
       publisherId: null,
     });
 
-    const withBooks = await genders.findByIdWithBooks(g.id);
+    const withBooks = await genres.findByIdWithBooks(g.id);
     expect(withBooks?.id).toBe(g.id);
     expect(Array.isArray(withBooks?.books)).toBe(true);
     expect(withBooks?.books?.some((x) => x.id === b.id)).toBe(true);
   });
 
-  it("findAllWithBooks returns all genders with books relation", async () => {
+  it("findAllWithBooks returns all genres with books relation", async () => {
     const name = `Genre ${Date.now()}`;
-    const g = await genders.create({ name });
+    const g = await genres.create({ name });
 
     await books.create({
       title: "Related Book",
@@ -83,11 +83,11 @@ describe("GenderRepository (integration, Miniflare D1)", () => {
       barcode: `BARCODE-${Date.now()}`,
       price: 10,
       language: "English",
-      genderIds: [g.id],
+      genreIds: [g.id],
       publisherId: null,
     });
 
-    const allWithBooks = await genders.findAllWithBooks();
+    const allWithBooks = await genres.findAllWithBooks();
     const found = allWithBooks.find((x) => x.id === g.id);
 
     expect(found).toBeDefined();

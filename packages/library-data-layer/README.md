@@ -4,9 +4,9 @@ A data access layer for a Library book shop management system using Drizzle ORM 
 
 ## Features
 
-- 📚 Complete database schema for books, genres (genders), and publishers
+- 📚 Complete database schema for books, genres, and publishers
 - 🔄 Full CRUD operations with type-safe repositories
-- 🔗 Relationship support (books with their genres and publishers)
+- 🔗 Many-to-many relationship support (books with multiple genres)
 - 🚀 Optimized for Cloudflare D1 and Workers
 - 💪 Written in TypeScript with full type safety
 - ⚡ Built with Bun.js for fast development
@@ -16,14 +16,16 @@ A data access layer for a Library book shop management system using Drizzle ORM 
 ### Tables
 
 - **book**: Stores book information including title, author, ISBN, barcode, price, language
-- **gender**: Book genres/categories (e.g., Fiction, Non-Fiction, Science)
+- **genre**: Book genres/categories (e.g., Fiction, Non-Fiction, Science)
+- **book_genre**: Intersection table for the many-to-many relationship between books and genres
 - **publisher**: Publishing companies
+- **upload_status**: Tracks the status of Excel file uploads and background processing
 
 ### Relationships
 
-- Books can have one gender (genre) - nullable relationship
+- Books can have many genres via **book_genre**
 - Books can have one publisher - nullable relationship
-- Genders can have many books
+- Genres can have many books
 - Publishers can have many books
 
 ## Installation
@@ -95,7 +97,7 @@ export default {
 #### Book Repository
 
 ```typescript
-// Create a book
+// Create a book with multiple genres
 const newBook = await repos.books.create({
   title: "The Great Gatsby",
   author: "F. Scott Fitzgerald",
@@ -103,39 +105,39 @@ const newBook = await repos.books.create({
   barcode: "9780743273565",
   price: 15.99,
   language: "English",
-  genderId: 1,
+  genreIds: [1, 2],
   publisherId: 1,
 });
 
-// Find book by ID with relations
+// Find book by ID with relations (includes genres and publisher)
 const book = await repos.books.findByIdWithRelations(1);
 
-// Search books
-const searchResults = await repos.books.search("Gatsby");
+// Search books with filters
+const searchResults = await repos.books.findWithFilters({
+  title: "Gatsby",
+  genreId: 1
+});
 
-// Find by ISBN
-const bookByIsbn = await repos.books.findByIsbn("978-0743273565");
-
-// Update book
-await repos.books.update(1, { price: 12.99 });
-
-// Delete book
-await repos.books.delete(1);
+// Update book and its genres
+await repos.books.update(1, { 
+  price: 12.99,
+  genreIds: [1, 3] 
+});
 ```
 
-#### Gender Repository
+#### Genre Repository
 
 ```typescript
 // Create a genre
-const newGender = await repos.genders.create({
+const newGenre = await repos.genres.create({
   name: "Science Fiction",
 });
 
 // Get genre with all its books
-const genreWithBooks = await repos.genders.findByIdWithBooks(1);
+const genreWithBooks = await repos.genres.findByIdWithBooks(1);
 
 // Search genres
-const genres = await repos.genders.search("Fiction");
+const genres = await repos.genres.search("Fiction");
 ```
 
 #### Publisher Repository
@@ -148,9 +150,6 @@ const newPublisher = await repos.publishers.create({
 
 // Get publisher with all its books
 const publisherWithBooks = await repos.publishers.findByIdWithBooks(1);
-
-// Find by name
-const publisher = await repos.publishers.findByName("Penguin Random House");
 ```
 
 ## Development
@@ -177,8 +176,9 @@ library-data-layer/
 │   │   └── types.ts          # TypeScript types
 │   ├── repositories/
 │   │   ├── book.repository.ts
-│   │   ├── gender.repository.ts
+│   │   ├── genre.repository.ts
 │   │   ├── publisher.repository.ts
+│   │   └── upload-status.repository.ts
 │   │   └── index.ts
 │   ├── db.ts                 # Database initialization
 │   └── index.ts              # Main entry point
@@ -188,69 +188,6 @@ library-data-layer/
 ├── tsconfig.json
 └── package.json
 ```
-
-## Type Safety
-
-All operations are fully typed. TypeScript will catch errors at compile time:
-
-```typescript
-// ✅ Type-safe
-const book = await repos.books.create({
-  title: "Book Title",
-  author: "Author Name",
-});
-
-// ❌ TypeScript error - missing required field
-const book = await repos.books.create({
-  author: "Author Name",
-});
-```
-
-## Advanced Usage
-
-### Custom Queries
-
-You can access the Drizzle database instance directly for custom queries:
-
-```typescript
-import { initDB } from "library-data-layer";
-import { book, gender } from "library-data-layer/src/schema";
-import { eq } from "drizzle-orm";
-
-const db = initDB(env.DB);
-
-// Custom join query
-const booksWithGenres = await db
-  .select({
-    bookTitle: book.title,
-    genreName: gender.name,
-  })
-  .from(book)
-  .leftJoin(gender, eq(book.genderId, gender.id));
-```
-
-### Transactions
-
-```typescript
-// Perform multiple operations in a transaction
-await db.transaction(async (tx) => {
-  const newGender = await tx
-    .insert(gender)
-    .values({ name: "Mystery" })
-    .returning();
-
-  await tx.insert(book).values({
-    title: "Mystery Book",
-    genderId: newGender[0].id,
-  });
-});
-```
-
-## Notes
-
-- **Gender vs Genre**: The schema uses "gender" as the table name, but it represents book genres/categories.
-- **Price**: Stored as `REAL` in SQLite (floating point), suitable for currency values.
-- **Auto-increment IDs**: Uses SQLite's `AUTOINCREMENT` for primary keys.
 
 ## License
 

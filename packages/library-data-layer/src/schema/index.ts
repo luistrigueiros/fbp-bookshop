@@ -7,8 +7,8 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
-// Gender table (genre/category)
-export const gender = sqliteTable("gender", {
+// Genre table (genre/category)
+export const genre = sqliteTable("genre", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name", { length: 100 }).notNull().unique(),
 });
@@ -19,8 +19,8 @@ export const publisher = sqliteTable("publisher", {
   name: text("name", { length: 200 }).notNull().unique(),
 });
 
-export function getGenderId() {
-  return gender.id;
+export function getGenreId() {
+  return genre.id;
 }
 export function getPublisherId() {
   return publisher.id;
@@ -40,18 +40,18 @@ export const book = sqliteTable("book", {
   }),
 });
 
-export const bookGender = sqliteTable(
-  "book_gender",
+export const bookGenre = sqliteTable(
+  "book_genre",
   {
     bookId: integer("book_id")
       .notNull()
       .references(() => book.id, { onDelete: "cascade" }),
-    genderId: integer("gender_id")
+    genreId: integer("genre_id")
       .notNull()
-      .references(getGenderId, { onDelete: "cascade" }),
+      .references(getGenreId, { onDelete: "cascade" }),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.bookId, t.genderId] }),
+    pk: primaryKey({ columns: [t.bookId, t.genreId] }),
   }),
 );
 
@@ -61,25 +61,25 @@ export const bookRelations = relations(book, ({ one, many }) => ({
     fields: [book.publisherId],
     references: [publisher.id],
   }),
-  bookGenders: many(bookGender),
+  bookGenres: many(bookGenre),
 }));
 
-export const genderRelations = relations(gender, ({ many }) => ({
-  bookGenders: many(bookGender),
+export const genreRelations = relations(genre, ({ many }) => ({
+  bookGenres: many(bookGenre),
 }));
 
 export const publisherRelations = relations(publisher, ({ many }) => ({
   books: many(book),
 }));
 
-export const bookGenderRelations = relations(bookGender, ({ one }) => ({
+export const bookGenreRelations = relations(bookGenre, ({ one }) => ({
   book: one(book, {
-    fields: [bookGender.bookId],
+    fields: [bookGenre.bookId],
     references: [book.id],
   }),
-  gender: one(gender, {
-    fields: [bookGender.genderId],
-    references: [gender.id],
+  genre: one(genre, {
+    fields: [bookGenre.genreId],
+    references: [genre.id],
   }),
 }));
 

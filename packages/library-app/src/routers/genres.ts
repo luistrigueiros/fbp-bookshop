@@ -5,15 +5,15 @@ export const NamePayloadSchema = z.object({
   name: z.string()
 });
 
-export const gendersRouter = router({
+export const genresRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.repositories.genders.findAll();
+    return ctx.repositories.genres.findAll();
   }),
   
   create: publicProcedure
     .input(NamePayloadSchema)
     .mutation(async ({ ctx, input }) => {
-      return ctx.repositories.genders.create(input);
+      return ctx.repositories.genres.create(input);
     }),
 
   update: publicProcedure
@@ -22,12 +22,12 @@ export const gendersRouter = router({
       data: NamePayloadSchema
     }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.repositories.genders.update(input.id, input.data);
+      return ctx.repositories.genres.update(input.id, input.data);
     }),
 
   delete: publicProcedure
     .input(z.number())
     .mutation(async ({ ctx, input }) => {
-      return ctx.repositories.genders.delete(input);
+      return ctx.repositories.genres.delete(input);
     }),
 });

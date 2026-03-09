@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { extractGender, extractPublisher, extractBook } from '../src';
-import type { Gender, Publisher } from '../src';
+import { extractGenre, extractPublisher, extractBook } from '../src';
+import type { Genre, Publisher } from '../src';
 import { existsSync } from "node:fs";
 
 // Path to the Excel fixture — adjust if needed
@@ -8,29 +8,29 @@ const FIXTURE = "./FBP-DB.xlsx";
 
 const hasFixture = existsSync(FIXTURE);
 
-describe("extractGender", () => {
-  it("returns a non-empty list of unique genders", () => {
+describe("extractGenre", () => {
+  it("returns a non-empty list of unique genres", () => {
     if (!hasFixture) {
       console.warn("Skipping: FBP-DB.xlsx not found");
       return;
     }
-    const result = extractGender(FIXTURE);
+    const result = extractGenre(FIXTURE);
     expect(result.items.length).toBeGreaterThan(0);
     expect(result.count).toBe(result.items.length);
   });
 
-  it("assigns unique IDs to every gender", () => {
+  it("assigns unique IDs to every genre", () => {
     if (!hasFixture) return;
-    const { items } = extractGender(FIXTURE);
-    const ids = items.map((g: Gender) => g.id);
+    const { items } = extractGenre(FIXTURE);
+    const ids = items.map((g: Genre) => g.id);
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(ids.length);
   });
 
   it("has no duplicate names (case-insensitive)", () => {
     if (!hasFixture) return;
-    const { items } = extractGender(FIXTURE);
-    const names = items.map((g: Gender) => g.name.toLowerCase());
+    const { items } = extractGenre(FIXTURE);
+    const names = items.map((g: Genre) => g.name.toLowerCase());
     const uniqueNames = new Set(names);
     expect(uniqueNames.size).toBe(names.length);
   });
@@ -77,16 +77,16 @@ describe("extractBook", () => {
     }
   });
 
-  it("books with a gender reference a known gender", () => {
+  it("books with a genre reference a known genre", () => {
     if (!hasFixture) return;
-    const { items: genders } = extractGender(FIXTURE);
-    const genderNames = new Set(genders.map((g: Gender) => g.name.toLowerCase()));
+    const { items: genres } = extractGenre(FIXTURE);
+    const genreNames = new Set(genres.map((g: Genre) => g.name.toLowerCase()));
     const { items: books } = extractBook(FIXTURE);
 
     for (const book of books) {
-      if (book.genders.length > 0) {
-        for (const gender of book.genders) {
-          expect(genderNames.has(gender.name.toLowerCase())).toBe(true);
+      if (book.genres.length > 0) {
+        for (const genre of book.genres) {
+          expect(genreNames.has(genre.name.toLowerCase())).toBe(true);
         }
       }
     }

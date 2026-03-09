@@ -67,19 +67,19 @@ export async function processQueueMessage(
     // Update expected books count
     await repos.uploads.update(key, { booksCount: result.count });
 
-    const genderMap = new Map<string, number>();
+    const genreMap = new Map<string, number>();
     const publisherMap = new Map<string, number>();
 
-    // Extract unique genders and publishers first
-    const uniqueGenders = Array.from(new Set(result.items.flatMap(i => i.genders.map(g => g.name)).filter(Boolean)));
+    // Extract unique genres and publishers first
+    const uniqueGenres = Array.from(new Set(result.items.flatMap(i => i.genres.map(g => g.name)).filter(Boolean)));
     const uniquePublishers = Array.from(new Set(result.items.map(i => i.publisher?.name).filter(Boolean))) as string[];
 
-    for (const name of uniqueGenders) {
-      let gender = await repos.genders.findByName(name);
-      if (!gender) {
-        gender = await repos.genders.create({ name });
+    for (const name of uniqueGenres) {
+      let genre = await repos.genres.findByName(name);
+      if (!genre) {
+        genre = await repos.genres.create({ name });
       }
-      genderMap.set(name, gender.id);
+      genreMap.set(name, genre.id);
     }
 
     for (const name of uniquePublishers) {
@@ -101,7 +101,7 @@ export async function processQueueMessage(
         barcode: item.barcode,
         price: item.price,
         language: item.language,
-        genderIds: item.genders.map(g => genderMap.get(g.name)).filter((id): id is number => id !== undefined),
+        genreIds: item.genres.map(g => genreMap.get(g.name)).filter((id): id is number => id !== undefined),
         publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
       }));
       

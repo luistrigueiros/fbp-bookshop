@@ -5,18 +5,18 @@ import {
   disposeD1TestEnv,
   type TestEnv,
 } from "library-test-utils";
-import { BookRepository, GenderRepository, PublisherRepository } from "@/index";
+import { BookRepository, GenreRepository, PublisherRepository } from "@/index";
 
 describe("BookRepository (integration, Miniflare D1)", () => {
   let testEnv: Awaited<ReturnType<typeof createD1TestEnv>>;
   let books: BookRepository;
-  let genders: GenderRepository;
+  let genres: GenreRepository;
   let publishers: PublisherRepository;
 
   beforeAll(async () => {
     testEnv = await createD1TestEnv();
     books = new BookRepository(testEnv.db);
-    genders = new GenderRepository(testEnv.db);
+    genres = new GenreRepository(testEnv.db);
     publishers = new PublisherRepository(testEnv.db);
   });
 
@@ -66,38 +66,38 @@ describe("BookRepository (integration, Miniflare D1)", () => {
   });
 
   it("Find with relations", async () => {
-    const g = await genders.create({ name: "Fiction" });
+    const g = await genres.create({ name: "Fiction" });
     const p = await publishers.create({ name: "Big Publisher" });
 
     const b = await books.create({
       title: "Relational Book",
       author: "Author",
-      genderIds: [g.id],
+      genreIds: [g.id],
       publisherId: p.id,
     });
 
     const withRel = await books.findByIdWithRelations(b.id);
-    expect(withRel?.bookGenders?.[0]?.gender?.name).toBe("Fiction");
+    expect(withRel?.bookGenres?.[0]?.genre?.name).toBe("Fiction");
     expect(withRel?.publisher?.name).toBe("Big Publisher");
 
     const allWithRel = await books.findAllWithRelations();
     expect(
       allWithRel.some(
-        (x) => x.id === b.id && x.bookGenders?.[0]?.gender?.id === g.id,
+        (x) => x.id === b.id && x.bookGenres?.[0]?.genre?.id === g.id,
       ),
     ).toBe(true);
   });
 
-  it("Find by gender and publisher ID", async () => {
-    const g = await genders.create({ name: "Sci-Fi" });
+  it("Find by genre and publisher ID", async () => {
+    const g = await genres.create({ name: "Sci-Fi" });
     const p = await publishers.create({ name: "Tech Press" });
 
-    await books.create({ title: "B1", author: "A1", genderIds: [g.id] });
+    await books.create({ title: "B1", author: "A1", genreIds: [g.id] });
     await books.create({ title: "B2", author: "A2", publisherId: p.id });
 
-    const byGender = await books.findByGenderId(g.id);
-    expect(byGender.length).toBe(1);
-    expect(byGender[0]?.title).toBe("B1");
+    const byGenre = await books.findByGenreId(g.id);
+    expect(byGenre.length).toBe(1);
+    expect(byGenre[0]?.title).toBe("B1");
 
     const byPublisher = await books.findByPublisherId(p.id);
     expect(byPublisher.length).toBe(1);

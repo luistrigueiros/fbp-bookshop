@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import type { Gender, ExtractionResult } from "./types";
+import type { Genre, ExtractionResult } from "./types";
 import {
   buildHeaderIndex,
   getCellTrimmed,
@@ -9,19 +9,19 @@ import {
 } from "./excelUtils";
 
 /**
- * Extracts all unique, deduplicated Gender entries from the Excel file.
+ * Extracts all unique, deduplicated Genre entries from the Excel file.
  *
  * Reads the first sheet, locates the "género" column by name (case-insensitive),
  * then iterates every data row — skipping empty cells — and collects unique names.
- * Each Gender receives an auto-incremented numeric ID.
+ * Each Genre receives an auto-incremented numeric ID.
  *
  * @param input - Absolute or relative path to the .xlsx file, or its content as a buffer
- * @returns ExtractionResult containing the deduplicated Gender array and total count
+ * @returns ExtractionResult containing the deduplicated Genre array and total count
  * @throws Error if the "género" column is not found in the header row
  */
-export function extractGender(
+export function extractGenre(
   input: string | ArrayBuffer | Buffer
-): ExtractionResult<Gender> {
+): ExtractionResult<Genre> {
   const workbook: XLSX.WorkBook = loadWorkbook(input);
   const sheet: XLSX.WorkSheet = getFirstSheet(workbook);
 
@@ -30,12 +30,12 @@ export function extractGender(
 
   if (genreColIndex === undefined) {
     throw new Error(
-      '[extractGender] Required column "género" not found in header row.'
+      '[extractGenre] Required column "género" not found in header row.'
     );
   }
 
   const { startRow, endRow } = getDataRowRange(sheet);
-  const seen = new Map<string, Gender>();
+  const seen = new Map<string, Genre>();
   const errors: { row: number; message: string }[] = [];
   let nextId = 1;
 
@@ -60,7 +60,7 @@ export function extractGender(
   }
 
   const items = Array.from(seen.values());
-  console.log(`[IMPORT] Extracted ${items.length} genders, ${errors.length} errors`);
+  console.log(`[IMPORT] Extracted ${items.length} genres, ${errors.length} errors`);
 
   return { items, count: items.length, errors };
 }

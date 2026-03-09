@@ -1,11 +1,11 @@
 import { router } from '../trpc';
 import { booksRouter } from './books';
-import { gendersRouter } from './genders';
+import { genresRouter } from './genres';
 import { publishersRouter } from './publishers';
 
 export const appRouter = router({
   books: booksRouter,
-  genders: gendersRouter,
+  genres: genresRouter,
   publishers: publishersRouter,
 });
 

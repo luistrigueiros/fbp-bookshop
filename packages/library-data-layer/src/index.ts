@@ -21,14 +21,14 @@ export * from "./logging";
 import type { DB } from "./db";
 import {
   BookRepository,
-  GenderRepository,
+  GenreRepository,
   PublisherRepository,
   UploadStatusRepository,
 } from "./repositories";
 
 export interface LibraryRepositories {
   books: BookRepository;
-  genders: GenderRepository;
+  genres: GenreRepository;
   publishers: PublisherRepository;
   uploads: UploadStatusRepository;
 }
@@ -41,7 +41,7 @@ export interface LibraryRepositories {
 export function createRepositories(db: DB): LibraryRepositories {
   return {
     books: new BookRepository(db),
-    genders: new GenderRepository(db),
+    genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db),
   };

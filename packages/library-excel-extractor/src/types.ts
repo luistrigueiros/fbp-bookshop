@@ -1,4 +1,4 @@
-export interface Gender {
+export interface Genre {
   id: number;
   name: string;
 }
@@ -15,7 +15,7 @@ export interface Book {
   barcode: string | null;
   price: number | null;
   language: string | null;
-  genders: Gender[];
+  genres: Genre[];
   publisher: Publisher | null;
 }
 

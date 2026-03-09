@@ -39,14 +39,14 @@ describe("Database Initialization and Validation", () => {
   it("should fail validation if migrations table is empty", async () => {
     // Create all core tables but empty migrations table
     await testEnv.mf.getBindings().then(async (bindings: any) => {
-      await bindings.DB.exec("DROP TABLE IF EXISTS book_gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS book_genre;");
       await bindings.DB.exec("DROP TABLE IF EXISTS book;");
-      await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS genre;");
       await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
       await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
 
       await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
-      await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("CREATE TABLE genre (id INTEGER PRIMARY KEY);");
       await bindings.DB.exec(
         "CREATE TABLE publisher (id INTEGER PRIMARY KEY);",
       );
@@ -63,14 +63,14 @@ describe("Database Initialization and Validation", () => {
   it("should warn but succeed if migrations table is missing but book table exists", async () => {
     // Create all core tables but NO migrations table
     await testEnv.mf.getBindings().then(async (bindings: any) => {
-      await bindings.DB.exec("DROP TABLE IF EXISTS book_gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS book_genre;");
       await bindings.DB.exec("DROP TABLE IF EXISTS book;");
-      await bindings.DB.exec("DROP TABLE IF EXISTS gender;");
+      await bindings.DB.exec("DROP TABLE IF EXISTS genre;");
       await bindings.DB.exec("DROP TABLE IF EXISTS publisher;");
       await bindings.DB.exec("DROP TABLE IF EXISTS __drizzle_migrations;");
 
       await bindings.DB.exec("CREATE TABLE book (id INTEGER PRIMARY KEY);");
-      await bindings.DB.exec("CREATE TABLE gender (id INTEGER PRIMARY KEY);");
+      await bindings.DB.exec("CREATE TABLE genre (id INTEGER PRIMARY KEY);");
       await bindings.DB.exec(
         "CREATE TABLE publisher (id INTEGER PRIMARY KEY);",
       );

@@ -7,7 +7,7 @@ import {
 import {
   createRepositories,
   BookRepository,
-  GenderRepository,
+  GenreRepository,
   PublisherRepository,
 } from "@/index";
 
@@ -26,7 +26,7 @@ describe("index.ts (integration, Miniflare D1)", () => {
     const repos = createRepositories(testEnv.db);
 
     expect(repos.books).toBeInstanceOf(BookRepository);
-    expect(repos.genders).toBeInstanceOf(GenderRepository);
+    expect(repos.genres).toBeInstanceOf(GenreRepository);
     expect(repos.publishers).toBeInstanceOf(PublisherRepository);
   });
 
@@ -41,11 +41,11 @@ describe("index.ts (integration, Miniflare D1)", () => {
     expect(book.id).toBeTruthy();
     expect(book.title).toBe("Integration Test Book");
 
-    const gender = await repos.genders.create({
-      name: "Integration Test Gender",
+    const genre = await repos.genres.create({
+      name: "Integration Test Genre",
     });
-    expect(gender.id).toBeTruthy();
-    expect(gender.name).toBe("Integration Test Gender");
+    expect(genre.id).toBeTruthy();
+    expect(genre.name).toBe("Integration Test Genre");
 
     const publisher = await repos.publishers.create({
       name: "Integration Test Publisher",

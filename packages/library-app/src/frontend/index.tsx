@@ -16,7 +16,7 @@ import Dashboard from './routes/index';
 import BooksList from './routes/books';
 import BookDetail from './routes/book-detail';
 import PublishersList from './routes/publishers';
-import GendersList from './routes/genders';
+import GenresList from './routes/genres';
 
 render(() => (
   <Router root={App}>
@@ -25,6 +25,6 @@ render(() => (
     <Route path="/books/new" component={BookDetail} />
     <Route path="/books/:id" component={BookDetail} />
     <Route path="/publishers" component={PublishersList} />
-    <Route path="/genders" component={GendersList} />
+    <Route path="/genres" component={GenresList} />
   </Router>
 ), root!);

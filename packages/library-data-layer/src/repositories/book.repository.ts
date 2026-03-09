@@ -1,6 +1,6 @@
 import { eq, like, or, and, sql, inArray } from "drizzle-orm";
 import type { DB } from "../db";
-import { book, bookGender } from "../schema";
+import { book, bookGenre } from "../schema";
 import type { Book, BookWithRelations, NewBook } from "../schema/types";
 import { layerLogger } from "../logging";
 
@@ -10,18 +10,18 @@ export class BookRepository {
   /**
    * Create a new book
    */
-  async create(data: NewBook & { genderIds?: number[] }): Promise<Book> {
+  async create(data: NewBook & { genreIds?: number[] }): Promise<Book> {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
-    const { genderIds, ...bookData } = data;
+    const { genreIds, ...bookData } = data;
     const result = await this.db.insert(book).values(bookData).returning();
     const createdBook = result[0]!;
 
-    if (genderIds && genderIds.length > 0) {
-      const bookGenders = genderIds.map((genderId) => ({
+    if (genreIds && genreIds.length > 0) {
+      const bookGenres = genreIds.map((genreId) => ({
         bookId: createdBook.id,
-        genderId,
+        genreId,
       }));
-      await this.db.insert(bookGender).values(bookGenders);
+      await this.db.insert(bookGenre).values(bookGenres);
     }
 
     layerLogger.info("Created book: {title} (ID: {id})", {
@@ -35,29 +35,29 @@ export class BookRepository {
    * Create multiple books in a single batch
    */
   async createMany(
-    data: (NewBook & { genderIds?: number[] })[],
+    data: (NewBook & { genreIds?: number[] })[],
   ): Promise<Book[]> {
     if (data.length === 0) return [];
     layerLogger.debug("Creating {count} new books", { count: data.length });
 
-    const booksToInsert = data.map(({ genderIds, ...bookData }) => bookData);
+    const booksToInsert = data.map(({ genreIds, ...bookData }) => bookData);
     const createdBooks = await this.db
       .insert(book)
       .values(booksToInsert)
       .returning();
 
-    const bookGendersToInsert: { bookId: number; genderId: number }[] = [];
+    const bookGenresToInsert: { bookId: number; genreId: number }[] = [];
     data.forEach((item, index) => {
-      if (item.genderIds && item.genderIds.length > 0) {
+      if (item.genreIds && item.genreIds.length > 0) {
         const bookId = createdBooks[index]!.id;
-        item.genderIds.forEach((genderId) => {
-          bookGendersToInsert.push({ bookId, genderId });
+        item.genreIds.forEach((genreId) => {
+          bookGenresToInsert.push({ bookId, genreId });
         });
       }
     });
 
-    if (bookGendersToInsert.length > 0) {
-      await this.db.insert(bookGender).values(bookGendersToInsert);
+    if (bookGenresToInsert.length > 0) {
+      await this.db.insert(bookGenre).values(bookGenresToInsert);
     }
 
     layerLogger.info("Created {count} books", { count: createdBooks.length });
@@ -73,7 +73,7 @@ export class BookRepository {
   }
 
   /**
-   * Get a book by ID with relations (gender and publisher)
+   * Get a book by ID with relations (genre and publisher)
    */
   async findByIdWithRelations(
     id: number,
@@ -81,9 +81,9 @@ export class BookRepository {
     return this.db.query.book.findFirst({
       where: eq(book.id, id),
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true,
+            genre: true,
           },
         },
         publisher: true,
@@ -104,9 +104,9 @@ export class BookRepository {
   async findAllWithRelations(): Promise<BookWithRelations[]> {
     return this.db.query.book.findMany({
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true,
+            genre: true,
           },
         },
         publisher: true,
@@ -123,7 +123,7 @@ export class BookRepository {
     title?: string;
     author?: string;
     publisherId?: number;
-    genderId?: number;
+    genreId?: number;
   }): Promise<{ data: BookWithRelations[]; total: number }> {
     const filters = [];
 
@@ -139,21 +139,21 @@ export class BookRepository {
 
     const whereClause = filters.length > 0 ? and(...filters) : undefined;
 
-    // If genderId is provided, we first find the bookIds associated with that gender
-    let bookIdsByGender: number[] | undefined;
-    if (params.genderId !== undefined) {
-      const bookGendersResults = await this.db
-        .select({ bookId: bookGender.bookId })
-        .from(bookGender)
-        .where(eq(bookGender.genderId, params.genderId));
-      bookIdsByGender = bookGendersResults.map((bg) => bg.bookId);
+    // If genreId is provided, we first find the bookIds associated with that genre
+    let bookIdsByGenre: number[] | undefined;
+    if (params.genreId !== undefined) {
+      const bookGenresResults = await this.db
+        .select({ bookId: bookGenre.bookId })
+        .from(bookGenre)
+        .where(eq(bookGenre.genreId, params.genreId));
+      bookIdsByGenre = bookGenresResults.map((bg) => bg.bookId);
 
-      // If no books found for this gender, return empty result
-      if (bookIdsByGender.length === 0) {
+      // If no books found for this genre, return empty result
+      if (bookIdsByGenre.length === 0) {
         return { data: [], total: 0 };
       }
 
-      filters.push(inArray(book.id, bookIdsByGender));
+      filters.push(inArray(book.id, bookIdsByGenre));
     }
 
     const finalWhereClause = filters.length > 0 ? and(...filters) : undefined;
@@ -162,9 +162,9 @@ export class BookRepository {
     const query = this.db.query.book.findMany({
       where: finalWhereClause,
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true,
+            genre: true,
           },
         },
         publisher: true,
@@ -201,13 +201,13 @@ export class BookRepository {
   }
 
   /**
-   * Find books by gender ID
+   * Find books by genre ID
    */
-  async findByGenderId(genderId: number): Promise<Book[]> {
+  async findByGenreId(genreId: number): Promise<Book[]> {
     const bookIds = await this.db
-      .select({ bookId: bookGender.bookId })
-      .from(bookGender)
-      .where(eq(bookGender.genderId, genderId));
+      .select({ bookId: bookGenre.bookId })
+      .from(bookGenre)
+      .where(eq(bookGenre.genreId, genreId));
 
     if (bookIds.length === 0) return [];
 
@@ -253,10 +253,10 @@ export class BookRepository {
    */
   async update(
     id: number,
-    data: Partial<NewBook> & { genderIds?: number[] },
+    data: Partial<NewBook> & { genreIds?: number[] },
   ): Promise<Book | undefined> {
     layerLogger.debug("Updating book ID: {id}", { id });
-    const { genderIds, ...bookData } = data;
+    const { genreIds, ...bookData } = data;
 
     const result = await this.db
       .update(book)
@@ -265,17 +265,17 @@ export class BookRepository {
       .returning();
     const updatedBook = result[0];
 
-    if (updatedBook && genderIds !== undefined) {
+    if (updatedBook && genreIds !== undefined) {
       // Delete existing associations
-      await this.db.delete(bookGender).where(eq(bookGender.bookId, id));
+      await this.db.delete(bookGenre).where(eq(bookGenre.bookId, id));
 
       // Add new associations
-      if (genderIds.length > 0) {
-        const bookGenders = genderIds.map((genderId) => ({
+      if (genreIds.length > 0) {
+        const bookGenres = genreIds.map((genreId) => ({
           bookId: id,
-          genderId,
+          genreId,
         }));
-        await this.db.insert(bookGender).values(bookGenders);
+        await this.db.insert(bookGenre).values(bookGenres);
       }
     }
 

@@ -9,7 +9,7 @@ const BookDetail = () => {
 
   // Data fetching
   const [publishers] = createResource(async () => trpc.publishers.list.query());
-  const [genders] = createResource(async () => trpc.genders.list.query());
+  const [genres] = createResource(async () => trpc.genres.list.query());
   
   const [bookData] = createResource(
     () => id(),
@@ -23,7 +23,7 @@ const BookDetail = () => {
   const [author, setAuthor] = createSignal('');
   const [price, setPrice] = createSignal(0);
   const [pubId, setPubId] = createSignal(0);
-  const [selectedGenderIds, setSelectedGenderIds] = createSignal<number[]>([]);
+  const [selectedGenreIds, setSelectedGenreIds] = createSignal<number[]>([]);
   const [isbn, setIsbn] = createSignal('');
   const [language, setLanguage] = createSignal('');
 
@@ -40,8 +40,8 @@ const BookDetail = () => {
     setAuthor(book.author || '');
     setPrice(book.price || 0);
     setPubId(book.publisherId || 0);
-    const genderIds = book.bookGenders?.map((bg: any) => bg.genderId) || [];
-    setSelectedGenderIds(genderIds);
+    const genreIds = book.bookGenres?.map((bg: any) => bg.genreId) || [];
+    setSelectedGenreIds(genreIds);
     setIsbn(book.isbn || '');
     setLanguage(book.language || '');
   };
@@ -68,7 +68,7 @@ const BookDetail = () => {
       author: author() || null,
       price: price() || null,
       publisherId: pubId() || null,
-      genderIds: selectedGenderIds(),
+      genreIds: selectedGenreIds(),
       isbn: isbn() || null,
       language: language() || null,
     };
@@ -129,19 +129,19 @@ const BookDetail = () => {
               </select>
             </div>
             <div style={{ 'grid-column': '1 / -1' }}>
-              <label>Genders</label>
+              <label>Genres</label>
               <select 
                 multiple 
                 style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '120px' }} 
-                value={selectedGenderIds().map(String)} 
+                value={selectedGenreIds().map(String)} 
                 onChange={(e) => {
                   const options = Array.from(e.target.selectedOptions);
-                  setSelectedGenderIds(options.map(o => parseInt(o.value)));
+                  setSelectedGenreIds(options.map(o => parseInt(o.value)));
                 }}
               >
-                <For each={genders()}>
+                <For each={genres()}>
                   {(gen) => (
-                    <option value={gen.id} selected={selectedGenderIds().includes(gen.id)}>
+                    <option value={gen.id} selected={selectedGenreIds().includes(gen.id)}>
                       {gen.name}
                     </option>
                   )}

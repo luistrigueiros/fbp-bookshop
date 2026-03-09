@@ -6,7 +6,7 @@ servers:
   - url: /
 tags:
   - name: Books
-  - name: Genders
+  - name: Genres
   - name: Publishers
   - name: Scan
 paths:
@@ -104,11 +104,11 @@ paths:
         '204':
           description: No Content
 
-  /api/genders:
+  /api/genres:
     get:
-      tags: [Genders]
-      operationId: listGenders
-      summary: List all genders
+      tags: [Genres]
+      operationId: listGenres
+      summary: List all genres
       responses:
         '200':
           description: OK
@@ -117,11 +117,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GenderRef'
+                  $ref: '#/components/schemas/GenreRef'
     post:
-      tags: [Genders]
-      operationId: createGender
-      summary: Create a gender
+      tags: [Genres]
+      operationId: createGenre
+      summary: Create a genre
       requestBody:
         required: true
         content:
@@ -134,7 +134,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GenderRef'
+                $ref: '#/components/schemas/GenreRef'
 
   /api/publishers:
     get:
@@ -218,9 +218,11 @@ components:
         language:
           type: string
           nullable: true
-        genderId:
-          type: integer
-          format: int64
+        genreIds:
+          type: array
+          items:
+            type: integer
+            format: int64
           nullable: true
         publisherId:
           type: integer
@@ -249,9 +251,11 @@ components:
         language:
           type: string
           nullable: true
-        genderId:
-          type: integer
-          format: int64
+        genreIds:
+          type: array
+          items:
+            type: integer
+              format: int64
           nullable: true
         publisherId:
           type: integer
@@ -259,7 +263,7 @@ components:
           nullable: true
       required: [title]
 
-    GenderRef:
+    GenreRef:
       type: object
       properties:
         id:

@@ -10,7 +10,7 @@ const App: ParentComponent = (props) => {
           <A href="/">Dashboard</A>
           <A href="/books">Books</A>
           <A href="/publishers">Publishers</A>
-          <A href="/genders">Genders</A>
+          <A href="/genres">Genres</A>
         </div>
       </nav>
       <main>

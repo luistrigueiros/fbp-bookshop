@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
-import type { Book, Gender, Publisher, ExtractionResult } from "./types";
-import { extractGender } from "./extractGender";
+import type { Book, Genre, Publisher, ExtractionResult } from "./types";
+import { extractGenre } from "./extractGenre";
 import { extractPublisher } from "./extractPublisher";
 import {
   buildHeaderIndex,
@@ -21,13 +21,13 @@ const COLUMNS = {
   BARCODE: "codigo barras",
   PRICE: "preço",
   LANGUAGE: "lingua",
-  GENDER: "género",
+  GENRE: "género",
   PUBLISHER: "editora",
 } as const;
 
 /**
  * Builds a lookup map from lowercase name → entity, used internally to
- * match gender/publisher strings from book rows to their canonical objects.
+ * match genre/publisher strings from book rows to their canonical objects.
  */
 function buildLookupMap<T extends { name: string }>(
   items: T[]
@@ -42,8 +42,8 @@ function buildLookupMap<T extends { name: string }>(
 /**
  * Extracts all Book entries from the Excel file.
  *
- * Internally calls extractGender and extractPublisher first to build in-memory
- * lookup maps. Each book row is then enriched with the matching Gender and
+ * Internally calls extractGenre and extractPublisher first to build in-memory
+ * lookup maps. Each book row is then enriched with the matching Genre and
  * Publisher objects by name.
  *
  * Deduplication: a book is considered a duplicate if another book already in
@@ -58,11 +58,11 @@ function buildLookupMap<T extends { name: string }>(
 export function extractBook(
   input: string | ArrayBuffer | Buffer
 ): ExtractionResult<Book> {
-  // ── 1. Pre-load genders and publishers into memory ──────────────────────
-  const { items: genders, errors: genderErrors } = extractGender(input);
+  // ── 1. Pre-load genres and publishers into memory ──────────────────────
+  const { items: genres, errors: genreErrors } = extractGenre(input);
   const { items: publishers, errors: publisherErrors } = extractPublisher(input);
 
-  const genderByName = buildLookupMap(genders);
+  const genreByName = buildLookupMap(genres);
   const publisherByName = buildLookupMap(publishers);
 
   // ── 2. Open workbook and map columns ────────────────────────────────────
@@ -78,7 +78,7 @@ export function extractBook(
     barcode: headerMap.get(COLUMNS.BARCODE),
     price: headerMap.get(COLUMNS.PRICE),
     language: headerMap.get(COLUMNS.LANGUAGE),
-    gender: headerMap.get(COLUMNS.GENDER),
+    genre: headerMap.get(COLUMNS.GENRE),
     publisher: headerMap.get(COLUMNS.PUBLISHER),
   };
 
@@ -92,7 +92,7 @@ export function extractBook(
   const { startRow, endRow } = getDataRowRange(sheet);
   const books: Book[] = [];
   const errors: { row: number; message: string }[] = [
-    ...genderErrors,
+    ...genreErrors,
     ...publisherErrors,
   ];
 
@@ -133,20 +133,20 @@ export function extractBook(
       }
 
       // ── Map related entities by name ──────────────────────────────────────
-      const genderCellValue = col.gender !== undefined
-        ? getCellTrimmed(sheet, row, col.gender)
+      const genreCellValue = col.genre !== undefined
+        ? getCellTrimmed(sheet, row, col.genre)
         : "";
       const publisherName = col.publisher !== undefined
         ? getCellTrimmed(sheet, row, col.publisher)
         : "";
 
-      const genderNames = genderCellValue
-        ? genderCellValue.split("/").map((s) => s.trim()).filter(Boolean)
+      const genreNames = genreCellValue
+        ? genreCellValue.split("/").map((s) => s.trim()).filter(Boolean)
         : [];
 
-      const genders: Gender[] = genderNames
-        .map((name) => genderByName.get(name.toLowerCase()) ?? null)
-        .filter((g): g is Gender => g !== null);
+      const genres: Genre[] = genreNames
+        .map((name) => genreByName.get(name.toLowerCase()) ?? null)
+        .filter((g): g is Genre => g !== null);
 
       const publisher: Publisher | null = publisherName
         ? (publisherByName.get(publisherName.toLowerCase()) ?? null)
@@ -166,7 +166,7 @@ export function extractBook(
         language: col.language !== undefined
           ? getCellTrimmed(sheet, row, col.language) || null
           : null,
-        genders,
+        genres,
         publisher,
       };
 

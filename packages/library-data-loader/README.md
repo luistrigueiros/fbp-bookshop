@@ -1,31 +1,43 @@
-To run this project, you need to have a `.env` file (or use the one specified in `package.json`) with the following variable:
-- `CLOUDFLARE_DATABASE_ID`: The ID of your D1 database.
+# Library Data Loader
 
-```txt
-npm install
-npm run dev
-```
+Service for asynchronous bulk upload and processing of book data from Excel files.
 
-```txt
-npm run deploy
-```
+## Features
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+- **Hono-based API**: Simple REST endpoints for upload and status tracking.
+- **R2 Storage**: Stores uploaded Excel files for processing.
+- **Cloudflare Queues**: Orchestrates background processing to avoid timeouts.
+- **D1 Database**: Inserts extracted book, genre, and publisher data.
+- **Many-to-Many support**: Correctly handles books with multiple genres.
 
-```txt
-npm run cf-typegen
-```
+## API Usage
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
-
-
-To upload the worker to Cloudflare:
+### Upload a file
 
 ```bash
- curl -X POST <WORKER_DEPLOY_URL>/upload -F "file=@test/FBP-DB.xlsx"
+curl -X POST <WORKER_URL>/upload -F "file=@test/FBP-DB.xlsx"
+```
+
+Returns a `key` for status tracking.
+
+### Check upload status
+
+```bash
+curl <WORKER_URL>/upload-status/<key>
+```
+
+Returns JSON with processing status, book count, and potential errors.
+
+## Development
+
+```bash
+bun install
+bun run dev
+bun run deploy
+```
+
+Tests require a D1 and R2 environment:
+
+```bash
+bun test
 ```
