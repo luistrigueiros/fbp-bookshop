@@ -6,7 +6,7 @@ export declare const BookUpsertSchema: z.ZodObject<{
     barcode: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     price: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
     language: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-    genderId: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+    genderIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
     publisherId: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     title: string;
@@ -15,7 +15,7 @@ export declare const BookUpsertSchema: z.ZodObject<{
     barcode?: string | null | undefined;
     price?: number | null | undefined;
     language?: string | null | undefined;
-    genderId?: number | null | undefined;
+    genderIds?: number[] | undefined;
     publisherId?: number | null | undefined;
 }, {
     title: string;
@@ -24,7 +24,7 @@ export declare const BookUpsertSchema: z.ZodObject<{
     barcode?: string | null | undefined;
     price?: number | null | undefined;
     language?: string | null | undefined;
-    genderId?: number | null | undefined;
+    genderIds?: number[] | undefined;
     publisherId?: number | null | undefined;
 }>;
 export declare const BookListQuerySchema: z.ZodObject<{
@@ -39,15 +39,15 @@ export declare const BookListQuerySchema: z.ZodObject<{
     offset: number;
     title?: string | undefined;
     author?: string | undefined;
-    genderId?: number | undefined;
     publisherId?: number | undefined;
+    genderId?: number | undefined;
 }, {
     title?: string | undefined;
     author?: string | undefined;
-    genderId?: number | undefined;
     publisherId?: number | undefined;
     limit?: number | undefined;
     offset?: number | undefined;
+    genderId?: number | undefined;
 }>;
 export declare const booksRouter: import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
     ctx: {
@@ -91,18 +91,18 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
         _input_in: {
             title?: string | undefined;
             author?: string | undefined;
-            genderId?: number | undefined;
             publisherId?: number | undefined;
             limit?: number | undefined;
             offset?: number | undefined;
+            genderId?: number | undefined;
         } | undefined;
         _input_out: {
             limit: number;
             offset: number;
             title?: string | undefined;
             author?: string | undefined;
-            genderId?: number | undefined;
             publisherId?: number | undefined;
+            genderId?: number | undefined;
         };
         _output_in: typeof import("@trpc/server").unsetMarker;
         _output_out: typeof import("@trpc/server").unsetMarker;
@@ -147,7 +147,6 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
         barcode: string | null;
         price: number | null;
         language: string | null;
-        genderId: number | null;
         publisherId: number | null;
     }>;
     create: import("@trpc/server").BuildProcedure<"mutation", {
@@ -182,7 +181,7 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
             barcode?: string | null | undefined;
             price?: number | null | undefined;
             language?: string | null | undefined;
-            genderId?: number | null | undefined;
+            genderIds?: number[] | undefined;
             publisherId?: number | null | undefined;
         };
         _input_out: {
@@ -192,7 +191,7 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
             barcode?: string | null | undefined;
             price?: number | null | undefined;
             language?: string | null | undefined;
-            genderId?: number | null | undefined;
+            genderIds?: number[] | undefined;
             publisherId?: number | null | undefined;
         };
         _output_in: typeof import("@trpc/server").unsetMarker;
@@ -205,7 +204,6 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
         barcode: string | null;
         price: number | null;
         language: string | null;
-        genderId: number | null;
         publisherId: number | null;
     }>;
     update: import("@trpc/server").BuildProcedure<"mutation", {
@@ -242,7 +240,7 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderId?: number | null | undefined;
+                genderIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
         };
@@ -255,7 +253,7 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderId?: number | null | undefined;
+                genderIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
         };
@@ -269,7 +267,6 @@ export declare const booksRouter: import("@trpc/server").CreateRouterInner<impor
         barcode: string | null;
         price: number | null;
         language: string | null;
-        genderId: number | null;
         publisherId: number | null;
     }>;
     delete: import("@trpc/server").BuildProcedure<"mutation", {

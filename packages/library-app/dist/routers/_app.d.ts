@@ -54,18 +54,18 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
             _input_in: {
                 title?: string | undefined;
                 author?: string | undefined;
-                genderId?: number | undefined;
                 publisherId?: number | undefined;
                 limit?: number | undefined;
                 offset?: number | undefined;
+                genderId?: number | undefined;
             } | undefined;
             _input_out: {
                 limit: number;
                 offset: number;
                 title?: string | undefined;
                 author?: string | undefined;
-                genderId?: number | undefined;
                 publisherId?: number | undefined;
+                genderId?: number | undefined;
             };
             _output_in: typeof import("@trpc/server").unsetMarker;
             _output_out: typeof import("@trpc/server").unsetMarker;
@@ -110,7 +110,6 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
             barcode: string | null;
             price: number | null;
             language: string | null;
-            genderId: number | null;
             publisherId: number | null;
         }>;
         create: import("@trpc/server").BuildProcedure<"mutation", {
@@ -145,7 +144,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderId?: number | null | undefined;
+                genderIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
             _input_out: {
@@ -155,7 +154,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderId?: number | null | undefined;
+                genderIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
             _output_in: typeof import("@trpc/server").unsetMarker;
@@ -168,7 +167,6 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
             barcode: string | null;
             price: number | null;
             language: string | null;
-            genderId: number | null;
             publisherId: number | null;
         }>;
         update: import("@trpc/server").BuildProcedure<"mutation", {
@@ -205,7 +203,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderId?: number | null | undefined;
+                    genderIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
             };
@@ -218,7 +216,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderId?: number | null | undefined;
+                    genderIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
             };
@@ -232,7 +230,6 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
             barcode: string | null;
             price: number | null;
             language: string | null;
-            genderId: number | null;
             publisherId: number | null;
         }>;
         delete: import("@trpc/server").BuildProcedure<"mutation", {
