@@ -1,7 +1,7 @@
 import { eq, like } from "drizzle-orm";
 import type { DB } from "../db";
 import { gender } from "../schema";
-import type { Gender, GenderWithBooks, NewGender } from "../schema/types";
+import type {Book, Gender, GenderWithBooks, NewGender} from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class GenderRepository {
