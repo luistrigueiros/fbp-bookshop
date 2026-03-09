@@ -238,6 +238,34 @@ export class BookRepository {
   }
 
   /**
+   * Find book by title, author and ISBN
+   */
+  async findByUniqueCriteria(
+    title: string,
+    author: string | null,
+    isbn: string | null,
+  ): Promise<Book | undefined> {
+    const conditions = [eq(book.title, title)];
+    if (author) {
+      conditions.push(eq(book.author, author));
+    } else {
+      conditions.push(sql`${book.author} IS NULL`);
+    }
+
+    if (isbn) {
+      conditions.push(eq(book.isbn, isbn));
+    } else {
+      conditions.push(sql`${book.isbn} IS NULL`);
+    }
+
+    const result = await this.db
+      .select()
+      .from(book)
+      .where(and(...conditions));
+    return result[0];
+  }
+
+  /**
    * Find books by barcode
    */
   async findByBarcode(barcode: string): Promise<Book | undefined> {

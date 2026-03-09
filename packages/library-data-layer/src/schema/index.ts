@@ -4,6 +4,7 @@ import {
   text,
   real,
   primaryKey,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
@@ -27,18 +28,24 @@ export function getPublisherId() {
 }
 
 // Book table
-export const book = sqliteTable("book", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  title: text("title", { length: 500 }).notNull(),
-  author: text("author", { length: 300 }),
-  isbn: text("isbn", { length: 20 }),
-  barcode: text("barcode", { length: 50 }),
-  price: real("price"), // SQLite uses REAL for decimal numbers
-  language: text("language", { length: 50 }),
-  publisherId: integer("publisher_id").references(getPublisherId, {
-    onDelete: "set null",
+export const book = sqliteTable(
+  "book",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title", { length: 500 }).notNull(),
+    author: text("author", { length: 300 }),
+    isbn: text("isbn", { length: 20 }),
+    barcode: text("barcode", { length: 50 }),
+    price: real("price"), // SQLite uses REAL for decimal numbers
+    language: text("language", { length: 50 }),
+    publisherId: integer("publisher_id").references(getPublisherId, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => ({
+    isbnIdx: uniqueIndex("book_isbn_idx").on(t.isbn),
   }),
-});
+);
 
 export const bookGenre = sqliteTable(
   "book_genre",
