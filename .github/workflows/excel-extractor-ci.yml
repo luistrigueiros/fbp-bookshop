@@ -1,6 +1,7 @@
 name: Library Excel Extractor CI
 
 on:
+  workflow_dispatch: {}
   push:
     branches: ["**"]
     paths:
