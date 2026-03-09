@@ -32,7 +32,7 @@ export declare const trpc: {
                     publisherId?: number | undefined;
                     limit?: number | undefined;
                     offset?: number | undefined;
-                    genderId?: number | undefined;
+                    genreId?: number | undefined;
                 } | undefined;
                 _input_out: {
                     limit: number;
@@ -40,7 +40,7 @@ export declare const trpc: {
                     title?: string | undefined;
                     author?: string | undefined;
                     publisherId?: number | undefined;
-                    genderId?: number | undefined;
+                    genreId?: number | undefined;
                 };
                 _output_in: typeof import("@trpc/server").unsetMarker;
                 _output_out: typeof import("@trpc/server").unsetMarker;
@@ -123,7 +123,7 @@ export declare const trpc: {
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderIds?: number[] | undefined;
+                    genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
                 _input_out: {
@@ -133,7 +133,7 @@ export declare const trpc: {
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderIds?: number[] | undefined;
+                    genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
                 _output_in: typeof import("@trpc/server").unsetMarker;
@@ -184,7 +184,7 @@ export declare const trpc: {
                         barcode?: string | null | undefined;
                         price?: number | null | undefined;
                         language?: string | null | undefined;
-                        genderIds?: number[] | undefined;
+                        genreIds?: number[] | undefined;
                         publisherId?: number | null | undefined;
                     };
                 };
@@ -197,7 +197,7 @@ export declare const trpc: {
                         barcode?: string | null | undefined;
                         price?: number | null | undefined;
                         language?: string | null | undefined;
-                        genderIds?: number[] | undefined;
+                        genreIds?: number[] | undefined;
                         publisherId?: number | null | undefined;
                     };
                 };
@@ -247,7 +247,7 @@ export declare const trpc: {
             }, null>>;
         };
     };
-    genders: {
+    genres: {
         list: {
             query: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"query", {
                 _config: import("@trpc/server").RootConfig<{

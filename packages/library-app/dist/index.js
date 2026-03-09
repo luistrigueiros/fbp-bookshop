@@ -6683,7 +6683,7 @@ var BookUpsertSchema = exports_external.object({
   barcode: exports_external.string().nullable().optional(),
   price: exports_external.number().nullable().optional(),
   language: exports_external.string().nullable().optional(),
-  genderIds: exports_external.array(exports_external.number()).optional(),
+  genreIds: exports_external.array(exports_external.number()).optional(),
   publisherId: exports_external.number().nullable().optional()
 });
 var BookListQuerySchema = exports_external.object({
@@ -6692,7 +6692,7 @@ var BookListQuerySchema = exports_external.object({
   title: exports_external.string().optional(),
   author: exports_external.string().optional(),
   publisherId: exports_external.number().optional(),
-  genderId: exports_external.number().optional()
+  genreId: exports_external.number().optional()
 });
 var booksRouter = router({
   list: publicProcedure.input(BookListQuerySchema.optional().default({ limit: 20, offset: 0 })).query(async ({ ctx, input }) => {
@@ -6724,25 +6724,25 @@ var booksRouter = router({
   })
 });
 
-// src/routers/genders.ts
+// src/routers/genres.ts
 var NamePayloadSchema = exports_external.object({
   name: exports_external.string()
 });
-var gendersRouter = router({
+var genresRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.repositories.genders.findAll();
+    return ctx.repositories.genres.findAll();
   }),
   create: publicProcedure.input(NamePayloadSchema).mutation(async ({ ctx, input }) => {
-    return ctx.repositories.genders.create(input);
+    return ctx.repositories.genres.create(input);
   }),
   update: publicProcedure.input(exports_external.object({
     id: exports_external.number(),
     data: NamePayloadSchema
   })).mutation(async ({ ctx, input }) => {
-    return ctx.repositories.genders.update(input.id, input.data);
+    return ctx.repositories.genres.update(input.id, input.data);
   }),
   delete: publicProcedure.input(exports_external.number()).mutation(async ({ ctx, input }) => {
-    return ctx.repositories.genders.delete(input);
+    return ctx.repositories.genres.delete(input);
   })
 });
 
@@ -6771,7 +6771,7 @@ var publishersRouter = router({
 // src/routers/_app.ts
 var appRouter = router({
   books: booksRouter,
-  genders: gendersRouter,
+  genres: genresRouter,
   publishers: publishersRouter
 });
 
@@ -10732,15 +10732,15 @@ __export(exports_schema, {
   publisherRelations: () => publisherRelations,
   publisher: () => publisher,
   getPublisherId: () => getPublisherId,
-  getGenderId: () => getGenderId,
-  genderRelations: () => genderRelations,
-  gender: () => gender,
+  getGenreId: () => getGenreId,
+  genreRelations: () => genreRelations,
+  genre: () => genre,
   bookRelations: () => bookRelations,
-  bookGenderRelations: () => bookGenderRelations,
-  bookGender: () => bookGender,
+  bookGenreRelations: () => bookGenreRelations,
+  bookGenre: () => bookGenre,
   book: () => book
 });
-var gender = sqliteTable("gender", {
+var genre = sqliteTable("genre", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name", { length: 100 }).notNull().unique()
 });
@@ -10748,8 +10748,8 @@ var publisher = sqliteTable("publisher", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name", { length: 200 }).notNull().unique()
 });
-function getGenderId() {
-  return gender.id;
+function getGenreId() {
+  return genre.id;
 }
 function getPublisherId() {
   return publisher.id;
@@ -10766,33 +10766,33 @@ var book = sqliteTable("book", {
     onDelete: "set null"
   })
 });
-var bookGender = sqliteTable("book_gender", {
+var bookGenre = sqliteTable("book_genre", {
   bookId: integer("book_id").notNull().references(() => book.id, { onDelete: "cascade" }),
-  genderId: integer("gender_id").notNull().references(getGenderId, { onDelete: "cascade" })
+  genreId: integer("genre_id").notNull().references(getGenreId, { onDelete: "cascade" })
 }, (t2) => ({
-  pk: primaryKey({ columns: [t2.bookId, t2.genderId] })
+  pk: primaryKey({ columns: [t2.bookId, t2.genreId] })
 }));
 var bookRelations = relations(book, ({ one, many }) => ({
   publisher: one(publisher, {
     fields: [book.publisherId],
     references: [publisher.id]
   }),
-  bookGenders: many(bookGender)
+  bookGenres: many(bookGenre)
 }));
-var genderRelations = relations(gender, ({ many }) => ({
-  bookGenders: many(bookGender)
+var genreRelations = relations(genre, ({ many }) => ({
+  bookGenres: many(bookGenre)
 }));
 var publisherRelations = relations(publisher, ({ many }) => ({
   books: many(book)
 }));
-var bookGenderRelations = relations(bookGender, ({ one }) => ({
+var bookGenreRelations = relations(bookGenre, ({ one }) => ({
   book: one(book, {
-    fields: [bookGender.bookId],
+    fields: [bookGenre.bookId],
     references: [book.id]
   }),
-  gender: one(gender, {
-    fields: [bookGender.genderId],
-    references: [gender.id]
+  genre: one(genre, {
+    fields: [bookGenre.genreId],
+    references: [genre.id]
   })
 }));
 var uploadStatus = sqliteTable("upload_status", {
@@ -12451,15 +12451,15 @@ class BookRepository {
   }
   async create(data) {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
-    const { genderIds, ...bookData } = data;
+    const { genreIds, ...bookData } = data;
     const result = await this.db.insert(book).values(bookData).returning();
     const createdBook = result[0];
-    if (genderIds && genderIds.length > 0) {
-      const bookGenders = genderIds.map((genderId) => ({
+    if (genreIds && genreIds.length > 0) {
+      const bookGenres = genreIds.map((genreId) => ({
         bookId: createdBook.id,
-        genderId
+        genreId
       }));
-      await this.db.insert(bookGender).values(bookGenders);
+      await this.db.insert(bookGenre).values(bookGenres);
     }
     layerLogger.info("Created book: {title} (ID: {id})", {
       title: createdBook.title,
@@ -12471,19 +12471,19 @@ class BookRepository {
     if (data.length === 0)
       return [];
     layerLogger.debug("Creating {count} new books", { count: data.length });
-    const booksToInsert = data.map(({ genderIds, ...bookData }) => bookData);
+    const booksToInsert = data.map(({ genreIds, ...bookData }) => bookData);
     const createdBooks = await this.db.insert(book).values(booksToInsert).returning();
-    const bookGendersToInsert = [];
+    const bookGenresToInsert = [];
     data.forEach((item, index) => {
-      if (item.genderIds && item.genderIds.length > 0) {
+      if (item.genreIds && item.genreIds.length > 0) {
         const bookId = createdBooks[index].id;
-        item.genderIds.forEach((genderId) => {
-          bookGendersToInsert.push({ bookId, genderId });
+        item.genreIds.forEach((genreId) => {
+          bookGenresToInsert.push({ bookId, genreId });
         });
       }
     });
-    if (bookGendersToInsert.length > 0) {
-      await this.db.insert(bookGender).values(bookGendersToInsert);
+    if (bookGenresToInsert.length > 0) {
+      await this.db.insert(bookGenre).values(bookGenresToInsert);
     }
     layerLogger.info("Created {count} books", { count: createdBooks.length });
     return createdBooks;
@@ -12496,9 +12496,9 @@ class BookRepository {
     return this.db.query.book.findFirst({
       where: eq(book.id, id),
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true
+            genre: true
           }
         },
         publisher: true
@@ -12511,9 +12511,9 @@ class BookRepository {
   async findAllWithRelations() {
     return this.db.query.book.findMany({
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true
+            genre: true
           }
         },
         publisher: true
@@ -12532,22 +12532,22 @@ class BookRepository {
       filters.push(eq(book.publisherId, params.publisherId));
     }
     const whereClause = filters.length > 0 ? and(...filters) : undefined;
-    let bookIdsByGender;
-    if (params.genderId !== undefined) {
-      const bookGendersResults = await this.db.select({ bookId: bookGender.bookId }).from(bookGender).where(eq(bookGender.genderId, params.genderId));
-      bookIdsByGender = bookGendersResults.map((bg) => bg.bookId);
-      if (bookIdsByGender.length === 0) {
+    let bookIdsByGenre;
+    if (params.genreId !== undefined) {
+      const bookGenresResults = await this.db.select({ bookId: bookGenre.bookId }).from(bookGenre).where(eq(bookGenre.genreId, params.genreId));
+      bookIdsByGenre = bookGenresResults.map((bg) => bg.bookId);
+      if (bookIdsByGenre.length === 0) {
         return { data: [], total: 0 };
       }
-      filters.push(inArray(book.id, bookIdsByGender));
+      filters.push(inArray(book.id, bookIdsByGenre));
     }
     const finalWhereClause = filters.length > 0 ? and(...filters) : undefined;
     const query = this.db.query.book.findMany({
       where: finalWhereClause,
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
-            gender: true
+            genre: true
           }
         },
         publisher: true
@@ -12566,8 +12566,8 @@ class BookRepository {
     const searchPattern = `%${query}%`;
     return this.db.select().from(book).where(or(like(book.title, searchPattern), like(book.author, searchPattern)));
   }
-  async findByGenderId(genderId) {
-    const bookIds = await this.db.select({ bookId: bookGender.bookId }).from(bookGender).where(eq(bookGender.genderId, genderId));
+  async findByGenreId(genreId) {
+    const bookIds = await this.db.select({ bookId: bookGenre.bookId }).from(bookGenre).where(eq(bookGenre.genreId, genreId));
     if (bookIds.length === 0)
       return [];
     return this.db.select().from(book).where(inArray(book.id, bookIds.map((b) => b.bookId)));
@@ -12585,17 +12585,17 @@ class BookRepository {
   }
   async update(id, data) {
     layerLogger.debug("Updating book ID: {id}", { id });
-    const { genderIds, ...bookData } = data;
+    const { genreIds, ...bookData } = data;
     const result = await this.db.update(book).set(bookData).where(eq(book.id, id)).returning();
     const updatedBook = result[0];
-    if (updatedBook && genderIds !== undefined) {
-      await this.db.delete(bookGender).where(eq(bookGender.bookId, id));
-      if (genderIds.length > 0) {
-        const bookGenders = genderIds.map((genderId) => ({
+    if (updatedBook && genreIds !== undefined) {
+      await this.db.delete(bookGenre).where(eq(bookGenre.bookId, id));
+      if (genreIds.length > 0) {
+        const bookGenres = genreIds.map((genreId) => ({
           bookId: id,
-          genderId
+          genreId
         }));
-        await this.db.insert(bookGender).values(bookGenders);
+        await this.db.insert(bookGenre).values(bookGenres);
       }
     }
     if (updatedBook) {
@@ -12612,39 +12612,39 @@ class BookRepository {
     return result.length;
   }
 }
-// ../library-data-layer/src/repositories/gender.repository.ts
-class GenderRepository {
+// ../library-data-layer/src/repositories/genre.repository.ts
+class GenreRepository {
   db;
   constructor(db) {
     this.db = db;
   }
   async create(data) {
-    layerLogger.debug("Creating new gender: {name}", { name: data.name });
-    const result = await this.db.insert(gender).values(data).returning();
-    const createdGender = result[0];
-    layerLogger.info("Created gender: {name} (ID: {id})", {
-      name: createdGender.name,
-      id: createdGender.id
+    layerLogger.debug("Creating new genre: {name}", { name: data.name });
+    const result = await this.db.insert(genre).values(data).returning();
+    const createdGenre = result[0];
+    layerLogger.info("Created genre: {name} (ID: {id})", {
+      name: createdGenre.name,
+      id: createdGenre.id
     });
-    return createdGender;
+    return createdGenre;
   }
   async createMany(data) {
     if (data.length === 0)
       return [];
-    layerLogger.debug("Creating {count} new genders", { count: data.length });
-    const result = await this.db.insert(gender).values(data).returning();
-    layerLogger.info("Created {count} genders", { count: result.length });
+    layerLogger.debug("Creating {count} new genres", { count: data.length });
+    const result = await this.db.insert(genre).values(data).returning();
+    layerLogger.info("Created {count} genres", { count: result.length });
     return result;
   }
   async findById(id) {
-    const result = await this.db.select().from(gender).where(eq(gender.id, id));
+    const result = await this.db.select().from(genre).where(eq(genre.id, id));
     return result[0];
   }
   async findByIdWithBooks(id) {
-    const result = await this.db.query.gender.findFirst({
-      where: eq(gender.id, id),
+    const result = await this.db.query.genre.findFirst({
+      where: eq(genre.id, id),
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
             book: true
           }
@@ -12655,20 +12655,20 @@ class GenderRepository {
       return;
     return {
       ...result,
-      books: result.bookGenders?.map((bg) => bg.book).filter(Boolean)
+      books: result.bookGenres?.map((bg) => bg.book).filter(Boolean)
     };
   }
   async findByName(name) {
-    const result = await this.db.select().from(gender).where(eq(gender.name, name));
+    const result = await this.db.select().from(genre).where(eq(genre.name, name));
     return result[0];
   }
   async findAll() {
-    return this.db.select().from(gender);
+    return this.db.select().from(genre);
   }
   async findAllWithBooks() {
-    const results = await this.db.query.gender.findMany({
+    const results = await this.db.query.genre.findMany({
       with: {
-        bookGenders: {
+        bookGenres: {
           with: {
             book: true
           }
@@ -12677,28 +12677,28 @@ class GenderRepository {
     });
     return results.map((result) => ({
       ...result,
-      books: result.bookGenders?.map((bg) => bg.book).filter(Boolean)
+      books: result.bookGenres?.map((bg) => bg.book).filter(Boolean)
     }));
   }
   async search(query) {
     const searchPattern = `%${query}%`;
-    return this.db.select().from(gender).where(like(gender.name, searchPattern));
+    return this.db.select().from(genre).where(like(genre.name, searchPattern));
   }
   async update(id, data) {
-    layerLogger.debug("Updating gender ID: {id}", { id });
-    const result = await this.db.update(gender).set(data).where(eq(gender.id, id)).returning();
-    const updatedGender = result[0];
-    if (updatedGender) {
-      layerLogger.info("Updated gender ID: {id}", { id });
+    layerLogger.debug("Updating genre ID: {id}", { id });
+    const result = await this.db.update(genre).set(data).where(eq(genre.id, id)).returning();
+    const updatedGenre = result[0];
+    if (updatedGenre) {
+      layerLogger.info("Updated genre ID: {id}", { id });
     }
-    return updatedGender;
+    return updatedGenre;
   }
   async delete(id) {
-    const result = await this.db.delete(gender).where(eq(gender.id, id)).returning();
+    const result = await this.db.delete(genre).where(eq(genre.id, id)).returning();
     return result.length > 0;
   }
   async count() {
-    const result = await this.db.select().from(gender);
+    const result = await this.db.select().from(genre);
     return result.length;
   }
 }
@@ -12804,7 +12804,7 @@ class UploadStatusRepository {
 function createRepositories(db) {
   return {
     books: new BookRepository(db),
-    genders: new GenderRepository(db),
+    genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db)
   };

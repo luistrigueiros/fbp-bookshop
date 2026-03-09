@@ -57,7 +57,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 publisherId?: number | undefined;
                 limit?: number | undefined;
                 offset?: number | undefined;
-                genderId?: number | undefined;
+                genreId?: number | undefined;
             } | undefined;
             _input_out: {
                 limit: number;
@@ -65,7 +65,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 title?: string | undefined;
                 author?: string | undefined;
                 publisherId?: number | undefined;
-                genderId?: number | undefined;
+                genreId?: number | undefined;
             };
             _output_in: typeof import("@trpc/server").unsetMarker;
             _output_out: typeof import("@trpc/server").unsetMarker;
@@ -144,7 +144,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderIds?: number[] | undefined;
+                genreIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
             _input_out: {
@@ -154,7 +154,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                 barcode?: string | null | undefined;
                 price?: number | null | undefined;
                 language?: string | null | undefined;
-                genderIds?: number[] | undefined;
+                genreIds?: number[] | undefined;
                 publisherId?: number | null | undefined;
             };
             _output_in: typeof import("@trpc/server").unsetMarker;
@@ -203,7 +203,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderIds?: number[] | undefined;
+                    genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
             };
@@ -216,7 +216,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
                     barcode?: string | null | undefined;
                     price?: number | null | undefined;
                     language?: string | null | undefined;
-                    genderIds?: number[] | undefined;
+                    genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
                 };
             };
@@ -263,7 +263,7 @@ export declare const appRouter: import("@trpc/server").CreateRouterInner<import(
             _output_out: typeof import("@trpc/server").unsetMarker;
         }, null>;
     }>;
-    genders: import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
+    genres: import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
         ctx: {
             req: Request<unknown, CfProperties<unknown>>;
             resHeaders: Headers;
