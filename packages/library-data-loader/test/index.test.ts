@@ -27,6 +27,15 @@ describe("Upload Service Integration Test (Async)", () => {
     await disposeD1TestEnv(testEnv);
   });
 
+  it("should serve the landing page at root", async () => {
+    const env = {
+      DB: testEnv.env.DB,
+      ENVIRONMENT: "development"
+    };
+    const res = await worker.fetch(new Request("http://localhost/"), env as any);
+    expect(res.status).toBe(200);
+  });
+
   it("should accept the Excel file and eventually store data in D1", async () => {
     const env = { 
       DB: testEnv.env.DB, 
@@ -123,13 +132,4 @@ describe("Upload Service Integration Test (Async)", () => {
     expect(finalGenreCount).toBe(initialGenreCount);
     expect(finalPublisherCount).toBe(initialPublisherCount);
   }, 120000);
-
-  it("should serve the landing page at root", async () => {
-    const env = { 
-        DB: testEnv.env.DB, 
-        ENVIRONMENT: "development" 
-    };
-    const res = await worker.fetch(new Request("http://localhost/"), env as any);
-    expect(res.status).toBe(200);
-  });
 });
