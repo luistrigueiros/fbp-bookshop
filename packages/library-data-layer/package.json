@@ -31,7 +31,7 @@
     "db:migrate:prod": "bun run db:generate && bun wrangler d1 migrations apply library-db --remote",
     "db:studio": "bun run preconfig && bun drizzle-kit studio",
     "lint": "bunx eslint .",
-    "test": "bun test",
+    "test": "bun run db:generate && bun test",
     "test:coverage": "bun test --coverage || true",
     "format": "bunx prettier --write ."
   },

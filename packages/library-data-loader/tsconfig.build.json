@@ -6,6 +6,7 @@
         "declaration": true,
         "emitDeclarationOnly": true,
         "paths": {
+            "@/*": ["./src/*"],
             "library-data-layer": [
                 "../library-data-layer/dist/index.d.ts"
             ],

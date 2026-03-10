@@ -90,11 +90,10 @@ export async function processQueueMessage(
       publisherMap.set(name, publisher.id);
     }
 
-    // Batch insert books in chunks
+    // Insert or update books
     let processedCount = 0;
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < result.items.length; i += BATCH_SIZE) {
-      const chunk = result.items.slice(i, i + BATCH_SIZE).map(item => ({
+    for (const item of result.items) {
+      const bookData = {
         title: item.title,
         author: item.author,
         isbn: item.isbn,
@@ -103,17 +102,32 @@ export async function processQueueMessage(
         language: item.language,
         genreIds: item.genres.map(g => genreMap.get(g.name)).filter((id): id is number => id !== undefined),
         publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
-      }));
+      };
+
+      const existingBook = await repos.books.findByUniqueCriteria(
+        bookData.title,
+        bookData.author,
+        bookData.isbn
+      );
+
+      if (existingBook) {
+        loaderLogger.debug("Updating existing book: {title} (ID: {id})", { 
+          title: bookData.title, 
+          id: existingBook.id 
+        });
+        await repos.books.update(existingBook.id, bookData);
+      } else {
+        loaderLogger.debug("Creating new book: {title}", { title: bookData.title });
+        await repos.books.create(bookData);
+      }
       
-      await repos.books.createMany(chunk);
-      processedCount += chunk.length;
+      processedCount++;
       
-      // Update processed count in DB
-      await repos.uploads.update(key, { processedCount });
-      loaderLogger.debug("Inserted batch of {count} books. Total: {total}", { 
-        count: chunk.length,
-        total: processedCount 
-      });
+      // Update processed count in DB every 10 books
+      if (processedCount % 10 === 0 || processedCount === result.items.length) {
+        await repos.uploads.update(key, { processedCount });
+        loaderLogger.debug("Processed {total} books", { total: processedCount });
+      }
     }
 
     // Mark as PROCESSED_SUCCESSFULLY

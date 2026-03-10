@@ -64,7 +64,7 @@ describe("PublisherRepository (integration, Miniflare D1)", () => {
       barcode: "BARCODE-OREILLY-1",
       price: 19.99,
       language: "English",
-      genderIds: [],
+      genreIds: [],
       publisherId: p.id,
     });
 

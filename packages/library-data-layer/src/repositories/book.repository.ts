@@ -1,4 +1,4 @@
-import { eq, like, or, and, sql, inArray } from "drizzle-orm";
+import { eq, like, or, and, sql, inArray, isNull } from "drizzle-orm";
 import type { DB } from "../db";
 import { book, bookGenre } from "../schema";
 import type { Book, BookWithRelations, NewBook } from "../schema/types";
@@ -234,6 +234,41 @@ export class BookRepository {
    */
   async findByIsbn(isbn: string): Promise<Book | undefined> {
     const result = await this.db.select().from(book).where(eq(book.isbn, isbn));
+    return result[0];
+  }
+
+  /**
+   * Find book by title, author and ISBN
+   */
+  async findByUniqueCriteria(
+    title: string,
+    author: string | null,
+    isbn: string | null,
+  ): Promise<Book | undefined> {
+    // 1. Try finding by ISBN first if it exists, as it's the most unique identifier
+    if (isbn) {
+      const byIsbn = await this.findByIsbn(isbn);
+      if (byIsbn) return byIsbn;
+    }
+
+    // 2. Fallback to title + author + isbn combination
+    const conditions = [eq(book.title, title)];
+    if (author) {
+      conditions.push(eq(book.author, author));
+    } else {
+      conditions.push(isNull(book.author));
+    }
+
+    if (isbn) {
+      conditions.push(eq(book.isbn, isbn));
+    } else {
+      conditions.push(isNull(book.isbn));
+    }
+
+    const result = await this.db
+      .select()
+      .from(book)
+      .where(and(...conditions));
     return result[0];
   }
 

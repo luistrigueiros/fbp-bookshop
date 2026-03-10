@@ -82,7 +82,34 @@ describe("Upload Service Integration Test (Async)", () => {
     }
     
     expect(finalStatusJson.status).toBe(UploadStatus.PROCESSED_SUCCESSFULLY);
-  }, 60000);
+
+    // 3. Repeat the process to verify upsert (no duplicates)
+    const drizzleDB = (await import("library-data-layer")).initDB(env.DB);
+    const repos = createRepositories(drizzleDB);
+    const initialBookCount = await repos.books.count();
+    const initialGenreCount = await repos.genres.count();
+    const initialPublisherCount = await repos.publishers.count();
+    
+    // Simulate second upload of the same file
+    await worker.queue({
+      messages: [{
+        id: "test-msg-2",
+        timestamp: new Date(),
+        body: { key: json.key, filename: "FBP-DB.xlsx" }, // Use SAME key to reuse the same data
+        ack: () => {},
+        retry: () => {},
+      }],
+      queue: "library-upload-queue",
+    } as any, env as any);
+
+    const finalBookCount = await repos.books.count();
+    const finalGenreCount = await repos.genres.count();
+    const finalPublisherCount = await repos.publishers.count();
+
+    expect(finalBookCount).toBe(initialBookCount);
+    expect(finalGenreCount).toBe(initialGenreCount);
+    expect(finalPublisherCount).toBe(initialPublisherCount);
+  }, 120000);
 
   it("should serve the landing page at root", async () => {
     const env = { 
