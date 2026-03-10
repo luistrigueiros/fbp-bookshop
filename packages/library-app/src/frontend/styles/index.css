@@ -147,3 +147,120 @@ main {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* ── Genre Selector ──────────────────────────────────────────────────── */
+.genre-selector-wrapper {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.genre-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 1.5rem;
+}
+
+.genre-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  background: var(--accent-color);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 0.15s;
+}
+
+.genre-tag:hover {
+  background: var(--accent-hover);
+}
+
+.genre-tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 0.1rem;
+  transition: color 0.1s;
+}
+
+.genre-tag-remove:hover {
+  color: #fff;
+}
+
+.genre-typeahead-wrapper {
+  position: relative;
+}
+
+.genre-typeahead {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  background: var(--secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.genre-typeahead:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.genre-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+}
+
+.genre-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  transition: background 0.12s;
+}
+
+.genre-dropdown-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.genre-dropdown-item-icon {
+  color: var(--accent-color);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.genre-dropdown-empty {
+  padding: 0.6rem 0.85rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
