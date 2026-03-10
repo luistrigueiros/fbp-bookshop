@@ -44,6 +44,7 @@ export const book = sqliteTable(
   },
   (t) => ({
     isbnIdx: uniqueIndex("book_isbn_idx").on(t.isbn),
+    uniqueBookIdx: uniqueIndex("book_unique_idx").on(t.title, t.author, t.isbn),
   }),
 );
 

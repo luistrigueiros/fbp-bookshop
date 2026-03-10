@@ -35,7 +35,7 @@ describe("Upload Service Integration Test (Async)", () => {
       ENVIRONMENT: "development" 
     };
     
-    const filePath = join(process.cwd(), "packages", "library-data-loader", "test", "FBP-DB.xlsx");
+    const filePath = join(process.cwd(), "test", "FBP-DB.xlsx");
     const fileContent = readFileSync(filePath);
 
     // 1. Submit the upload request
@@ -84,29 +84,31 @@ describe("Upload Service Integration Test (Async)", () => {
     expect(finalStatusJson.status).toBe(UploadStatus.PROCESSED_SUCCESSFULLY);
 
     // 3. Repeat the process to verify upsert (no duplicates)
-    const repos = createRepositories(env.DB);
+    const drizzleDB = (await import("library-data-layer")).initDB(env.DB);
+    const repos = createRepositories(drizzleDB);
     const initialBookCount = await repos.books.count();
+    const initialGenreCount = await repos.genres.count();
+    const initialPublisherCount = await repos.publishers.count();
     
     // Simulate second upload of the same file
-    const secondKey = `uploads/${Date.now()}-second-FBP-DB.xlsx`;
     await worker.queue({
       messages: [{
         id: "test-msg-2",
         timestamp: new Date(),
-        body: { key: secondKey, filename: "FBP-DB.xlsx" },
+        body: { key: json.key, filename: "FBP-DB.xlsx" }, // Use SAME key to reuse the same data
         ack: () => {},
         retry: () => {},
       }],
       queue: "library-upload-queue",
     } as any, env as any);
 
-    // Since we didn't actually put it in R2 for the second key, we should reuse the first key or actually put it.
-    // Let's just re-run the queue with the SAME key to simulate processing the same data.
-    // Or better, just call worker.queue with the same key again.
-    await worker.queue(batch as any, env as any);
-
     const finalBookCount = await repos.books.count();
+    const finalGenreCount = await repos.genres.count();
+    const finalPublisherCount = await repos.publishers.count();
+
     expect(finalBookCount).toBe(initialBookCount);
+    expect(finalGenreCount).toBe(initialGenreCount);
+    expect(finalPublisherCount).toBe(initialPublisherCount);
   }, 120000);
 
   it("should serve the landing page at root", async () => {
