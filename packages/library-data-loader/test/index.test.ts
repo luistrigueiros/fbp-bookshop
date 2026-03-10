@@ -38,6 +38,7 @@ describe("Upload Service Integration Test (Async)", () => {
   });
 
   it("should accept the Excel file and eventually store data in D1", async () => {
+    // 1. Submit the upload request
     const currentBindings = await testEnv.getBindings() as any;
     const env = { 
       DB: currentBindings.DB, 
@@ -56,10 +57,8 @@ describe("Upload Service Integration Test (Async)", () => {
                       retry: () => {},
                   }]
               } as any, { 
-                ...env, 
-                DB: freshBindings.DB,
-                UPLOADS_BUCKET: freshBindings.UPLOADS_BUCKET,
-                UPLOAD_QUEUE: freshBindings.UPLOAD_QUEUE 
+                ...freshBindings,
+                BOOK_QUEUE: (await testEnv.getBindings() as any).BOOK_QUEUE // This is recursive if we're not careful, but BOOK_QUEUE is simulated here
               } as any);
           }
       },
@@ -69,7 +68,6 @@ describe("Upload Service Integration Test (Async)", () => {
     const filePath = join(__dirname, "FBP-DB.xlsx");
     const fileContent = readFileSync(filePath);
 
-    // 1. Submit the upload request
     const formData = new FormData();
     const blob = new Blob([fileContent], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -81,7 +79,7 @@ describe("Upload Service Integration Test (Async)", () => {
       body: formData,
     });
 
-    const res = await worker.fetch(req, env);
+    const res = await worker.fetch(req, env as any);
 
     const json = (await res.json()) as { message: string; key: string };
     expect(res.status).toBe(202);
@@ -89,6 +87,8 @@ describe("Upload Service Integration Test (Async)", () => {
     const key = json.key;
 
     // 2. Manually trigger the queue handler to simulate background processing
+    // Re-acquire bindings for the queue handler call
+    const freshBindingsForQueue = await testEnv.getBindings() as any;
     const batch = {
       messages: [
         {
@@ -102,10 +102,12 @@ describe("Upload Service Integration Test (Async)", () => {
       queue: "library-upload-queue",
     };
 
-    await worker.queue(batch as any, env as any);
+    await worker.queue(batch as any, { ...env, ...freshBindingsForQueue } as any);
 
     // Verify final status
-    const finalStatusRes = await worker.fetch(new Request(`http://localhost/upload-status/${key}`), env);
+    // Re-acquire bindings for the status check
+    const freshBindingsForStatus = await testEnv.getBindings() as any;
+    const finalStatusRes = await worker.fetch(new Request(`http://localhost/upload-status/${key}`), { ...env, ...freshBindingsForStatus } as any);
     const finalStatusJson = await finalStatusRes.json() as any;
     
     if (finalStatusJson.status !== UploadStatus.PROCESSED_SUCCESSFULLY) {
@@ -115,13 +117,17 @@ describe("Upload Service Integration Test (Async)", () => {
     expect(finalStatusJson.status).toBe(UploadStatus.PROCESSED_SUCCESSFULLY);
 
     // 3. Repeat the process to verify upsert (no duplicates)
-    const drizzleDB = (await import("library-data-layer")).initDB(env.DB);
+    // Re-acquire bindings for the upsert check
+    const freshBindingsForUpsert = await testEnv.getBindings() as any;
+    const drizzleDB = (await import("library-data-layer")).initDB(freshBindingsForUpsert.DB);
     const repos = createRepositories(drizzleDB);
     const initialBookCount = await repos.books.count();
     const initialGenreCount = await repos.genres.count();
     const initialPublisherCount = await repos.publishers.count();
     
     // Simulate second upload of the same file
+    // Re-acquire bindings for the second queue handler call
+    const freshBindingsForQueue2 = await testEnv.getBindings() as any;
     await worker.queue({
       messages: [{
         id: "test-msg-2",
@@ -131,7 +137,7 @@ describe("Upload Service Integration Test (Async)", () => {
         retry: () => {},
       }],
       queue: "library-upload-queue",
-    } as any, env as any);
+    } as any, { ...env, ...freshBindingsForQueue2 } as any);
 
     const finalBookCount = await repos.books.count();
     const finalGenreCount = await repos.genres.count();
