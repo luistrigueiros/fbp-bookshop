@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { D1Database, R2Bucket, Queue } from "@cloudflare/workers-types";
-import { handleUpload, processQueueMessage } from '@/upload-service'
+import { handleUpload, processExcelQueueMessage, processBookQueueMessage, type UploadQueueMessage, type BookQueueMessage } from '@/upload-service'
 import { landingPage } from '@/landing-page'
 import { dbValidationMiddleware, type Variables } from '@/db-middleware'
 import { setupLogging, initDB, loaderLogger, createRepositories } from 'library-data-layer'
@@ -16,7 +16,8 @@ setupLogging({ environment: resolveEnvironment() })
 type Bindings = {
   DB: D1Database
   UPLOADS_BUCKET: R2Bucket
-  UPLOAD_QUEUE: Queue<any>
+  UPLOAD_QUEUE: Queue<UploadQueueMessage>
+  BOOK_QUEUE: Queue<BookQueueMessage>
   ENVIRONMENT?: string
 }
 
@@ -80,8 +81,16 @@ export default {
     
     for (const message of batch.messages) {
       try {
-        const { key } = message.body;
-        await processQueueMessage(key, env.UPLOADS_BUCKET, db);
+        if ('key' in message.body && !('book' in message.body)) {
+          // It's an Excel upload message
+          const { key } = message.body as UploadQueueMessage;
+          await processExcelQueueMessage(key, env.UPLOADS_BUCKET, env.BOOK_QUEUE, db);
+        } else if ('book' in message.body) {
+          // It's an individual book processing message
+          await processBookQueueMessage(message.body as BookQueueMessage, db);
+        } else {
+          loaderLogger.error("Unknown queue message type: {body}", { body: JSON.stringify(message.body) });
+        }
         message.ack();
       } catch (error) {
         loaderLogger.error("Queue processing failed for message {id}: {error}", { 

@@ -1,10 +1,21 @@
-import { extractBook } from 'library-excel-extractor'
+import { extractBook, type Book as ExtractedBook } from 'library-excel-extractor'
 import { createRepositories, loaderLogger, type DB, UploadStatus } from 'library-data-layer'
-import type { R2Bucket } from '@cloudflare/workers-types'
+import type { R2Bucket, Queue } from '@cloudflare/workers-types'
 
 export interface ProcessUploadResult {
   message: string
   key: string
+}
+
+export interface UploadQueueMessage {
+  key: string
+  filename: string
+}
+
+export interface BookQueueMessage {
+  uploadKey: string
+  book: ExtractedBook
+  isLast: boolean
 }
 
 /**
@@ -13,7 +24,7 @@ export interface ProcessUploadResult {
 export async function handleUpload(
   file: File,
   bucket: R2Bucket,
-  queue: Queue<any>,
+  queue: Queue<UploadQueueMessage>,
   db: DB
 ): Promise<ProcessUploadResult> {
   const key = `uploads/${Date.now()}-${file.name}`;
@@ -41,14 +52,15 @@ export async function handleUpload(
 }
 
 /**
- * Processes a message from the queue by fetching the file from R2 and inserting data into D1.
+ * Processes the Excel file from R2 and splits it into individual book messages.
  */
-export async function processQueueMessage(
+export async function processExcelQueueMessage(
   key: string,
   bucket: R2Bucket,
+  bookQueue: Queue<BookQueueMessage>,
   db: DB
 ): Promise<void> {
-  loaderLogger.info("Processing queue message for key: {key}", { key });
+  loaderLogger.info("Processing Excel queue message for key: {key}", { key });
   const repos = createRepositories(db);
 
   try {
@@ -67,84 +79,131 @@ export async function processQueueMessage(
     // Update expected books count
     await repos.uploads.update(key, { booksCount: result.count });
 
-    const genreMap = new Map<string, number>();
-    const publisherMap = new Map<string, number>();
-
-    // Extract unique genres and publishers first
-    const uniqueGenres = Array.from(new Set(result.items.flatMap(i => i.genres.map(g => g.name)).filter(Boolean)));
-    const uniquePublishers = Array.from(new Set(result.items.map(i => i.publisher?.name).filter(Boolean))) as string[];
-
-    for (const name of uniqueGenres) {
-      let genre = await repos.genres.findByName(name);
-      if (!genre) {
-        genre = await repos.genres.create({ name });
-      }
-      genreMap.set(name, genre.id);
+    if (result.count === 0) {
+      await repos.uploads.update(key, { status: UploadStatus.PROCESSED_SUCCESSFULLY });
+      return;
     }
 
-    for (const name of uniquePublishers) {
-      let publisher = await repos.publishers.findByName(name);
-      if (!publisher) {
-        publisher = await repos.publishers.create({ name });
-      }
-      publisherMap.set(name, publisher.id);
+    // Send each book to the book queue
+    for (let i = 0; i < result.items.length; i++) {
+      const isLast = i === result.items.length - 1;
+      await bookQueue.send({
+        uploadKey: key,
+        book: result.items[i],
+        isLast
+      });
     }
 
-    // Insert or update books
-    let processedCount = 0;
-    for (const item of result.items) {
-      const bookData = {
-        title: item.title,
-        author: item.author,
-        isbn: item.isbn,
-        barcode: item.barcode,
-        price: item.price,
-        language: item.language,
-        genreIds: item.genres.map(g => genreMap.get(g.name)).filter((id): id is number => id !== undefined),
-        publisherId: item.publisher ? publisherMap.get(item.publisher.name) : null,
-      };
-
-      const existingBook = await repos.books.findByUniqueCriteria(
-        bookData.title,
-        bookData.author,
-        bookData.isbn
-      );
-
-      if (existingBook) {
-        loaderLogger.debug("Updating existing book: {title} (ID: {id})", { 
-          title: bookData.title, 
-          id: existingBook.id 
-        });
-        await repos.books.update(existingBook.id, bookData);
-      } else {
-        loaderLogger.debug("Creating new book: {title}", { title: bookData.title });
-        await repos.books.create(bookData);
-      }
-      
-      processedCount++;
-      
-      // Update processed count in DB every 10 books
-      if (processedCount % 10 === 0 || processedCount === result.items.length) {
-        await repos.uploads.update(key, { processedCount });
-        loaderLogger.debug("Processed {total} books", { total: processedCount });
-      }
-    }
-
-    // Mark as PROCESSED_SUCCESSFULLY
-    await repos.uploads.update(key, { status: UploadStatus.PROCESSED_SUCCESSFULLY });
-    loaderLogger.info("Successfully processed upload with {count} books from key: {key}", { 
+    loaderLogger.info("Queued {count} books for individual processing from key: {key}", { 
       count: result.count,
       key 
     });
 
   } catch (error) {
     const errorMessage = (error as Error).message;
-    loaderLogger.error("Failed to process upload {key}: {error}", { key, error: errorMessage });
+    loaderLogger.error("Failed to process Excel upload {key}: {error}", { key, error: errorMessage });
     
     // Mark as PROCESSED_FAILED
     await repos.uploads.update(key, { 
       status: UploadStatus.PROCESSED_FAILED,
       error: errorMessage
+    });
+    
+    throw error;
+  }
+}
+
+/**
+ * Processes a single book from the book queue.
+ */
+export async function processBookQueueMessage(
+  message: BookQueueMessage,
+  db: DB
+): Promise<void> {
+  const { uploadKey, book, isLast } = message;
+  const repos = createRepositories(db);
+
+  try {
+    // 1. Handle Genre and Publisher (ensure they exist)
+    const genreIds: number[] = [];
+    for (const g of book.genres) {
+      let genre = await repos.genres.findByName(g.name);
+      if (!genre) {
+        genre = await repos.genres.create({ name: g.name });
+      }
+      genreIds.push(genre.id);
+    }
+
+    let publisherId: number | null = null;
+    if (book.publisher) {
+      let publisher = await repos.publishers.findByName(book.publisher.name);
+      if (!publisher) {
+        publisher = await repos.publishers.create({ name: book.publisher.name });
+      }
+      publisherId = publisher.id;
+    }
+
+    // 2. Insert or update book
+    const bookData = {
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      barcode: book.barcode,
+      price: book.price,
+      language: book.language,
+      genreIds,
+      publisherId,
+    };
+
+    const existingBook = await repos.books.findByUniqueCriteria(
+      bookData.title,
+      bookData.author,
+      bookData.isbn
+    );
+
+    if (existingBook) {
+      loaderLogger.debug("Updating existing book: {title} (ID: {id})", { 
+        title: bookData.title, 
+        id: existingBook.id 
+      });
+      await repos.books.update(existingBook.id, bookData);
+    } else {
+      loaderLogger.debug("Creating new book: {title}", { title: bookData.title });
+      await repos.books.create(bookData);
+    }
+
+    // 3. Update status
+    // Use an atomic-like increment for processedCount
+    // Since D1 doesn't have an easy "increment" in the repository pattern here without custom SQL,
+    // we'll fetch and update, which is slightly risky for race conditions but better than processing all at once.
+    const upload = await repos.uploads.findByKey(uploadKey);
+    if (upload) {
+      const newProcessedCount = (upload.processedCount || 0) + 1;
+      
+      const updateData: any = { processedCount: newProcessedCount };
+      
+      if (isLast || newProcessedCount >= (upload.booksCount || 0)) {
+        updateData.status = UploadStatus.PROCESSED_SUCCESSFULLY;
+        loaderLogger.info("Finished processing all books for upload: {key}", { key: uploadKey });
+      }
+
+      await repos.uploads.update(uploadKey, updateData);
+    }
+
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    loaderLogger.error("Failed to process book for upload {key}: {error}", { 
+      key: uploadKey, 
+      error: errorMessage,
+      book: book.title
+    });
+    
+    // If one book fails, we might want to mark the whole upload as failed or just log it.
+    // Given the requirement "if there is an error in the middle it does not process the remaining records",
+    // processing them individually ALREADY helps.
+    // We update the error field but keep going for other books.
+    await repos.uploads.update(uploadKey, { 
+      error: `Partial failure: ${errorMessage}`
     });
     
     throw error;

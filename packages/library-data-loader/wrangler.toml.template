@@ -17,8 +17,15 @@ bucket_name = "library-uploads"
 queue = "library-upload-queue"
 binding = "UPLOAD_QUEUE"
 
+[[queues.producers]]
+queue = "library-book-queue"
+binding = "BOOK_QUEUE"
+
 [[queues.consumers]]
 queue = "library-upload-queue"
+
+[[queues.consumers]]
+queue = "library-book-queue"
 
 [observability]
 enabled = true

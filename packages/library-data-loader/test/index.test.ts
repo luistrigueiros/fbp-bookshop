@@ -32,10 +32,23 @@ describe("Upload Service Integration Test (Async)", () => {
       DB: testEnv.env.DB, 
       UPLOADS_BUCKET: testEnv.env.UPLOADS_BUCKET,
       UPLOAD_QUEUE: testEnv.env.UPLOAD_QUEUE,
+      BOOK_QUEUE: {
+          send: async (msg: any) => {
+              // Simulate immediate processing of the book message
+              await worker.queue({
+                  messages: [{
+                      id: "book-msg-" + Math.random(),
+                      body: msg,
+                      ack: () => {},
+                      retry: () => {},
+                  }]
+              } as any, env as any);
+          }
+      },
       ENVIRONMENT: "development" 
     };
     
-    const filePath = join(process.cwd(), "test", "FBP-DB.xlsx");
+    const filePath = join(__dirname, "FBP-DB.xlsx");
     const fileContent = readFileSync(filePath);
 
     // 1. Submit the upload request
