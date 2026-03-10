@@ -28,8 +28,9 @@ describe("Upload Service Integration Test (Async)", () => {
   });
 
   it("should serve the landing page at root", async () => {
+    const currentBindings = await testEnv.getBindings() as any;
     const env = {
-      DB: testEnv.env.DB,
+      DB: currentBindings.DB,
       ENVIRONMENT: "development"
     };
     const res = await worker.fetch(new Request("http://localhost/"), env as any);
@@ -37,12 +38,15 @@ describe("Upload Service Integration Test (Async)", () => {
   });
 
   it("should accept the Excel file and eventually store data in D1", async () => {
+    const currentBindings = await testEnv.getBindings() as any;
     const env = { 
-      DB: testEnv.env.DB, 
-      UPLOADS_BUCKET: testEnv.env.UPLOADS_BUCKET,
-      UPLOAD_QUEUE: testEnv.env.UPLOAD_QUEUE,
+      DB: currentBindings.DB, 
+      UPLOADS_BUCKET: currentBindings.UPLOADS_BUCKET,
+      UPLOAD_QUEUE: currentBindings.UPLOAD_QUEUE,
       BOOK_QUEUE: {
           send: async (msg: any) => {
+              // Re-acquire fresh bindings inside simulated queue if needed
+              const freshBindings = await testEnv.getBindings() as any;
               // Simulate immediate processing of the book message
               await worker.queue({
                   messages: [{
@@ -51,7 +55,12 @@ describe("Upload Service Integration Test (Async)", () => {
                       ack: () => {},
                       retry: () => {},
                   }]
-              } as any, env as any);
+              } as any, { 
+                ...env, 
+                DB: freshBindings.DB,
+                UPLOADS_BUCKET: freshBindings.UPLOADS_BUCKET,
+                UPLOAD_QUEUE: freshBindings.UPLOAD_QUEUE 
+              } as any);
           }
       },
       ENVIRONMENT: "development" 

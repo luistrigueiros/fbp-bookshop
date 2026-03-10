@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 
 import { initDB, runMigrations, splitMigrationStatements, setupLogging, type DB } from "library-data-layer";
 
-export type TestEnv = {
+export interface TestEnv {
   mf: Miniflare;
   env: { 
     DB: D1Database;
@@ -13,7 +13,12 @@ export type TestEnv = {
     UPLOAD_QUEUE?: Queue<any>;
   } & Record<string, any>;
   db: DB;
-};
+  /**
+   * Re-acquires fresh bindings from the Miniflare instance.
+   * Useful to avoid "poisoned stub" errors in long-running tests.
+   */
+  getBindings(): Promise<Record<string, any>>;
+}
 
 async function readMigrationsSql(drizzleDirPath: string): Promise<string[]> {
   try {
@@ -88,8 +93,9 @@ export async function createD1TestEnv(options?: {
   await env.DB.exec("PRAGMA foreign_keys = ON;");
 
   const db = initDB(env.DB);
+  const getBindings = () => mf.getBindings();
 
-  return { mf, env, db };
+  return { mf, env, db, getBindings };
 }
 
 /**
