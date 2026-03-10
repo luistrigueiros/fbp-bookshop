@@ -32,7 +32,7 @@ export const booksRouter = router({
   getById: publicProcedure
     .input(z.number())
     .query(async ({ ctx, input }) => {
-      const book = await ctx.repositories.books.findById(input);
+      const book = await ctx.repositories.books.findByIdWithRelations(input);
       if (!book) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Book not found' });
       }

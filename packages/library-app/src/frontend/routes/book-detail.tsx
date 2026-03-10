@@ -1,6 +1,7 @@
 import { createSignal, createResource, For, Show, onMount, createEffect } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
 import { trpc } from '../trpc';
+import GenreSelector from '../components/GenreSelector';
 
 const BookDetail = () => {
   const params = useParams();
@@ -130,24 +131,11 @@ const BookDetail = () => {
             </div>
             <div style={{ 'grid-column': '1 / -1' }}>
               <label>Genres</label>
-              <select 
-                multiple 
-                style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem', 'min-height': '120px' }} 
-                value={selectedGenreIds().map(String)} 
-                onChange={(e) => {
-                  const options = Array.from(e.target.selectedOptions);
-                  setSelectedGenreIds(options.map(o => parseInt(o.value)));
-                }}
-              >
-                <For each={genres()}>
-                  {(gen) => (
-                    <option value={gen.id} selected={selectedGenreIds().includes(gen.id)}>
-                      {gen.name}
-                    </option>
-                  )}
-                </For>
-              </select>
-              <small style={{ color: 'var(--text-secondary)' }}>Hold Ctrl/Cmd to select multiple</small>
+              <GenreSelector
+                allGenres={genres()}
+                selectedIds={selectedGenreIds()}
+                onChange={(ids) => setSelectedGenreIds(ids)}
+              />
             </div>
           </div>
           <div style={{ 'margin-top': '1.5rem', display: 'flex', gap: '1rem' }}>

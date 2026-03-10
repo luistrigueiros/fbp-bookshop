@@ -3,8 +3,9 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from './routers/_app';
 import { createContext } from './context';
 import { honoLogger } from '@logtape/hono';
-import { setupLogging } from 'library-data-layer';
+import { setupLogging, runMigrations, splitMigrationStatements } from 'library-data-layer';
 import type { D1Database } from '@cloudflare/workers-types';
+import { migrations } from './migrations';
 
 type Bindings = {
   DB: D1Database;
@@ -14,9 +15,23 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+// Track whether migrations have already been applied in this worker instance
+let migrationsApplied = false;
+
 app.use('*', honoLogger());
 app.use('*', async (c, next) => {
   await setupLogging({ environment: c.env.ENVIRONMENT });
+  await next();
+});
+
+// Auto-apply DB migrations on the first request so a fresh local D1 database
+// is always initialised before any query runs.
+app.use('/api/*', async (c, next) => {
+  if (!migrationsApplied) {
+    const allStatements = migrations.flatMap((m) => splitMigrationStatements(m.content));
+    await runMigrations(c.env.DB, allStatements);
+    migrationsApplied = true;
+  }
   await next();
 });
 
@@ -43,3 +58,4 @@ app.get('*', async (c) => {
 export default {
   fetch: app.fetch,
 };
+
