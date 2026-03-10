@@ -12,9 +12,12 @@ let isLoggingConfigured = false;
 /**
  * Configure LogTape for the application.
  * This should be called once at the entry point of the application/worker.
- * @param options - Configuration options, e.g., { environment: "production" }
+ * @param options - Configuration options, e.g., { environment: "production", lowestLevel: "warning" }
  */
-export async function setupLogging(options?: { environment?: string }) {
+export async function setupLogging(options?: {
+  environment?: string;
+  lowestLevel?: "debug" | "info" | "warning" | "error" | "fatal";
+}) {
   if (isLoggingConfigured) return;
 
   // Detect if we are in a deployed Cloudflare environment
@@ -28,6 +31,22 @@ export async function setupLogging(options?: { environment?: string }) {
   const usePlainText =
     options?.environment === "production" || (isCloudflare && !isMiniflare);
 
+  // Default level is "debug" unless in production ("info") or explicitly overridden
+  let lowestLevel = options?.lowestLevel;
+  if (!lowestLevel) {
+    lowestLevel = options?.environment === "production" ? "info" : "debug";
+  }
+
+  // Detect test environment (Bun, Node, or Cloudflare Worker in test mode)
+  const isTest =
+    (typeof process !== "undefined" &&
+      (process.env.NODE_ENV === "test" || process.env.BUN_ENV === "test")) ||
+    (globalThis as any).VITEST === "true";
+
+  if (isTest && !options?.lowestLevel) {
+    lowestLevel = "warning";
+  }
+
   await configure({
     sinks: {
       console: getConsoleSink({
@@ -40,7 +59,7 @@ export async function setupLogging(options?: { environment?: string }) {
     loggers: [
       {
         category: ["library"],
-        lowestLevel: "debug",
+        lowestLevel: lowestLevel,
         sinks: ["console"],
       },
     ],

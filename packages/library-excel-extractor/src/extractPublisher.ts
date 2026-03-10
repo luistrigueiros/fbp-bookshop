@@ -57,7 +57,5 @@ export function extractPublisher(
   }
 
   const items = Array.from(seen.values());
-  console.log(`[IMPORT] Extracted ${items.length} publishers, ${errors.length} errors`);
-
   return { items, count: items.length, errors };
 }

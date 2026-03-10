@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/d1";
 import { sql } from "drizzle-orm";
 import * as schema from "./schema";
+import { layerLogger } from "./logging";
 
 /**
  * Initialize Drizzle ORM with Cloudflare D1 database
@@ -45,7 +46,7 @@ export async function validateDB(
           error: "Migrations table '__drizzle_migrations' not found.",
         };
       }
-      console.log(
+      layerLogger.info(
         "[VALIDATION] Migrations table missing but 'book' table found. Proceeding...",
       );
     } else {
@@ -84,7 +85,7 @@ export async function runMigrations(
         // Ignore "table already exists" errors during auto-migration in dev
         const message = err instanceof Error ? err.message : String(err);
         if (message.includes("already exists")) {
-          console.log(
+          layerLogger.info(
             `[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`,
           );
           continue;

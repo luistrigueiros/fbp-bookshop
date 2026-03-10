@@ -179,7 +179,5 @@ export function extractBook(
     }
   }
 
-  console.log(`[IMPORT] Extracted ${books.length} books, ${errors.length} errors`);
-
   return { items: books, count: books.length, errors };
 }

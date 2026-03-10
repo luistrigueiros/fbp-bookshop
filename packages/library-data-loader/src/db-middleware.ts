@@ -1,5 +1,5 @@
 import { MiddlewareHandler } from 'hono'
-import { initDB, validateDB, runMigrations, splitMigrationStatements, type DB } from 'library-data-layer'
+import { initDB, validateDB, runMigrations, splitMigrationStatements, type DB, loaderLogger } from 'library-data-layer'
 import { D1Database } from "@cloudflare/workers-types"
 import { migrations } from '@/migrations'
 
@@ -25,20 +25,20 @@ export const dbValidationMiddleware = (): MiddlewareHandler<{
 
         // 3. Auto-initialize in development mode if validation fails
         if (!validation.success && c.env.ENVIRONMENT === 'development') {
-            console.log(`[DEV] Database validation failed: ${validation.error}. Attempting auto-migration...`)
+            loaderLogger.info(`[DEV] Database validation failed: ${validation.error}. Attempting auto-migration...`)
             try {
                 if (migrations.length > 0) {
                     for (const migration of migrations) {
                         const statements = splitMigrationStatements(migration.content)
                         await runMigrations(c.env.DB, statements)
-                        console.log(`[DEV] Applied migration: ${migration.file}`)
+                        loaderLogger.info(`[DEV] Applied migration: ${migration.file}`)
                     }
 
                     // Re-validate after migrations
                     validation = await validateDB(db)
                 }
             } catch (err) {
-                console.error(`[DEV] Auto-migration failed: ${err instanceof Error ? err.message : String(err)}`)
+                loaderLogger.error(`[DEV] Auto-migration failed: ${err instanceof Error ? err.message : String(err)}`)
             }
         }
 

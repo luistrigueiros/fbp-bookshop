@@ -60,7 +60,5 @@ export function extractGenre(
   }
 
   const items = Array.from(seen.values());
-  console.log(`[IMPORT] Extracted ${items.length} genres, ${errors.length} errors`);
-
   return { items, count: items.length, errors };
 }
