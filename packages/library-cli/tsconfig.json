@@ -4,6 +4,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": ".",
+    "types": ["bun", "@cloudflare/workers-types"],
     "paths": {
       "library-cli": ["src/index.ts"]
     }

@@ -1,12 +1,12 @@
 import {
     checkServerConnection,
     createClient,
-    extractDataFromExcel,
-    uploadBooks,
-    uploadGenres,
-    uploadPublishers
+    extractDataFromExcel
 } from "./utils";
 import {readFileSync} from "fs";
+import {uploadGenres} from "./uploadGenres";
+import {uploadPublishers} from "./uploadPublishers";
+import {uploadBooks} from "./uploadBooks";
 
 export async function processExcelFile(file: string, options: { url: string }) {
     try {
