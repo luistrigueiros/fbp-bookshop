@@ -5,11 +5,17 @@ export async function uploadBooks(
     client: TRPCClient,
     books: Book[],
     genreMap: Map<string, number>,
-    publisherMap: Map<string, number>
+    publisherMap: Map<string, number>,
+    startRow?: number
 ) {
     console.log('Uploading books...');
     let bookCount = 0;
-    for (let i = 0; i < books.length; i++) {
+    const startIndex = startRow ? Math.max(0, startRow - 1) : 0;
+    if (startIndex > 0) {
+        console.log(`Starting from row ${startRow} (index ${startIndex})`);
+    }
+
+    for (let i = startIndex; i < books.length; i++) {
         const book = books[i];
         try {
             const genreIds = book.genres

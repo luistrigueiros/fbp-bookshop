@@ -5,7 +5,7 @@ import {uploadPublishers} from "library-cli/uploadPublishers";
 import {uploadBooks} from "library-cli/uploadBooks";
 import {createAndCheckClient} from "library-cli/createAndCheckClient";
 
-export async function processExcelFile(file: string, options: { url: string }) {
+export async function processExcelFile(file: string, options: { url: string; startRow?: number }) {
     try {
         const client = await createAndCheckClient(options);
 
@@ -28,7 +28,7 @@ export async function processExcelFile(file: string, options: { url: string }) {
         const publisherMap = await uploadPublishers(client, publishers);
 
         // Upload Books
-        const bookCount = await uploadBooks(client, books, genreMap, publisherMap);
+        const bookCount = await uploadBooks(client, books, genreMap, publisherMap, options.startRow);
 
         console.log(`Successfully uploaded ${bookCount} books.`);
     } catch (error) {
