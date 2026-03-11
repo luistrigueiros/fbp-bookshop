@@ -131,6 +131,7 @@ export class BookRepository {
           },
         },
         publisher: true,
+        stock: true,
       },
     });
   }
@@ -189,6 +190,7 @@ export class BookRepository {
           },
         },
         publisher: true,
+        stock: true,
       },
       limit: params.limit,
       offset: params.offset,

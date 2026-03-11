@@ -184,6 +184,7 @@ const BooksList = () => {
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Author</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Publisher</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Genre</th>
+                <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Stock</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)' }}>Price</th>
                 <th style={{ padding: '1rem', 'border-bottom': '1px solid var(--border-color)', 'text-align': 'right' }}>Actions</th>
               </tr>
@@ -191,7 +192,7 @@ const BooksList = () => {
             <tbody>
               <Show when={booksData.loading}>
                 <tr>
-                  <td colspan="7" style={{ padding: '2rem', 'text-align': 'center' }}>Loading books...</td>
+                  <td colspan="8" style={{ padding: '2rem', 'text-align': 'center' }}>Loading books...</td>
                 </tr>
               </Show>
               <For each={booksData()?.data}>
@@ -203,6 +204,18 @@ const BooksList = () => {
                     <td style={{ padding: '1rem' }}>{book.publisher?.name || '-'}</td>
                     <td style={{ padding: '1rem' }}>
                       {book.bookGenres?.map((bg: any) => bg.genre.name).join(', ') || '-'}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <Show when={book.stock} fallback={<span style={{ color: 'var(--text-secondary)' }}>No stock</span>}>
+                        {(stock) => (
+                          <div style={{ 'font-size': '0.9rem' }}>
+                            <span style={{ 'font-weight': '600' }}>{stock().numberOfCopies - stock().numberOfCopiesSold}</span> in stock
+                            <Show when={stock().bookshelf}>
+                              <div style={{ 'font-size': '0.8rem', color: 'var(--text-secondary)' }}>{stock().bookshelf}</div>
+                            </Show>
+                          </div>
+                        )}
+                      </Show>
                     </td>
                     <td style={{ padding: '1rem' }}>{book.price ? `$${book.price.toFixed(2)}` : '-'}</td>
                     <td style={{ padding: '1rem', 'text-align': 'right' }}>

@@ -30,6 +30,7 @@ const BookDetail = () => {
   const [bookshelf, setBookshelf] = createSignal('');
   const [numberOfCopies, setNumberOfCopies] = createSignal(0);
   const [numberOfCopiesSold, setNumberOfCopiesSold] = createSignal(0);
+  const [activeTab, setActiveTab] = createSignal<'info' | 'stock'>('info');
 
   // Update signals when bookData is loaded
   onMount(() => {
@@ -109,57 +110,98 @@ const BookDetail = () => {
       </div>
 
       <Show when={!bookData.loading || !id()} fallback={<p>Loading book details...</p>}>
+        {/* TAB NAVIGATION */}
+        <div style={{ display: 'flex', 'border-bottom': '1px solid var(--border-color)', 'margin-bottom': '1.5rem', gap: '2rem' }}>
+          <button 
+            onClick={() => setActiveTab('info')} 
+            type="button"
+            style={{ 
+              padding: '0.75rem 0.5rem', 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: activeTab() === 'info' ? 'var(--accent-color)' : 'var(--text-secondary)',
+              'border-bottom': activeTab() === 'info' ? '2px solid var(--accent-color)' : '2px solid transparent',
+              'font-weight': activeTab() === 'info' ? '600' : '400',
+              'transition': 'all 0.2s ease'
+            }}
+          >
+            Book Information
+          </button>
+          <button 
+            onClick={() => setActiveTab('stock')} 
+            type="button"
+            style={{ 
+              padding: '0.75rem 0.5rem', 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: activeTab() === 'stock' ? 'var(--accent-color)' : 'var(--text-secondary)',
+              'border-bottom': activeTab() === 'stock' ? '2px solid var(--accent-color)' : '2px solid transparent',
+              'font-weight': activeTab() === 'stock' ? '600' : '400',
+              'transition': 'all 0.2s ease'
+            }}
+          >
+            Stock Information
+          </button>
+        </div>
+
         <form onSubmit={handleSave}>
           <div style={{ display: 'grid', 'grid-template-columns': 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', 'margin-top': '1rem' }}>
-            <div>
-              <label>Title</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={title()} onInput={(e) => setTitle(e.target.value)} required />
-            </div>
-            <div>
-              <label>Author</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={author()} onInput={(e) => setAuthor(e.target.value)} />
-            </div>
-            <div>
-              <label>Price</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" step="0.01" value={price()} onInput={(e) => setPrice(parseFloat(e.target.value))} />
-            </div>
-            <div>
-              <label>ISBN</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={isbn()} onInput={(e) => setIsbn(e.target.value)} />
-            </div>
-            <div>
-              <label>Language</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={language()} onInput={(e) => setLanguage(e.target.value)} />
-            </div>
-            <div>
-              <label>Bookshelf</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={bookshelf()} onInput={(e) => setBookshelf(e.target.value)} />
-            </div>
-            <div>
-              <label>Total Copies</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopies()} onInput={(e) => setNumberOfCopies(parseInt(e.target.value) || 0)} />
-            </div>
-            <div>
-              <label>Copies Sold</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopiesSold()} onInput={(e) => setNumberOfCopiesSold(parseInt(e.target.value) || 0)} />
-            </div>
-            <div>
-              <label>Publisher</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={pubId()} onChange={(e) => setPubId(parseInt(e.target.value))}>
-                <option value={0}>No Publisher</option>
-                <For each={publishers()}>
-                  {(pub) => <option value={pub.id} selected={pub.id === pubId()}>{pub.name}</option>}
-                </For>
-              </select>
-            </div>
-            <div style={{ 'grid-column': '1 / -1' }}>
-              <label>Genres</label>
-              <GenreSelector
-                allGenres={genres()}
-                selectedIds={selectedGenreIds()}
-                onChange={(ids: number[]) => setSelectedGenreIds(ids)}
-              />
-            </div>
+            <Show when={activeTab() === 'info'}>
+              <div>
+                <label>Title</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={title()} onInput={(e) => setTitle(e.target.value)} required />
+              </div>
+              <div>
+                <label>Author</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={author()} onInput={(e) => setAuthor(e.target.value)} />
+              </div>
+              <div>
+                <label>Price</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" step="0.01" value={price()} onInput={(e) => setPrice(parseFloat(e.target.value))} />
+              </div>
+              <div>
+                <label>ISBN</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={isbn()} onInput={(e) => setIsbn(e.target.value)} />
+              </div>
+              <div>
+                <label>Language</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={language()} onInput={(e) => setLanguage(e.target.value)} />
+              </div>
+              <div>
+                <label>Publisher</label>
+                <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={pubId()} onChange={(e) => setPubId(parseInt(e.target.value))}>
+                  <option value={0}>No Publisher</option>
+                  <For each={publishers()}>
+                    {(pub) => <option value={pub.id} selected={pub.id === pubId()}>{pub.name}</option>}
+                  </For>
+                </select>
+              </div>
+              <div style={{ 'grid-column': '1 / -1' }}>
+                <label>Genres</label>
+                <GenreSelector
+                  allGenres={genres()}
+                  selectedIds={selectedGenreIds()}
+                  onChange={(ids: number[]) => setSelectedGenreIds(ids)}
+                />
+              </div>
+            </Show>
+
+            <Show when={activeTab() === 'stock'}>
+              <div>
+                <label>Bookshelf</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={bookshelf()} onInput={(e) => setBookshelf(e.target.value)} />
+              </div>
+              <div>
+                <label>Total Copies</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopies()} onInput={(e) => setNumberOfCopies(parseInt(e.target.value) || 0)} />
+              </div>
+              <div>
+                <label>Copies Sold</label>
+                <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopiesSold()} onInput={(e) => setNumberOfCopiesSold(parseInt(e.target.value) || 0)} />
+              </div>
+            </Show>
           </div>
           <div style={{ 'margin-top': '1.5rem', display: 'flex', gap: '1rem' }}>
             <button type="submit" style={{ padding: '0.5rem 2rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>
