@@ -2,13 +2,14 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "../../",
     "baseUrl": ".",
     "types": ["bun", "@cloudflare/workers-types"],
     "paths": {
       "library-cli/*": ["src/*"],
-      "library-trpc/*": ["../library-trpc/src/*"]
+      "library-trpc/*": ["../library-trpc/src/*"],
+      "library-excel-extractor": ["../library-excel-extractor/src/index.ts"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "../library-excel-extractor/src/**/*"]
 }

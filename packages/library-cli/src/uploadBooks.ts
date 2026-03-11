@@ -13,8 +13,8 @@ export async function uploadBooks(
         const book = books[i];
         try {
             const genreIds = book.genres
-                .map((g) => genreMap.get(g.name.toLowerCase()))
-                .filter((id): id is number => id !== undefined);
+                .map((g: { name: string }) => genreMap.get(g.name.toLowerCase()))
+                .filter((id: number | undefined): id is number => id !== undefined);
 
             const publisherId = book.publisher
                 ? publisherMap.get(book.publisher.name.toLowerCase())

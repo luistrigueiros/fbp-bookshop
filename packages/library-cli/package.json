@@ -19,7 +19,8 @@
     "typescript": "catalog:"
   },
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
-    "typecheck": "bunx tsc --noEmit"
+    "typecheck": "bunx tsc --noEmit",
+    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap",
+    "lint": "bunx eslint ."
   }
 }
