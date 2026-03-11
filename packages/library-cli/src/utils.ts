@@ -21,6 +21,15 @@ export function extractDataFromExcel(buffer: Buffer) {
 
 export type TRPCClient = ReturnType<typeof createClient>;
 
+export async function checkServerConnection(client: TRPCClient) {
+  try {
+    const result = await client.ping.query();
+    return result === 'pong';
+  } catch (err) {
+    return false;
+  }
+}
+
 export async function uploadGenres(client: TRPCClient, genres: any[]) {
   const genreMap = new Map<string, number>();
   console.log('Uploading genres...');

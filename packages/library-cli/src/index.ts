@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import { 
   createClient, 
   extractDataFromExcel, 
+  checkServerConnection,
   uploadGenres, 
   uploadPublishers, 
   uploadBooks 
@@ -11,17 +12,25 @@ import {
 
 async function processExcelFile(file :string, options :{ url: string })  {
   try {
+    // 1. Setup tRPC client and check connection
+    const client = createClient(options.url);
+    console.log(`Checking connection to server: ${options.url}`);
+    const isConnected = await checkServerConnection(client);
+    
+    if (!isConnected) {
+      console.error(`Error: Could not connect to the server at ${options.url}. Please ensure the server is running and reachable.`);
+      process.exit(1);
+    }
+    console.log('Server is reachable.');
+
     console.log(`Reading file: ${file}`);
     const buffer = readFileSync(file);
 
-    // 1. Extract data from Excel
+    // 2. Extract data from Excel
     console.log('Extracting data from Excel...');
     const { books, genres, publishers } = extractDataFromExcel(buffer);
 
     console.log(`Extracted ${books.length} books, ${genres.length} genres, ${publishers.length} publishers.`);
-
-    // 2. Setup tRPC client
-    const client = createClient(options.url);
 
     // 3. Upload data
     console.log('Uploading to server...');
@@ -49,7 +58,7 @@ program
   .description('CLI to load books data from Excel and upload to library-app via tRPC')
   .version('1.0.0')
   .argument('<file>', 'Path to the Excel file')
-  .option('-u, --url <url>', 'tRPC server URL', 'http://localhost:8787/trpc')
+  .option('-u, --url <url>', 'tRPC server URL', 'http://localhost:8787/api')
   .action(processExcelFile);
 
 program.parse();
