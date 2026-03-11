@@ -31,7 +31,6 @@ describe("Library App API Tests", () => {
       links: [
         httpLink({
           url: 'http://localhost/api',
-          // @ts-expect-error: worker.fetch expects CloudflareBindings which are slightly different from our test env but compatible for this test
           fetch: proxyFetch,
         }),
       ],
