@@ -1,25 +1,13 @@
-import {
-    checkServerConnection,
-    createClient,
-    extractDataFromExcel
-} from "./utils";
+import {extractDataFromExcel} from "./utils";
 import {readFileSync} from "fs";
 import {uploadGenres} from "./uploadGenres";
 import {uploadPublishers} from "./uploadPublishers";
 import {uploadBooks} from "./uploadBooks";
+import {createAndCheckClient} from "./createAndCheckClient";
 
 export async function processExcelFile(file: string, options: { url: string }) {
     try {
-        // 1. Setup tRPC client and check connection
-        const client = createClient(options.url);
-        console.log(`Checking connection to server: ${options.url}`);
-        const isConnected = await checkServerConnection(client);
-
-        if (!isConnected) {
-            console.error(`Error: Could not connect to the server at ${options.url}. Please ensure the server is running and reachable.`);
-            process.exit(1);
-        }
-        console.log('Server is reachable.');
+        const client = await createAndCheckClient(options);
 
         console.log(`Reading file: ${file}`);
         const buffer = readFileSync(file);
