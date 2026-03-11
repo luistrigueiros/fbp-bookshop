@@ -26,6 +26,7 @@
         "dotenv": "catalog:",
         "hono": "^4.12.5",
         "library-data-layer": "workspace:*",
+        "library-trpc": "workspace:*",
         "solid-js": "^1.9.3",
         "zod": "^3.23.8",
       },
@@ -38,6 +39,26 @@
         "vite-plugin-pwa": "^1.2.0",
         "vite-plugin-solid": "^2.11.10",
         "wrangler": "^4.71.0",
+      },
+    },
+    "packages/library-cli": {
+      "name": "library-cli",
+      "version": "1.0.0",
+      "bin": {
+        "library-load": "./src/index.ts",
+      },
+      "dependencies": {
+        "@trpc/client": "^10.45.2",
+        "commander": "^12.0.0",
+        "library-app": "workspace:*",
+        "library-excel-extractor": "workspace:*",
+        "library-trpc": "workspace:*",
+        "zod": "^3.23.8",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "^4.20260310.1",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/library-data-layer": {
@@ -59,26 +80,6 @@
       },
       "peerDependencies": {
         "@cloudflare/workers-types": "^4.0.0",
-      },
-    },
-    "packages/library-data-loader": {
-      "name": "library-data-loader",
-      "version": "1.0.0",
-      "dependencies": {
-        "@logtape/hono": "^2.0.4",
-        "@logtape/logtape": "^2.0.4",
-        "dotenv": "catalog:",
-        "hono": "^4.12.5",
-        "library-data-layer": "workspace:*",
-        "library-excel-extractor": "workspace:*",
-      },
-      "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260307.1",
-        "@types/bun": "^1.3.10",
-        "drizzle-kit": "^0.31.9",
-        "library-test-utils": "workspace:*",
-        "miniflare": "^4.20260305.0",
-        "wrangler": "^4.71.0",
       },
     },
     "packages/library-excel-extractor": {
@@ -103,6 +104,18 @@
         "@cloudflare/workers-types": "catalog:",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/library-trpc": {
+      "name": "library-trpc",
+      "version": "1.0.0",
+      "dependencies": {
+        "@trpc/server": "^10.45.2",
+        "library-data-layer": "workspace:*",
+        "zod": "^3.23.8",
+      },
+      "devDependencies": {
         "typescript": "catalog:",
       },
     },
@@ -658,7 +671,7 @@
 
     "codepage": ["codepage@1.15.0", "", {}, "sha512-3g6NUTPd/YtuuGrhMnOMRjFc+LJw/bnMp3+0r/Wcz3IXUuCosKRJvMphm5+Q+bvTVGcJJuRvVLuYba+WojaFaA=="],
 
-    "commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
+    "commander": ["commander@12.1.0", "", {}, "sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA=="],
 
     "common-tags": ["common-tags@1.8.2", "", {}, "sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA=="],
 
@@ -926,13 +939,15 @@
 
     "library-app": ["library-app@workspace:packages/library-app"],
 
-    "library-data-layer": ["library-data-layer@workspace:packages/library-data-layer"],
+    "library-cli": ["library-cli@workspace:packages/library-cli"],
 
-    "library-data-loader": ["library-data-loader@workspace:packages/library-data-loader"],
+    "library-data-layer": ["library-data-layer@workspace:packages/library-data-layer"],
 
     "library-excel-extractor": ["library-excel-extractor@workspace:packages/library-excel-extractor"],
 
     "library-test-utils": ["library-test-utils@workspace:packages/library-test-utils"],
+
+    "library-trpc": ["library-trpc@workspace:packages/library-trpc"],
 
     "locate-path": ["locate-path@6.0.0", "", { "dependencies": { "p-locate": "^5.0.0" } }, "sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw=="],
 
@@ -1290,9 +1305,17 @@
 
     "filelist/minimatch": ["minimatch@5.1.9", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw=="],
 
+    "library-cli/@cloudflare/workers-types": ["@cloudflare/workers-types@4.20260310.1", "", {}, "sha512-Cg4gyGDtfimNMgBr2h06aGR5Bt8puUbblyzPNZN55mBfVYCTWwQiUd9PrbkcoddKrWHlsy0ACH/16dAeGf5BQg=="],
+
+    "library-data-layer/@cloudflare/workers-types": ["@cloudflare/workers-types@4.20260310.1", "", {}, "sha512-Cg4gyGDtfimNMgBr2h06aGR5Bt8puUbblyzPNZN55mBfVYCTWwQiUd9PrbkcoddKrWHlsy0ACH/16dAeGf5BQg=="],
+
+    "library-test-utils/@cloudflare/workers-types": ["@cloudflare/workers-types@4.20260310.1", "", {}, "sha512-Cg4gyGDtfimNMgBr2h06aGR5Bt8puUbblyzPNZN55mBfVYCTWwQiUd9PrbkcoddKrWHlsy0ACH/16dAeGf5BQg=="],
+
     "path-scurry/lru-cache": ["lru-cache@11.2.6", "", {}, "sha512-ESL2CrkS/2wTPfuend7Zhkzo2u0daGJ/A2VucJOgQ/C48S/zB8MMeMHSGKYpXhIjbPxfuezITkaBH1wqv00DDQ=="],
 
     "source-map-support/source-map": ["source-map@0.6.1", "", {}, "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="],
+
+    "terser/commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
 
     "tsx/esbuild": ["esbuild@0.27.3", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.27.3", "@esbuild/android-arm": "0.27.3", "@esbuild/android-arm64": "0.27.3", "@esbuild/android-x64": "0.27.3", "@esbuild/darwin-arm64": "0.27.3", "@esbuild/darwin-x64": "0.27.3", "@esbuild/freebsd-arm64": "0.27.3", "@esbuild/freebsd-x64": "0.27.3", "@esbuild/linux-arm": "0.27.3", "@esbuild/linux-arm64": "0.27.3", "@esbuild/linux-ia32": "0.27.3", "@esbuild/linux-loong64": "0.27.3", "@esbuild/linux-mips64el": "0.27.3", "@esbuild/linux-ppc64": "0.27.3", "@esbuild/linux-riscv64": "0.27.3", "@esbuild/linux-s390x": "0.27.3", "@esbuild/linux-x64": "0.27.3", "@esbuild/netbsd-arm64": "0.27.3", "@esbuild/netbsd-x64": "0.27.3", "@esbuild/openbsd-arm64": "0.27.3", "@esbuild/openbsd-x64": "0.27.3", "@esbuild/openharmony-arm64": "0.27.3", "@esbuild/sunos-x64": "0.27.3", "@esbuild/win32-arm64": "0.27.3", "@esbuild/win32-ia32": "0.27.3", "@esbuild/win32-x64": "0.27.3" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-8VwMnyGCONIs6cWue2IdpHxHnAjzxnw2Zr7MkVxB2vjmQ2ivqGFb4LEG3SMnv0Gb2F/G/2yA8zUaiL1gywDCCg=="],
 

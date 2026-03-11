@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from './routers/_app';
+import { appRouter } from 'library-trpc';
 import { createContext } from './context';
 import { honoLogger } from '@logtape/hono';
 import { setupLogging, runMigrations, splitMigrationStatements } from 'library-data-layer';
 import type { D1Database } from '@cloudflare/workers-types';
 import { migrations } from './migrations';
+
 
 type Bindings = {
   DB: D1Database;

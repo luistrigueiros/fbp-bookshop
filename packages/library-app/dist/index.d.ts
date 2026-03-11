@@ -1,4 +1,6 @@
+import { type AppRouter } from 'library-trpc';
 import type { D1Database } from '@cloudflare/workers-types';
+export type { AppRouter };
 type Bindings = {
     DB: D1Database;
     ENVIRONMENT?: string;

@@ -1,0 +1,24 @@
+{
+  "name": "library-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "library-load": "./src/index.ts"
+  },
+  "dependencies": {
+    "library-app": "workspace:*",
+    "library-trpc": "workspace:*",
+    "library-excel-extractor": "workspace:*",
+    "@trpc/client": "^10.45.2",
+    "zod": "^3.23.8",
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260310.1",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  },
+  "scripts": {
+    "typecheck": "bunx tsc --noEmit"
+  }
+}

@@ -3,7 +3,6 @@
 /packages/library-app/node_modules/
 /packages/library-data-loader/node_modules/
 /packages/library-data-layer/node_modules/
-/packages/library-data-layer/drizzle/
 /packages/library-data-layer/.wrangler/
 /packages/library-data-layer/dist/
 /packages/library-excel-extractor/node_modules/
@@ -19,3 +18,5 @@
 /packages/library-app/dist/
 /packages/library-app/.wrangler/
 /packages/library-app/wrangler.toml
+/packages/library-cli/node_modules/
+/packages/library-trpc/node_modules/
