@@ -17,5 +17,10 @@
   },
   "devDependencies": {
     "typescript": "catalog:"
+  },
+  "scripts": {
+    "typecheck": "bunx tsc --noEmit",
+    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap",
+    "lint": "bunx eslint ."
   }
 }

@@ -1,4 +1,20 @@
 export declare const trpc: {
+    ping: {
+        query: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"query", {
+            _config: import("@trpc/server").RootConfig<{
+                ctx: import("library-trpc").tRPCContext;
+                meta: object;
+                errorShape: import("@trpc/server").DefaultErrorShape;
+                transformer: import("@trpc/server").DefaultDataTransformer;
+            }>;
+            _ctx_out: import("library-trpc").tRPCContext;
+            _input_in: typeof import("@trpc/server").unsetMarker;
+            _input_out: typeof import("@trpc/server").unsetMarker;
+            _output_in: typeof import("@trpc/server").unsetMarker;
+            _output_out: typeof import("@trpc/server").unsetMarker;
+            _meta: object;
+        }, string>>;
+    };
     books: {
         list: {
             query: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"query", {
@@ -68,6 +84,11 @@ export declare const trpc: {
                     language?: string | null | undefined;
                     genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
+                    stock?: {
+                        bookshelf?: string | null | undefined;
+                        numberOfCopies?: number | undefined;
+                        numberOfCopiesSold?: number | undefined;
+                    } | undefined;
                 };
                 _input_out: {
                     title: string;
@@ -78,6 +99,11 @@ export declare const trpc: {
                     language?: string | null | undefined;
                     genreIds?: number[] | undefined;
                     publisherId?: number | null | undefined;
+                    stock?: {
+                        bookshelf?: string | null | undefined;
+                        numberOfCopies?: number | undefined;
+                        numberOfCopiesSold?: number | undefined;
+                    } | undefined;
                 };
                 _output_in: typeof import("@trpc/server").unsetMarker;
                 _output_out: typeof import("@trpc/server").unsetMarker;
@@ -91,6 +117,59 @@ export declare const trpc: {
                 language: string | null;
                 publisherId: number | null;
             }>>;
+        };
+        upsert: {
+            mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
+                _config: import("@trpc/server").RootConfig<{
+                    ctx: import("library-trpc").tRPCContext;
+                    meta: object;
+                    errorShape: import("@trpc/server").DefaultErrorShape;
+                    transformer: import("@trpc/server").DefaultDataTransformer;
+                }>;
+                _meta: object;
+                _ctx_out: import("library-trpc").tRPCContext;
+                _input_in: {
+                    title: string;
+                    author?: string | null | undefined;
+                    isbn?: string | null | undefined;
+                    barcode?: string | null | undefined;
+                    price?: number | null | undefined;
+                    language?: string | null | undefined;
+                    genreIds?: number[] | undefined;
+                    publisherId?: number | null | undefined;
+                    stock?: {
+                        bookshelf?: string | null | undefined;
+                        numberOfCopies?: number | undefined;
+                        numberOfCopiesSold?: number | undefined;
+                    } | undefined;
+                };
+                _input_out: {
+                    title: string;
+                    author?: string | null | undefined;
+                    isbn?: string | null | undefined;
+                    barcode?: string | null | undefined;
+                    price?: number | null | undefined;
+                    language?: string | null | undefined;
+                    genreIds?: number[] | undefined;
+                    publisherId?: number | null | undefined;
+                    stock?: {
+                        bookshelf?: string | null | undefined;
+                        numberOfCopies?: number | undefined;
+                        numberOfCopiesSold?: number | undefined;
+                    } | undefined;
+                };
+                _output_in: typeof import("@trpc/server").unsetMarker;
+                _output_out: typeof import("@trpc/server").unsetMarker;
+            }, {
+                id: number;
+                title: string;
+                author: string | null;
+                isbn: string | null;
+                barcode: string | null;
+                price: number | null;
+                language: string | null;
+                publisherId: number | null;
+            } | undefined>>;
         };
         update: {
             mutate: import("@trpc/client").Resolver<import("@trpc/server").BuildProcedure<"mutation", {
@@ -113,6 +192,11 @@ export declare const trpc: {
                         language?: string | null | undefined;
                         genreIds?: number[] | undefined;
                         publisherId?: number | null | undefined;
+                        stock?: {
+                            bookshelf?: string | null | undefined;
+                            numberOfCopies?: number | undefined;
+                            numberOfCopiesSold?: number | undefined;
+                        } | undefined;
                     };
                 };
                 _input_out: {
@@ -126,6 +210,11 @@ export declare const trpc: {
                         language?: string | null | undefined;
                         genreIds?: number[] | undefined;
                         publisherId?: number | null | undefined;
+                        stock?: {
+                            bookshelf?: string | null | undefined;
+                            numberOfCopies?: number | undefined;
+                            numberOfCopiesSold?: number | undefined;
+                        } | undefined;
                     };
                 };
                 _output_in: typeof import("@trpc/server").unsetMarker;

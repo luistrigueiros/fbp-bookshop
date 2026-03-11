@@ -48,6 +48,18 @@ export const book = sqliteTable(
   }),
 );
 
+// Book Stock table
+export const bookStock = sqliteTable("book_stock", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookId: integer("book_id")
+    .notNull()
+    .unique()
+    .references(() => book.id, { onDelete: "cascade" }),
+  bookshelf: text("bookshelf", { length: 100 }),
+  numberOfCopies: integer("number_of_copies").default(0).notNull(),
+  numberOfCopiesSold: integer("number_of_copies_sold").default(0).notNull(),
+});
+
 export const bookGenre = sqliteTable(
   "book_genre",
   {
@@ -70,6 +82,14 @@ export const bookRelations = relations(book, ({ one, many }) => ({
     references: [publisher.id],
   }),
   bookGenres: many(bookGenre),
+  stock: one(bookStock),
+}));
+
+export const bookStockRelations = relations(bookStock, ({ one }) => ({
+  book: one(book, {
+    fields: [bookStock.bookId],
+    references: [book.id],
+  }),
 }));
 
 export const genreRelations = relations(genre, ({ many }) => ({

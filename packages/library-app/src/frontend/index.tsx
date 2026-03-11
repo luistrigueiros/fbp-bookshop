@@ -1,7 +1,7 @@
 import { render } from 'solid-js/web';
 import { Router } from '@solidjs/router';
-import App from './App';
-import './styles/index.css';
+import App from '@/frontend/App';
+import '@/frontend/styles/index.css';
 
 const root = document.getElementById('root');
 
@@ -12,11 +12,11 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 }
 
 import { Route } from '@solidjs/router';
-import Dashboard from './routes/index';
-import BooksList from './routes/books';
-import BookDetail from './routes/book-detail';
-import PublishersList from './routes/publishers';
-import GenresList from './routes/genres';
+import Dashboard from '@/frontend/routes/index';
+import BooksList from '@/frontend/routes/books';
+import BookDetail from '@/frontend/routes/book-detail';
+import PublishersList from '@/frontend/routes/publishers';
+import GenresList from '@/frontend/routes/genres';
 
 render(() => (
   <Router root={App}>

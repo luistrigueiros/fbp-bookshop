@@ -1,5 +1,5 @@
 import {Genre} from "library-excel-extractor";
-import {TRPCClient} from "./utils";
+import {TRPCClient} from "library-cli/utils";
 
 export async function uploadGenres(client: TRPCClient, genres: Genre[]) {
     const genreMap = new Map<string, number>();
@@ -7,7 +7,7 @@ export async function uploadGenres(client: TRPCClient, genres: Genre[]) {
     for (const genre of genres) {
         try {
             const existingGenres = await client.genres.list.query();
-            const existing = existingGenres.find(g => g.name.toLowerCase() === genre.name.toLowerCase());
+            const existing = existingGenres.find((g: any) => g.name.toLowerCase() === genre.name.toLowerCase());
 
             if (existing) {
                 genreMap.set(genre.name.toLowerCase(), existing.id);

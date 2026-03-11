@@ -1,5 +1,5 @@
 import {Publisher} from "library-excel-extractor";
-import {TRPCClient} from "./utils";
+import {TRPCClient} from "library-cli/utils";
 
 export async function uploadPublishers(client: TRPCClient, publishers: Publisher[]) {
     const publisherMap = new Map<string, number>();
@@ -7,7 +7,7 @@ export async function uploadPublishers(client: TRPCClient, publishers: Publisher
     for (const publisher of publishers) {
         try {
             const existingPublishers = await client.publishers.list.query();
-            const existing = existingPublishers.find(p => p.name.toLowerCase() === publisher.name.toLowerCase());
+            const existing = existingPublishers.find((p: any) => p.name.toLowerCase() === publisher.name.toLowerCase());
 
             if (existing) {
                 publisherMap.set(publisher.name.toLowerCase(), existing.id);

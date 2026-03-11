@@ -1,4 +1,4 @@
-import {checkServerConnection, createClient} from "./utils";
+import {checkServerConnection, createClient} from "library-cli/utils";
 
 export async function createAndCheckClient(options: { url: string }) {
     // 1. Setup tRPC client and check connection

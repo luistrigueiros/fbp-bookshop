@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import {Command} from 'commander';
-import {processExcelFile} from "./processExcelFile";
+import {processExcelFile} from "library-cli/processExcelFile";
 
 const program = new Command();
 

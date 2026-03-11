@@ -13,6 +13,11 @@ export const BookUpsertSchema = z.object({
   language: z.string().nullable().optional(),
   genreIds: z.array(z.number()).optional(),
   publisherId: z.number().nullable().optional(),
+  stock: z.object({
+    bookshelf: z.string().nullable().optional(),
+    numberOfCopies: z.number().min(0).optional(),
+    numberOfCopiesSold: z.number().min(0).optional(),
+  }).optional(),
 });
 
 export const BookListQuerySchema = z.object({

@@ -1,5 +1,5 @@
 import { createSignal, createResource, For, Show } from 'solid-js';
-import { trpc } from '../trpc';
+import { trpc } from '@/frontend/trpc';
 
 const PublishersList = () => {
   const [publishers, { refetch }] = createResource(async () => await trpc.publishers.list.query());
