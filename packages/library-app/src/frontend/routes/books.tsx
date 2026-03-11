@@ -1,6 +1,6 @@
 import { createSignal, createResource, For, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { trpc } from '../trpc';
+import { trpc } from '@/frontend/trpc';
 
 const BooksList = () => {
   const navigate = useNavigate();

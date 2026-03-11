@@ -1,5 +1,5 @@
 import { createResource, For } from 'solid-js';
-import { trpc } from '../trpc';
+import { trpc } from '@/frontend/trpc';
 
 const Dashboard = () => {
   const [books] = createResource(async () => await trpc.books.list.query());

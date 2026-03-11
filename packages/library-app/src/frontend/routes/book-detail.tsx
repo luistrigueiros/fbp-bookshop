@@ -1,7 +1,7 @@
 import { createSignal, createResource, For, Show, onMount, createEffect } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
-import { trpc } from '../trpc';
-import GenreSelector from '../components/GenreSelector';
+import { trpc } from '@/frontend/trpc';
+import GenreSelector from '@/frontend/components/GenreSelector';
 
 const BookDetail = () => {
   const params = useParams();
@@ -27,6 +27,9 @@ const BookDetail = () => {
   const [selectedGenreIds, setSelectedGenreIds] = createSignal<number[]>([]);
   const [isbn, setIsbn] = createSignal('');
   const [language, setLanguage] = createSignal('');
+  const [bookshelf, setBookshelf] = createSignal('');
+  const [numberOfCopies, setNumberOfCopies] = createSignal(0);
+  const [numberOfCopiesSold, setNumberOfCopiesSold] = createSignal(0);
 
   // Update signals when bookData is loaded
   onMount(() => {
@@ -45,6 +48,9 @@ const BookDetail = () => {
     setSelectedGenreIds(genreIds);
     setIsbn(book.isbn || '');
     setLanguage(book.language || '');
+    setBookshelf(book.stock?.bookshelf || '');
+    setNumberOfCopies(book.stock?.numberOfCopies || 0);
+    setNumberOfCopiesSold(book.stock?.numberOfCopiesSold || 0);
   };
 
   // Using a resource property or createEffect to sync
@@ -72,6 +78,11 @@ const BookDetail = () => {
       genreIds: selectedGenreIds(),
       isbn: isbn() || null,
       language: language() || null,
+      stock: {
+        bookshelf: bookshelf() || null,
+        numberOfCopies: numberOfCopies(),
+        numberOfCopiesSold: numberOfCopiesSold(),
+      },
     };
 
     const bookId = id();
@@ -119,6 +130,18 @@ const BookDetail = () => {
             <div>
               <label>Language</label>
               <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={language()} onInput={(e) => setLanguage(e.target.value)} />
+            </div>
+            <div>
+              <label>Bookshelf</label>
+              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={bookshelf()} onInput={(e) => setBookshelf(e.target.value)} />
+            </div>
+            <div>
+              <label>Total Copies</label>
+              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopies()} onInput={(e) => setNumberOfCopies(parseInt(e.target.value) || 0)} />
+            </div>
+            <div>
+              <label>Copies Sold</label>
+              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} type="number" min="0" value={numberOfCopiesSold()} onInput={(e) => setNumberOfCopiesSold(parseInt(e.target.value) || 0)} />
             </div>
             <div>
               <label>Publisher</label>

@@ -1,7 +1,7 @@
 import { eq, like, or, and, sql, inArray, isNull } from "drizzle-orm";
 import type { DB } from "../db";
-import { book, bookGenre } from "../schema";
-import type { Book, BookWithRelations, NewBook } from "../schema/types";
+import { book, bookGenre, bookStock } from "../schema";
+import type { Book, BookWithRelations, NewBook, NewBookStock } from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class BookRepository {
@@ -10,9 +10,11 @@ export class BookRepository {
   /**
    * Create a new book
    */
-  async create(data: NewBook & { genreIds?: number[] }): Promise<Book> {
+  async create(
+    data: NewBook & { genreIds?: number[]; stock?: Partial<NewBookStock> },
+  ): Promise<Book> {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
-    const { genreIds, ...bookData } = data;
+    const { genreIds, stock, ...bookData } = data;
     const result = await this.db.insert(book).values(bookData).returning();
     const createdBook = result[0]!;
 
@@ -22,6 +24,13 @@ export class BookRepository {
         genreId,
       }));
       await this.db.insert(bookGenre).values(bookGenres);
+    }
+
+    if (stock) {
+      await this.db.insert(bookStock).values({
+        ...stock,
+        bookId: createdBook.id,
+      });
     }
 
     layerLogger.info("Created book: {title} (ID: {id})", {
@@ -78,7 +87,7 @@ export class BookRepository {
   async findByIdWithRelations(
     id: number,
   ): Promise<BookWithRelations | undefined> {
-    return this.db.query.book.findFirst({
+    const bookData = await this.db.query.book.findFirst({
       where: eq(book.id, id),
       with: {
         bookGenres: {
@@ -89,6 +98,18 @@ export class BookRepository {
         publisher: true,
       },
     });
+
+    if (!bookData) return undefined;
+
+    const stockData = await this.db
+      .select()
+      .from(bookStock)
+      .where(eq(bookStock.bookId, id));
+
+    return {
+      ...bookData,
+      stock: stockData[0] || null,
+    };
   }
 
   /**
@@ -288,10 +309,13 @@ export class BookRepository {
    */
   async update(
     id: number,
-    data: Partial<NewBook> & { genreIds?: number[] },
+    data: Partial<NewBook> & {
+      genreIds?: number[];
+      stock?: Partial<NewBookStock>;
+    },
   ): Promise<Book | undefined> {
     layerLogger.debug("Updating book ID: {id}", { id });
-    const { genreIds, ...bookData } = data;
+    const { genreIds, stock, ...bookData } = data;
 
     const result = await this.db
       .update(book)
@@ -311,6 +335,25 @@ export class BookRepository {
           genreId,
         }));
         await this.db.insert(bookGenre).values(bookGenres);
+      }
+    }
+
+    if (updatedBook && stock !== undefined) {
+      const existingStock = await this.db
+        .select()
+        .from(bookStock)
+        .where(eq(bookStock.bookId, id));
+
+      if (existingStock.length > 0) {
+        await this.db
+          .update(bookStock)
+          .set(stock)
+          .where(eq(bookStock.bookId, id));
+      } else {
+        await this.db.insert(bookStock).values({
+          ...stock,
+          bookId: id,
+        });
       }
     }
 

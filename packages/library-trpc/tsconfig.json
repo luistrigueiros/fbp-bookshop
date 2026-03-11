@@ -5,7 +5,8 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "library-trpc": ["src/index.ts"]
+      "library-trpc": ["src/index.ts"],
+      "@/*": ["src/*"]
     }
   },
   "include": ["src/**/*"]

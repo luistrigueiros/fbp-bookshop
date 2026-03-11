@@ -21,6 +21,7 @@ export * from "./logging";
 import type { DB } from "./db";
 import {
   BookRepository,
+  BookStockRepository,
   GenreRepository,
   PublisherRepository,
   UploadStatusRepository,
@@ -28,6 +29,7 @@ import {
 
 export interface LibraryRepositories {
   books: BookRepository;
+  bookStock: BookStockRepository;
   genres: GenreRepository;
   publishers: PublisherRepository;
   uploads: UploadStatusRepository;
@@ -41,6 +43,7 @@ export interface LibraryRepositories {
 export function createRepositories(db: DB): LibraryRepositories {
   return {
     books: new BookRepository(db),
+    bookStock: new BookStockRepository(db),
     genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db),

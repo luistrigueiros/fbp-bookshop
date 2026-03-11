@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { NamePayloadSchema } from '../schemas';
-import { router, publicProcedure } from '../trpc';
+import { NamePayloadSchema } from '@/schemas';
+import { router, publicProcedure } from '@/trpc';
 
 export const publishersRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {

@@ -10,11 +10,12 @@ describe("Library App API Tests", () => {
   let trpc: ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 
   beforeAll(async () => {
+    const drizzleDirPath = join(import.meta.dir, "..", "..", "library-data-layer", "drizzle");
     testEnv = await createD1TestEnv({
       bindings: {
         ENVIRONMENT: "test",
       },
-      drizzleDirPath: join(process.cwd(), "..", "library-data-layer", "drizzle"),
+      drizzleDirPath,
     });
 
     const proxyFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -73,7 +74,12 @@ describe("Library App API Tests", () => {
       genreIds: [genre.id],
       publisherId: publisher.id,
       price: 19.99,
-      language: "English"
+      language: "English",
+      stock: {
+        bookshelf: "A1",
+        numberOfCopies: 5,
+        numberOfCopiesSold: 0
+      }
     });
 
     expect(newBook.title).toBe("Dune");
@@ -86,6 +92,8 @@ describe("Library App API Tests", () => {
 
     const fetched = await trpc.books.getById.query(newBook.id);
     expect(fetched.title).toBe("Dune");
+    expect(fetched.stock?.bookshelf).toBe("A1");
+    expect(fetched.stock?.numberOfCopies).toBe(5);
 
     const updated = await trpc.books.update.mutate({
       id: newBook.id,
@@ -96,12 +104,22 @@ describe("Library App API Tests", () => {
         genreIds: [genre.id],
         publisherId: publisher.id,
         price: 25.99,
-        language: "English"
+        language: "English",
+        stock: {
+          bookshelf: "B2",
+          numberOfCopies: 10,
+          numberOfCopiesSold: 1
+        }
       }
     });
 
     expect(updated.title).toBe("Dune: Deluxe Edition");
     expect(updated.price).toBe(25.99);
+
+    const fetchedUpdated = await trpc.books.getById.query(newBook.id);
+    expect(fetchedUpdated.stock?.bookshelf).toBe("B2");
+    expect(fetchedUpdated.stock?.numberOfCopies).toBe(10);
+    expect(fetchedUpdated.stock?.numberOfCopiesSold).toBe(1);
 
     await trpc.books.delete.mutate(newBook.id);
 

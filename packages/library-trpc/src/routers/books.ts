@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { BookUpsertSchema, BookListQuerySchema } from '../schemas';
-import { router, publicProcedure } from '../trpc';
+import { BookUpsertSchema, BookListQuerySchema } from '@/schemas';
+import { router, publicProcedure } from '@/trpc';
 import { TRPCError } from '@trpc/server';
 
 export const booksRouter = router({
