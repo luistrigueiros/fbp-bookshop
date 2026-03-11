@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1773097470004,
-      "tag": "0000_true_gladiator",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1773099007973,
-      "tag": "0001_cute_nocturne",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1773255580246,
-      "tag": "0002_yellow_lifeguard",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1773264809990,
-      "tag": "0003_superb_expediter",
+      "when": 1773268436631,
+      "tag": "0000_loud_doctor_faustus",
       "breakpoints": true
     }
   ]

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "07482354-8637-4515-82a7-26684b1a8682",
+  "id": "acbb9c67-bec9-4dd3-b0c0-d8a9b9b98910",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "book": {
@@ -64,7 +64,24 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "book_isbn_idx": {
+          "name": "book_isbn_idx",
+          "columns": [
+            "isbn"
+          ],
+          "isUnique": true
+        },
+        "book_unique_idx": {
+          "name": "book_unique_idx",
+          "columns": [
+            "title",
+            "author",
+            "isbn"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "book_publisher_id_publisher_id_fk": {
           "name": "book_publisher_id_publisher_id_fk",
@@ -140,6 +157,75 @@
           "name": "book_genre_book_id_genre_id_pk"
         }
       },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "book_stock": {
+      "name": "book_stock",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bookshelf": {
+          "name": "bookshelf",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_copies": {
+          "name": "number_of_copies",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "number_of_copies_sold": {
+          "name": "number_of_copies_sold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "book_stock_book_id_unique": {
+          "name": "book_stock_book_id_unique",
+          "columns": [
+            "book_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "book_stock_book_id_book_id_fk": {
+          "name": "book_stock_book_id_book_id_fk",
+          "tableFrom": "book_stock",
+          "tableTo": "book",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
