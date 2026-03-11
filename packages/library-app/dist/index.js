@@ -2353,354 +2353,6 @@ async function fetchRequestHandler(opts) {
   });
   return promise;
 }
-// ../../node_modules/.bun/@trpc+server@10.45.4/node_modules/@trpc/server/dist/index.mjs
-function getParseFn(procedureParser) {
-  const parser = procedureParser;
-  if (typeof parser === "function") {
-    return parser;
-  }
-  if (typeof parser.parseAsync === "function") {
-    return parser.parseAsync.bind(parser);
-  }
-  if (typeof parser.parse === "function") {
-    return parser.parse.bind(parser);
-  }
-  if (typeof parser.validateSync === "function") {
-    return parser.validateSync.bind(parser);
-  }
-  if (typeof parser.create === "function") {
-    return parser.create.bind(parser);
-  }
-  if (typeof parser.assert === "function") {
-    return (value) => {
-      parser.assert(value);
-      return value;
-    };
-  }
-  throw new Error("Could not find a validator fn");
-}
-function mergeWithoutOverrides(obj1, ...objs) {
-  const newObj = Object.assign(Object.create(null), obj1);
-  for (const overrides of objs) {
-    for (const key in overrides) {
-      if (key in newObj && newObj[key] !== overrides[key]) {
-        throw new Error(`Duplicate key ${key}`);
-      }
-      newObj[key] = overrides[key];
-    }
-  }
-  return newObj;
-}
-function createMiddlewareFactory() {
-  function createMiddlewareInner(middlewares) {
-    return {
-      _middlewares: middlewares,
-      unstable_pipe(middlewareBuilderOrFn) {
-        const pipedMiddleware = "_middlewares" in middlewareBuilderOrFn ? middlewareBuilderOrFn._middlewares : [
-          middlewareBuilderOrFn
-        ];
-        return createMiddlewareInner([
-          ...middlewares,
-          ...pipedMiddleware
-        ]);
-      }
-    };
-  }
-  function createMiddleware(fn) {
-    return createMiddlewareInner([
-      fn
-    ]);
-  }
-  return createMiddleware;
-}
-function isPlainObject(obj) {
-  return obj && typeof obj === "object" && !Array.isArray(obj);
-}
-function createInputMiddleware(parse) {
-  const inputMiddleware = async ({ next, rawInput, input }) => {
-    let parsedInput;
-    try {
-      parsedInput = await parse(rawInput);
-    } catch (cause) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        cause
-      });
-    }
-    const combinedInput = isPlainObject(input) && isPlainObject(parsedInput) ? {
-      ...input,
-      ...parsedInput
-    } : parsedInput;
-    return next({
-      input: combinedInput
-    });
-  };
-  inputMiddleware._type = "input";
-  return inputMiddleware;
-}
-function createOutputMiddleware(parse) {
-  const outputMiddleware = async ({ next }) => {
-    const result = await next();
-    if (!result.ok) {
-      return result;
-    }
-    try {
-      const data = await parse(result.data);
-      return {
-        ...result,
-        data
-      };
-    } catch (cause) {
-      throw new TRPCError({
-        message: "Output validation failed",
-        code: "INTERNAL_SERVER_ERROR",
-        cause
-      });
-    }
-  };
-  outputMiddleware._type = "output";
-  return outputMiddleware;
-}
-var middlewareMarker = "middlewareMarker";
-function createNewBuilder(def1, def2) {
-  const { middlewares = [], inputs, meta, ...rest } = def2;
-  return createBuilder({
-    ...mergeWithoutOverrides(def1, rest),
-    inputs: [
-      ...def1.inputs,
-      ...inputs ?? []
-    ],
-    middlewares: [
-      ...def1.middlewares,
-      ...middlewares
-    ],
-    meta: def1.meta && meta ? {
-      ...def1.meta,
-      ...meta
-    } : meta ?? def1.meta
-  });
-}
-function createBuilder(initDef = {}) {
-  const _def = {
-    inputs: [],
-    middlewares: [],
-    ...initDef
-  };
-  return {
-    _def,
-    input(input) {
-      const parser = getParseFn(input);
-      return createNewBuilder(_def, {
-        inputs: [
-          input
-        ],
-        middlewares: [
-          createInputMiddleware(parser)
-        ]
-      });
-    },
-    output(output) {
-      const parseOutput = getParseFn(output);
-      return createNewBuilder(_def, {
-        output,
-        middlewares: [
-          createOutputMiddleware(parseOutput)
-        ]
-      });
-    },
-    meta(meta) {
-      return createNewBuilder(_def, {
-        meta
-      });
-    },
-    unstable_concat(builder) {
-      return createNewBuilder(_def, builder._def);
-    },
-    use(middlewareBuilderOrFn) {
-      const middlewares = "_middlewares" in middlewareBuilderOrFn ? middlewareBuilderOrFn._middlewares : [
-        middlewareBuilderOrFn
-      ];
-      return createNewBuilder(_def, {
-        middlewares
-      });
-    },
-    query(resolver) {
-      return createResolver({
-        ..._def,
-        query: true
-      }, resolver);
-    },
-    mutation(resolver) {
-      return createResolver({
-        ..._def,
-        mutation: true
-      }, resolver);
-    },
-    subscription(resolver) {
-      return createResolver({
-        ..._def,
-        subscription: true
-      }, resolver);
-    }
-  };
-}
-function createResolver(_def, resolver) {
-  const finalBuilder = createNewBuilder(_def, {
-    resolver,
-    middlewares: [
-      async function resolveMiddleware(opts) {
-        const data = await resolver(opts);
-        return {
-          marker: middlewareMarker,
-          ok: true,
-          data,
-          ctx: opts.ctx
-        };
-      }
-    ]
-  });
-  return createProcedureCaller(finalBuilder._def);
-}
-var codeblock = `
-This is a client-only function.
-If you want to call this function on the server, see https://trpc.io/docs/server/server-side-calls
-`.trim();
-function createProcedureCaller(_def) {
-  const procedure = async function resolve(opts) {
-    if (!opts || !("rawInput" in opts)) {
-      throw new Error(codeblock);
-    }
-    const callRecursive = async (callOpts = {
-      index: 0,
-      ctx: opts.ctx
-    }) => {
-      try {
-        const middleware = _def.middlewares[callOpts.index];
-        const result2 = await middleware({
-          ctx: callOpts.ctx,
-          type: opts.type,
-          path: opts.path,
-          rawInput: callOpts.rawInput ?? opts.rawInput,
-          meta: _def.meta,
-          input: callOpts.input,
-          next(_nextOpts) {
-            const nextOpts = _nextOpts;
-            return callRecursive({
-              index: callOpts.index + 1,
-              ctx: nextOpts && "ctx" in nextOpts ? {
-                ...callOpts.ctx,
-                ...nextOpts.ctx
-              } : callOpts.ctx,
-              input: nextOpts && "input" in nextOpts ? nextOpts.input : callOpts.input,
-              rawInput: nextOpts && "rawInput" in nextOpts ? nextOpts.rawInput : callOpts.rawInput
-            });
-          }
-        });
-        return result2;
-      } catch (cause) {
-        return {
-          ok: false,
-          error: getTRPCErrorFromUnknown(cause),
-          marker: middlewareMarker
-        };
-      }
-    };
-    const result = await callRecursive();
-    if (!result) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "No result from middlewares - did you forget to `return next()`?"
-      });
-    }
-    if (!result.ok) {
-      throw result.error;
-    }
-    return result.data;
-  };
-  procedure._def = _def;
-  procedure.meta = _def.meta;
-  return procedure;
-}
-function mergeRouters(...routerList) {
-  const record = mergeWithoutOverrides({}, ...routerList.map((r) => r._def.record));
-  const errorFormatter = routerList.reduce((currentErrorFormatter, nextRouter) => {
-    if (nextRouter._def._config.errorFormatter && nextRouter._def._config.errorFormatter !== defaultFormatter) {
-      if (currentErrorFormatter !== defaultFormatter && currentErrorFormatter !== nextRouter._def._config.errorFormatter) {
-        throw new Error("You seem to have several error formatters");
-      }
-      return nextRouter._def._config.errorFormatter;
-    }
-    return currentErrorFormatter;
-  }, defaultFormatter);
-  const transformer = routerList.reduce((prev, current) => {
-    if (current._def._config.transformer && current._def._config.transformer !== defaultTransformer) {
-      if (prev !== defaultTransformer && prev !== current._def._config.transformer) {
-        throw new Error("You seem to have several transformers");
-      }
-      return current._def._config.transformer;
-    }
-    return prev;
-  }, defaultTransformer);
-  const router = createRouterFactory({
-    errorFormatter,
-    transformer,
-    isDev: routerList.some((r) => r._def._config.isDev),
-    allowOutsideOfServer: routerList.some((r) => r._def._config.allowOutsideOfServer),
-    isServer: routerList.some((r) => r._def._config.isServer),
-    $types: routerList[0]?._def._config.$types
-  })(record);
-  return router;
-}
-
-class TRPCBuilder {
-  context() {
-    return new TRPCBuilder;
-  }
-  meta() {
-    return new TRPCBuilder;
-  }
-  create(options) {
-    return createTRPCInner()(options);
-  }
-}
-var initTRPC = new TRPCBuilder;
-function createTRPCInner() {
-  return function initTRPCInner(runtime) {
-    const errorFormatter = runtime?.errorFormatter ?? defaultFormatter;
-    const transformer = getDataTransformer(runtime?.transformer ?? defaultTransformer);
-    const config = {
-      transformer,
-      isDev: runtime?.isDev ?? globalThis.process?.env?.NODE_ENV !== "production",
-      allowOutsideOfServer: runtime?.allowOutsideOfServer ?? false,
-      errorFormatter,
-      isServer: runtime?.isServer ?? isServerDefault,
-      $types: createFlatProxy((key) => {
-        throw new Error(`Tried to access "$types.${key}" which is not available at runtime`);
-      })
-    };
-    {
-      const isServer = runtime?.isServer ?? isServerDefault;
-      if (!isServer && runtime?.allowOutsideOfServer !== true) {
-        throw new Error(`You're trying to use @trpc/server in a non-server environment. This is not supported by default.`);
-      }
-    }
-    return {
-      _config: config,
-      procedure: createBuilder({
-        meta: runtime?.defaultMeta
-      }),
-      middleware: createMiddlewareFactory(),
-      router: createRouterFactory(config),
-      mergeRouters,
-      createCallerFactory: createCallerFactory()
-    };
-  };
-}
-
-// src/trpc.ts
-var t = initTRPC.context().create();
-var router = t.router;
-var publicProcedure = t.procedure;
 
 // ../../node_modules/.bun/zod@3.25.76/node_modules/zod/v3/external.js
 var exports_external = {};
@@ -2904,8 +2556,8 @@ var ZodParsedType = util.arrayToEnum([
   "set"
 ]);
 var getParsedType = (data) => {
-  const t2 = typeof data;
-  switch (t2) {
+  const t = typeof data;
+  switch (t) {
     case "undefined":
       return ZodParsedType.undefined;
     case "string":
@@ -6675,7 +6327,10 @@ var coerce = {
   date: (arg) => ZodDate.create({ ...arg, coerce: true })
 };
 var NEVER = INVALID;
-// src/routers/books.ts
+// ../library-trpc/src/schemas.ts
+var NamePayloadSchema = exports_external.object({
+  name: exports_external.string()
+});
 var BookUpsertSchema = exports_external.object({
   title: exports_external.string(),
   author: exports_external.string().nullable().optional(),
@@ -6694,12 +6349,361 @@ var BookListQuerySchema = exports_external.object({
   publisherId: exports_external.number().optional(),
   genreId: exports_external.number().optional()
 });
+// ../../node_modules/.bun/@trpc+server@10.45.4/node_modules/@trpc/server/dist/index.mjs
+function getParseFn(procedureParser) {
+  const parser = procedureParser;
+  if (typeof parser === "function") {
+    return parser;
+  }
+  if (typeof parser.parseAsync === "function") {
+    return parser.parseAsync.bind(parser);
+  }
+  if (typeof parser.parse === "function") {
+    return parser.parse.bind(parser);
+  }
+  if (typeof parser.validateSync === "function") {
+    return parser.validateSync.bind(parser);
+  }
+  if (typeof parser.create === "function") {
+    return parser.create.bind(parser);
+  }
+  if (typeof parser.assert === "function") {
+    return (value) => {
+      parser.assert(value);
+      return value;
+    };
+  }
+  throw new Error("Could not find a validator fn");
+}
+function mergeWithoutOverrides(obj1, ...objs) {
+  const newObj = Object.assign(Object.create(null), obj1);
+  for (const overrides of objs) {
+    for (const key in overrides) {
+      if (key in newObj && newObj[key] !== overrides[key]) {
+        throw new Error(`Duplicate key ${key}`);
+      }
+      newObj[key] = overrides[key];
+    }
+  }
+  return newObj;
+}
+function createMiddlewareFactory() {
+  function createMiddlewareInner(middlewares) {
+    return {
+      _middlewares: middlewares,
+      unstable_pipe(middlewareBuilderOrFn) {
+        const pipedMiddleware = "_middlewares" in middlewareBuilderOrFn ? middlewareBuilderOrFn._middlewares : [
+          middlewareBuilderOrFn
+        ];
+        return createMiddlewareInner([
+          ...middlewares,
+          ...pipedMiddleware
+        ]);
+      }
+    };
+  }
+  function createMiddleware(fn) {
+    return createMiddlewareInner([
+      fn
+    ]);
+  }
+  return createMiddleware;
+}
+function isPlainObject(obj) {
+  return obj && typeof obj === "object" && !Array.isArray(obj);
+}
+function createInputMiddleware(parse) {
+  const inputMiddleware = async ({ next, rawInput, input }) => {
+    let parsedInput;
+    try {
+      parsedInput = await parse(rawInput);
+    } catch (cause) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        cause
+      });
+    }
+    const combinedInput = isPlainObject(input) && isPlainObject(parsedInput) ? {
+      ...input,
+      ...parsedInput
+    } : parsedInput;
+    return next({
+      input: combinedInput
+    });
+  };
+  inputMiddleware._type = "input";
+  return inputMiddleware;
+}
+function createOutputMiddleware(parse) {
+  const outputMiddleware = async ({ next }) => {
+    const result = await next();
+    if (!result.ok) {
+      return result;
+    }
+    try {
+      const data = await parse(result.data);
+      return {
+        ...result,
+        data
+      };
+    } catch (cause) {
+      throw new TRPCError({
+        message: "Output validation failed",
+        code: "INTERNAL_SERVER_ERROR",
+        cause
+      });
+    }
+  };
+  outputMiddleware._type = "output";
+  return outputMiddleware;
+}
+var middlewareMarker = "middlewareMarker";
+function createNewBuilder(def1, def2) {
+  const { middlewares = [], inputs, meta, ...rest } = def2;
+  return createBuilder({
+    ...mergeWithoutOverrides(def1, rest),
+    inputs: [
+      ...def1.inputs,
+      ...inputs ?? []
+    ],
+    middlewares: [
+      ...def1.middlewares,
+      ...middlewares
+    ],
+    meta: def1.meta && meta ? {
+      ...def1.meta,
+      ...meta
+    } : meta ?? def1.meta
+  });
+}
+function createBuilder(initDef = {}) {
+  const _def = {
+    inputs: [],
+    middlewares: [],
+    ...initDef
+  };
+  return {
+    _def,
+    input(input) {
+      const parser = getParseFn(input);
+      return createNewBuilder(_def, {
+        inputs: [
+          input
+        ],
+        middlewares: [
+          createInputMiddleware(parser)
+        ]
+      });
+    },
+    output(output) {
+      const parseOutput = getParseFn(output);
+      return createNewBuilder(_def, {
+        output,
+        middlewares: [
+          createOutputMiddleware(parseOutput)
+        ]
+      });
+    },
+    meta(meta) {
+      return createNewBuilder(_def, {
+        meta
+      });
+    },
+    unstable_concat(builder) {
+      return createNewBuilder(_def, builder._def);
+    },
+    use(middlewareBuilderOrFn) {
+      const middlewares = "_middlewares" in middlewareBuilderOrFn ? middlewareBuilderOrFn._middlewares : [
+        middlewareBuilderOrFn
+      ];
+      return createNewBuilder(_def, {
+        middlewares
+      });
+    },
+    query(resolver) {
+      return createResolver({
+        ..._def,
+        query: true
+      }, resolver);
+    },
+    mutation(resolver) {
+      return createResolver({
+        ..._def,
+        mutation: true
+      }, resolver);
+    },
+    subscription(resolver) {
+      return createResolver({
+        ..._def,
+        subscription: true
+      }, resolver);
+    }
+  };
+}
+function createResolver(_def, resolver) {
+  const finalBuilder = createNewBuilder(_def, {
+    resolver,
+    middlewares: [
+      async function resolveMiddleware(opts) {
+        const data = await resolver(opts);
+        return {
+          marker: middlewareMarker,
+          ok: true,
+          data,
+          ctx: opts.ctx
+        };
+      }
+    ]
+  });
+  return createProcedureCaller(finalBuilder._def);
+}
+var codeblock = `
+This is a client-only function.
+If you want to call this function on the server, see https://trpc.io/docs/server/server-side-calls
+`.trim();
+function createProcedureCaller(_def) {
+  const procedure = async function resolve(opts) {
+    if (!opts || !("rawInput" in opts)) {
+      throw new Error(codeblock);
+    }
+    const callRecursive = async (callOpts = {
+      index: 0,
+      ctx: opts.ctx
+    }) => {
+      try {
+        const middleware = _def.middlewares[callOpts.index];
+        const result2 = await middleware({
+          ctx: callOpts.ctx,
+          type: opts.type,
+          path: opts.path,
+          rawInput: callOpts.rawInput ?? opts.rawInput,
+          meta: _def.meta,
+          input: callOpts.input,
+          next(_nextOpts) {
+            const nextOpts = _nextOpts;
+            return callRecursive({
+              index: callOpts.index + 1,
+              ctx: nextOpts && "ctx" in nextOpts ? {
+                ...callOpts.ctx,
+                ...nextOpts.ctx
+              } : callOpts.ctx,
+              input: nextOpts && "input" in nextOpts ? nextOpts.input : callOpts.input,
+              rawInput: nextOpts && "rawInput" in nextOpts ? nextOpts.rawInput : callOpts.rawInput
+            });
+          }
+        });
+        return result2;
+      } catch (cause) {
+        return {
+          ok: false,
+          error: getTRPCErrorFromUnknown(cause),
+          marker: middlewareMarker
+        };
+      }
+    };
+    const result = await callRecursive();
+    if (!result) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "No result from middlewares - did you forget to `return next()`?"
+      });
+    }
+    if (!result.ok) {
+      throw result.error;
+    }
+    return result.data;
+  };
+  procedure._def = _def;
+  procedure.meta = _def.meta;
+  return procedure;
+}
+function mergeRouters(...routerList) {
+  const record = mergeWithoutOverrides({}, ...routerList.map((r) => r._def.record));
+  const errorFormatter = routerList.reduce((currentErrorFormatter, nextRouter) => {
+    if (nextRouter._def._config.errorFormatter && nextRouter._def._config.errorFormatter !== defaultFormatter) {
+      if (currentErrorFormatter !== defaultFormatter && currentErrorFormatter !== nextRouter._def._config.errorFormatter) {
+        throw new Error("You seem to have several error formatters");
+      }
+      return nextRouter._def._config.errorFormatter;
+    }
+    return currentErrorFormatter;
+  }, defaultFormatter);
+  const transformer = routerList.reduce((prev, current) => {
+    if (current._def._config.transformer && current._def._config.transformer !== defaultTransformer) {
+      if (prev !== defaultTransformer && prev !== current._def._config.transformer) {
+        throw new Error("You seem to have several transformers");
+      }
+      return current._def._config.transformer;
+    }
+    return prev;
+  }, defaultTransformer);
+  const router = createRouterFactory({
+    errorFormatter,
+    transformer,
+    isDev: routerList.some((r) => r._def._config.isDev),
+    allowOutsideOfServer: routerList.some((r) => r._def._config.allowOutsideOfServer),
+    isServer: routerList.some((r) => r._def._config.isServer),
+    $types: routerList[0]?._def._config.$types
+  })(record);
+  return router;
+}
+
+class TRPCBuilder {
+  context() {
+    return new TRPCBuilder;
+  }
+  meta() {
+    return new TRPCBuilder;
+  }
+  create(options) {
+    return createTRPCInner()(options);
+  }
+}
+var initTRPC = new TRPCBuilder;
+function createTRPCInner() {
+  return function initTRPCInner(runtime) {
+    const errorFormatter = runtime?.errorFormatter ?? defaultFormatter;
+    const transformer = getDataTransformer(runtime?.transformer ?? defaultTransformer);
+    const config = {
+      transformer,
+      isDev: runtime?.isDev ?? globalThis.process?.env?.NODE_ENV !== "production",
+      allowOutsideOfServer: runtime?.allowOutsideOfServer ?? false,
+      errorFormatter,
+      isServer: runtime?.isServer ?? isServerDefault,
+      $types: createFlatProxy((key) => {
+        throw new Error(`Tried to access "$types.${key}" which is not available at runtime`);
+      })
+    };
+    {
+      const isServer = runtime?.isServer ?? isServerDefault;
+      if (!isServer && runtime?.allowOutsideOfServer !== true) {
+        throw new Error(`You're trying to use @trpc/server in a non-server environment. This is not supported by default.`);
+      }
+    }
+    return {
+      _config: config,
+      procedure: createBuilder({
+        meta: runtime?.defaultMeta
+      }),
+      middleware: createMiddlewareFactory(),
+      router: createRouterFactory(config),
+      mergeRouters,
+      createCallerFactory: createCallerFactory()
+    };
+  };
+}
+
+// ../library-trpc/src/trpc.ts
+var t = initTRPC.context().create();
+var router = t.router;
+var publicProcedure = t.procedure;
+// ../library-trpc/src/routers/books.ts
 var booksRouter = router({
   list: publicProcedure.input(BookListQuerySchema.optional().default({ limit: 20, offset: 0 })).query(async ({ ctx, input }) => {
     return ctx.repositories.books.findWithFilters(input);
   }),
   getById: publicProcedure.input(exports_external.number()).query(async ({ ctx, input }) => {
-    const book = await ctx.repositories.books.findById(input);
+    const book = await ctx.repositories.books.findByIdWithRelations(input);
     if (!book) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
     }
@@ -6724,10 +6728,7 @@ var booksRouter = router({
   })
 });
 
-// src/routers/genres.ts
-var NamePayloadSchema = exports_external.object({
-  name: exports_external.string()
-});
+// ../library-trpc/src/routers/genres.ts
 var genresRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.repositories.genres.findAll();
@@ -6746,20 +6747,17 @@ var genresRouter = router({
   })
 });
 
-// src/routers/publishers.ts
-var NamePayloadSchema2 = exports_external.object({
-  name: exports_external.string()
-});
+// ../library-trpc/src/routers/publishers.ts
 var publishersRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.repositories.publishers.findAll();
   }),
-  create: publicProcedure.input(NamePayloadSchema2).mutation(async ({ ctx, input }) => {
+  create: publicProcedure.input(NamePayloadSchema).mutation(async ({ ctx, input }) => {
     return ctx.repositories.publishers.create(input);
   }),
   update: publicProcedure.input(exports_external.object({
     id: exports_external.number(),
-    data: NamePayloadSchema2
+    data: NamePayloadSchema
   })).mutation(async ({ ctx, input }) => {
     return ctx.repositories.publishers.update(input.id, input.data);
   }),
@@ -6768,13 +6766,12 @@ var publishersRouter = router({
   })
 });
 
-// src/routers/_app.ts
+// ../library-trpc/src/routers/_app.ts
 var appRouter = router({
   books: booksRouter,
   genres: genresRouter,
   publishers: publishersRouter
 });
-
 // ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/entity.js
 var entityKind = Symbol.for("drizzle:entityKind");
 var hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
@@ -8683,6 +8680,49 @@ function sqliteTableBase(name, columns, extraConfig, schema, baseName = name) {
 var sqliteTable = (name, columns, extraConfig) => {
   return sqliteTableBase(name, columns, extraConfig);
 };
+
+// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/indexes.js
+class IndexBuilderOn {
+  constructor(name, unique) {
+    this.name = name;
+    this.unique = unique;
+  }
+  static [entityKind] = "SQLiteIndexBuilderOn";
+  on(...columns) {
+    return new IndexBuilder(this.name, columns, this.unique);
+  }
+}
+
+class IndexBuilder {
+  static [entityKind] = "SQLiteIndexBuilder";
+  config;
+  constructor(name, columns, unique) {
+    this.config = {
+      name,
+      columns,
+      unique,
+      where: undefined
+    };
+  }
+  where(condition) {
+    this.config.where = condition;
+    return this;
+  }
+  build(table) {
+    return new Index(this.config, table);
+  }
+}
+
+class Index {
+  static [entityKind] = "SQLiteIndex";
+  config;
+  constructor(config, table) {
+    this.config = { ...config, table };
+  }
+}
+function uniqueIndex(name) {
+  return new IndexBuilderOn(name, true);
+}
 
 // ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/primary-keys.js
 function primaryKey(...config) {
@@ -10765,7 +10805,10 @@ var book = sqliteTable("book", {
   publisherId: integer("publisher_id").references(getPublisherId, {
     onDelete: "set null"
   })
-});
+}, (t2) => ({
+  isbnIdx: uniqueIndex("book_isbn_idx").on(t2.isbn),
+  uniqueBookIdx: uniqueIndex("book_unique_idx").on(t2.title, t2.author, t2.isbn)
+}));
 var bookGenre = sqliteTable("book_genre", {
   bookId: integer("book_id").notNull().references(() => book.id, { onDelete: "cascade" }),
   genreId: integer("genre_id").notNull().references(getGenreId, { onDelete: "cascade" })
@@ -10812,11 +10855,6 @@ var uploadStatus = sqliteTable("upload_status", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
-
-// ../library-data-layer/src/db.ts
-function initDB(d1) {
-  return drizzle(d1, { schema: exports_schema });
-}
 // ../../node_modules/.bun/@logtape+logtape@2.0.4/node_modules/@logtape/logtape/dist/context.js
 var categoryPrefixSymbol = Symbol.for("logtape.categoryPrefix");
 function getCategoryPrefix() {
@@ -12420,6 +12458,14 @@ async function setupLogging(options) {
   const isMiniflare = globalThis.MINIFLARE === true;
   const isCloudflare = globalThis.navigator?.userAgent === "Cloudflare-Workers";
   const usePlainText = options?.environment === "production" || isCloudflare && !isMiniflare;
+  let lowestLevel = options?.lowestLevel;
+  if (!lowestLevel) {
+    lowestLevel = options?.environment === "production" ? "info" : "debug";
+  }
+  const isTest = typeof process !== "undefined" && false || globalThis.VITEST === "true";
+  if (isTest && !options?.lowestLevel) {
+    lowestLevel = "warning";
+  }
   await configure({
     sinks: {
       console: getConsoleSink({
@@ -12430,7 +12476,7 @@ async function setupLogging(options) {
     loggers: [
       {
         category: ["library"],
-        lowestLevel: "debug",
+        lowestLevel,
         sinks: ["console"]
       }
     ]
@@ -12443,6 +12489,29 @@ function getLibraryLogger(category) {
 var layerLogger = getLibraryLogger(["library", "data-layer"]);
 var loaderLogger = getLibraryLogger(["library", "data-loader"]);
 
+// ../library-data-layer/src/db.ts
+function initDB(d1) {
+  return drizzle(d1, { schema: exports_schema });
+}
+async function runMigrations(db, sqlStatements) {
+  for (const statement of sqlStatements) {
+    if (statement.trim().length > 0) {
+      try {
+        await db.prepare(statement).run();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes("already exists")) {
+          layerLogger.info(`[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+}
+function splitMigrationStatements(content) {
+  return content.split("--> statement-breakpoint").map((s) => s.trim()).filter((s) => s.length > 0);
+}
 // ../library-data-layer/src/repositories/book.repository.ts
 class BookRepository {
   db;
@@ -12577,6 +12646,26 @@ class BookRepository {
   }
   async findByIsbn(isbn) {
     const result = await this.db.select().from(book).where(eq(book.isbn, isbn));
+    return result[0];
+  }
+  async findByUniqueCriteria(title, author, isbn) {
+    if (isbn) {
+      const byIsbn = await this.findByIsbn(isbn);
+      if (byIsbn)
+        return byIsbn;
+    }
+    const conditions = [eq(book.title, title)];
+    if (author) {
+      conditions.push(eq(book.author, author));
+    } else {
+      conditions.push(isNull(book.author));
+    }
+    if (isbn) {
+      conditions.push(eq(book.isbn, isbn));
+    } else {
+      conditions.push(isNull(book.isbn));
+    }
+    const result = await this.db.select().from(book).where(and(...conditions));
     return result[0];
   }
   async findByBarcode(barcode) {
@@ -12934,11 +13023,28 @@ function honoLogger(options = {}) {
   });
 }
 
+// src/migrations.ts
+var migrations = [
+  {
+    file: "0000_calm_ma_gnuci.sql",
+    content: "CREATE TABLE `book` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`title` text(500) NOT NULL,\n\t`author` text(300),\n\t`isbn` text(20),\n\t`barcode` text(50),\n\t`price` real,\n\t`language` text(50),\n\t`publisher_id` integer,\n\tFOREIGN KEY (`publisher_id`) REFERENCES `publisher`(`id`) ON UPDATE no action ON DELETE set null\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `book_isbn_idx` ON `book` (`isbn`);--> statement-breakpoint\nCREATE UNIQUE INDEX `book_unique_idx` ON `book` (`title`,`author`,`isbn`);--> statement-breakpoint\nCREATE TABLE `book_genre` (\n\t`book_id` integer NOT NULL,\n\t`genre_id` integer NOT NULL,\n\tPRIMARY KEY(`book_id`, `genre_id`),\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade,\n\tFOREIGN KEY (`genre_id`) REFERENCES `genre`(`id`) ON UPDATE no action ON DELETE cascade\n);\n--> statement-breakpoint\nCREATE TABLE `genre` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text(100) NOT NULL\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `genre_name_unique` ON `genre` (`name`);--> statement-breakpoint\nCREATE TABLE `publisher` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text(200) NOT NULL\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `publisher_name_unique` ON `publisher` (`name`);--> statement-breakpoint\nCREATE TABLE `upload_status` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`status` text NOT NULL,\n\t`filename` text,\n\t`books_count` integer DEFAULT 0,\n\t`processed_count` integer DEFAULT 0,\n\t`error` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);\n"
+  }
+];
+
 // src/index.ts
 var app = new Hono2;
+var migrationsApplied = false;
 app.use("*", honoLogger());
 app.use("*", async (c, next) => {
   await setupLogging({ environment: c.env.ENVIRONMENT });
+  await next();
+});
+app.use("/api/*", async (c, next) => {
+  if (!migrationsApplied) {
+    const allStatements = migrations.flatMap((m) => splitMigrationStatements(m.content));
+    await runMigrations(c.env.DB, allStatements);
+    migrationsApplied = true;
+  }
   await next();
 });
 app.all("/api/*", (c) => {

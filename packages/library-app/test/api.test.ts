@@ -3,7 +3,7 @@ import { join } from "path";
 import worker from "../src/index";
 import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-utils";
 import { createTRPCProxyClient, httpLink } from '@trpc/client';
-import type { AppRouter } from '../src/routers/_app';
+import type { AppRouter } from 'library-trpc';
 
 describe("Library App API Tests", () => {
   let testEnv: TestEnv;
