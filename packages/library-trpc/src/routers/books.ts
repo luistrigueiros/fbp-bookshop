@@ -25,6 +25,22 @@ export const booksRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.repositories.books.create(input);
     }),
+
+  upsert: publicProcedure
+    .input(BookUpsertSchema)
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.repositories.books.findByUniqueCriteria(
+        input.title,
+        input.author ?? null,
+        input.isbn ?? null
+      );
+
+      if (existing) {
+        return ctx.repositories.books.update(existing.id, input);
+      } else {
+        return ctx.repositories.books.create(input);
+      }
+    }),
     
   update: publicProcedure
     .input(z.object({

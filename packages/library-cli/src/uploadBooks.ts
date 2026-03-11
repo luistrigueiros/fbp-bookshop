@@ -20,7 +20,7 @@ export async function uploadBooks(
                 ? publisherMap.get(book.publisher.name.toLowerCase())
                 : undefined;
 
-            await client.books.create.mutate({
+            await client.books.upsert.mutate({
                 title: book.title,
                 author: book.author,
                 isbn: book.isbn,
