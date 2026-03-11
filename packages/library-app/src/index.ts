@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from 'library-trpc';
-import { createContext } from './context';
+import { createContext } from '@/context';
 import { honoLogger } from '@logtape/hono';
 import { setupLogging, runMigrations, splitMigrationStatements } from 'library-data-layer';
 import type { D1Database } from '@cloudflare/workers-types';
-import { migrations } from './migrations';
+import { migrations } from '@/migrations';
 
 
 type Bindings = {
@@ -29,7 +29,7 @@ app.use('*', async (c, next) => {
 // is always initialised before any query runs.
 app.use('/api/*', async (c, next) => {
   if (!migrationsApplied) {
-    const allStatements = migrations.flatMap((m) => splitMigrationStatements(m.content));
+    const allStatements = migrations.flatMap((m: { content: string }) => splitMigrationStatements(m.content));
     await runMigrations(c.env.DB, allStatements);
     migrationsApplied = true;
   }
@@ -42,7 +42,7 @@ app.all('/api/*', (c) => {
     endpoint: '/api',
     req: c.req.raw,
     router: appRouter,
-    createContext: (opts) => createContext({ ...opts, ...{ env: c.env } }),
+    createContext: (opts: any) => createContext({ ...opts, ...{ env: c.env } }),
   });
 });
 

@@ -6,7 +6,8 @@
     "baseUrl": ".",
     "types": ["bun", "@cloudflare/workers-types"],
     "paths": {
-      "library-cli": ["src/index.ts"]
+      "library-cli/*": ["src/*"],
+      "library-trpc/*": ["../library-trpc/src/*"]
     }
   },
   "include": ["src/**/*"]

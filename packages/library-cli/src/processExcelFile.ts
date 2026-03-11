@@ -1,9 +1,9 @@
-import {extractDataFromExcel} from "./utils";
+import {extractDataFromExcel} from "library-cli/utils";
 import {readFileSync} from "fs";
-import {uploadGenres} from "./uploadGenres";
-import {uploadPublishers} from "./uploadPublishers";
-import {uploadBooks} from "./uploadBooks";
-import {createAndCheckClient} from "./createAndCheckClient";
+import {uploadGenres} from "library-cli/uploadGenres";
+import {uploadPublishers} from "library-cli/uploadPublishers";
+import {uploadBooks} from "library-cli/uploadBooks";
+import {createAndCheckClient} from "library-cli/createAndCheckClient";
 
 export async function processExcelFile(file: string, options: { url: string }) {
     try {

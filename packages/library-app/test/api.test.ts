@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, afterAll } from "bun:test";
 import { join } from "path";
-import worker from "../src/index";
+import worker from "@/index";
 import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-utils";
 import { createTRPCProxyClient, httpLink } from '@trpc/client';
 import type { AppRouter } from 'library-trpc';
@@ -31,7 +31,7 @@ describe("Library App API Tests", () => {
       links: [
         httpLink({
           url: 'http://localhost/api',
-          // @ts-ignore
+          // @ts-expect-error: worker.fetch expects CloudflareBindings which are slightly different from our test env but compatible for this test
           fetch: proxyFetch,
         }),
       ],
@@ -86,7 +86,7 @@ describe("Library App API Tests", () => {
     expect(newBook.id).toBeGreaterThan(0);
 
     const list = await trpc.books.list.query();
-    const found = list.data.find(b => b.id === newBook.id);
+    const found = list.data.find((b: any) => b.id === newBook.id);
     expect(found).toBeDefined();
     expect(found?.author).toBe("Frank Herbert");
 

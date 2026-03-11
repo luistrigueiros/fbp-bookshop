@@ -6339,7 +6339,12 @@ var BookUpsertSchema = exports_external.object({
   price: exports_external.number().nullable().optional(),
   language: exports_external.string().nullable().optional(),
   genreIds: exports_external.array(exports_external.number()).optional(),
-  publisherId: exports_external.number().nullable().optional()
+  publisherId: exports_external.number().nullable().optional(),
+  stock: exports_external.object({
+    bookshelf: exports_external.string().nullable().optional(),
+    numberOfCopies: exports_external.number().min(0).optional(),
+    numberOfCopiesSold: exports_external.number().min(0).optional()
+  }).optional()
 });
 var BookListQuerySchema = exports_external.object({
   limit: exports_external.number().min(1).max(100).optional().default(20),
@@ -6712,6 +6717,14 @@ var booksRouter = router({
   create: publicProcedure.input(BookUpsertSchema).mutation(async ({ ctx, input }) => {
     return ctx.repositories.books.create(input);
   }),
+  upsert: publicProcedure.input(BookUpsertSchema).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.repositories.books.findByUniqueCriteria(input.title, input.author ?? null, input.isbn ?? null);
+    if (existing) {
+      return ctx.repositories.books.update(existing.id, input);
+    } else {
+      return ctx.repositories.books.create(input);
+    }
+  }),
   update: publicProcedure.input(exports_external.object({
     id: exports_external.number(),
     data: BookUpsertSchema
@@ -6768,11 +6781,14 @@ var publishersRouter = router({
 
 // ../library-trpc/src/routers/_app.ts
 var appRouter = router({
+  ping: publicProcedure.query(() => {
+    return "pong";
+  }),
   books: booksRouter,
   genres: genresRouter,
   publishers: publishersRouter
 });
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/entity.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/entity.js
 var entityKind = Symbol.for("drizzle:entityKind");
 var hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
 function is(value, type) {
@@ -6797,7 +6813,7 @@ function is(value, type) {
   return false;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/logger.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/logger.js
 class ConsoleLogWriter {
   static [entityKind] = "ConsoleLogWriter";
   write(message) {
@@ -6829,10 +6845,10 @@ class NoopLogger {
   logQuery() {}
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/table.utils.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/table.utils.js
 var TableName = Symbol.for("drizzle:Name");
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/table.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/table.js
 var Schema = Symbol.for("drizzle:Schema");
 var Columns = Symbol.for("drizzle:Columns");
 var ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
@@ -6876,7 +6892,7 @@ function getTableUniqueName(table) {
   return `${table[Schema] ?? "public"}.${table[TableName]}`;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/column.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/column.js
 class Column {
   constructor(table, config) {
     this.table = table;
@@ -6926,7 +6942,7 @@ class Column {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/column-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/column-builder.js
 class ColumnBuilder {
   static [entityKind] = "ColumnBuilder";
   config;
@@ -6982,17 +6998,17 @@ class ColumnBuilder {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/tracing-utils.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/tracing-utils.js
 function iife(fn, ...args) {
   return fn(...args);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/pg-core/unique-constraint.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/pg-core/unique-constraint.js
 function uniqueKeyName(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/pg-core/columns/common.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/pg-core/columns/common.js
 class PgColumn extends Column {
   constructor(table, config) {
     if (!config.uniqueName) {
@@ -7041,7 +7057,7 @@ class ExtraConfigColumn extends PgColumn {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/pg-core/columns/enum.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/pg-core/columns/enum.js
 class PgEnumObjectColumn extends PgColumn {
   static [entityKind] = "PgEnumObjectColumn";
   enum;
@@ -7071,7 +7087,7 @@ class PgEnumColumn extends PgColumn {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/subquery.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/subquery.js
 class Subquery {
   static [entityKind] = "Subquery";
   constructor(sql, fields, alias, isWith = false, usedTables = []) {
@@ -7090,10 +7106,10 @@ class WithSubquery extends Subquery {
   static [entityKind] = "WithSubquery";
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/version.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/version.js
 var version = "0.45.1";
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/tracing.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/tracing.js
 var otel;
 var rawTracer;
 var tracer = {
@@ -7120,10 +7136,10 @@ var tracer = {
   }
 };
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/view-common.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/view-common.js
 var ViewBaseConfig = Symbol.for("drizzle:ViewBaseConfig");
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sql/sql.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sql/sql.js
 function isSQLWrapper(value) {
   return value !== null && value !== undefined && typeof value.getSQL === "function";
 }
@@ -7503,7 +7519,7 @@ Subquery.prototype.getSQL = function() {
   return new SQL([this]);
 };
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/utils.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/utils.js
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce((result2, { path, field }, columnIndex) => {
@@ -7613,7 +7629,7 @@ function getColumnNameAndConfig(a, b) {
 }
 var textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder;
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/pg-core/table.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/pg-core/table.js
 var InlineForeignKeys = Symbol.for("drizzle:PgInlineForeignKeys");
 var EnableRLS = Symbol.for("drizzle:EnableRLS");
 
@@ -7629,7 +7645,7 @@ class PgTable extends Table {
   [Table.Symbol.ExtraConfigColumns] = {};
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/pg-core/primary-keys.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/pg-core/primary-keys.js
 class PrimaryKeyBuilder {
   static [entityKind] = "PgPrimaryKeyBuilder";
   columns;
@@ -7657,7 +7673,7 @@ class PrimaryKey {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sql/expressions/conditions.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sql/expressions/conditions.js
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
     return new Param(value, column);
@@ -7762,7 +7778,7 @@ function notIlike(column, value) {
   return sql`${column} not ilike ${value}`;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sql/expressions/select.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sql/expressions/select.js
 function asc(column) {
   return sql`${column} asc`;
 }
@@ -7770,7 +7786,7 @@ function desc(column) {
   return sql`${column} desc`;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/relations.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/relations.js
 class Relation {
   constructor(sourceTable, referencedTable, relationName) {
     this.sourceTable = sourceTable;
@@ -7996,7 +8012,7 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/alias.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/alias.js
 class ColumnAliasProxyHandler {
   constructor(table) {
     this.table = table;
@@ -8075,7 +8091,7 @@ function mapColumnsInSQLToAlias(query, alias) {
   }));
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/selection-proxy.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/selection-proxy.js
 class SelectionProxyHandler {
   static [entityKind] = "SelectionProxyHandler";
   config;
@@ -8127,7 +8143,7 @@ class SelectionProxyHandler {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/query-promise.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/query-promise.js
 class QueryPromise {
   static [entityKind] = "QueryPromise";
   [Symbol.toStringTag] = "QueryPromise";
@@ -8148,7 +8164,7 @@ class QueryPromise {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/foreign-keys.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/foreign-keys.js
 class ForeignKeyBuilder {
   static [entityKind] = "SQLiteForeignKeyBuilder";
   reference;
@@ -8202,12 +8218,12 @@ class ForeignKey {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/unique-constraint.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/unique-constraint.js
 function uniqueKeyName2(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/common.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/common.js
 class SQLiteColumnBuilder extends ColumnBuilder {
   static [entityKind] = "SQLiteColumnBuilder";
   foreignKeyConfigs = [];
@@ -8258,7 +8274,7 @@ class SQLiteColumn extends Column {
   static [entityKind] = "SQLiteColumn";
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/blob.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/blob.js
 class SQLiteBigIntBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteBigIntBuilder";
   constructor(name) {
@@ -8346,7 +8362,7 @@ function blob(a, b) {
   return new SQLiteBlobBufferBuilder(name);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/custom.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/custom.js
 class SQLiteCustomColumnBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteCustomColumnBuilder";
   constructor(name, fieldConfig, customTypeParams) {
@@ -8387,7 +8403,7 @@ function customType(customTypeParams) {
   };
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/integer.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/integer.js
 class SQLiteBaseIntegerBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteBaseIntegerBuilder";
   constructor(name, dataType, columnType) {
@@ -8489,7 +8505,7 @@ function integer(a, b) {
   return new SQLiteIntegerBuilder(name);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/numeric.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/numeric.js
 class SQLiteNumericBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteNumericBuilder";
   constructor(name) {
@@ -8559,7 +8575,7 @@ function numeric(a, b) {
   return mode === "number" ? new SQLiteNumericNumberBuilder(name) : mode === "bigint" ? new SQLiteNumericBigIntBuilder(name) : new SQLiteNumericBuilder(name);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/real.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/real.js
 class SQLiteRealBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteRealBuilder";
   constructor(name) {
@@ -8580,7 +8596,7 @@ function real(name) {
   return new SQLiteRealBuilder(name ?? "");
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/text.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/text.js
 class SQLiteTextBuilder extends SQLiteColumnBuilder {
   static [entityKind] = "SQLiteTextBuilder";
   constructor(name, config) {
@@ -8635,7 +8651,7 @@ function text(a, b = {}) {
   return new SQLiteTextBuilder(name, config);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/columns/all.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/columns/all.js
 function getSQLiteColumnBuilders() {
   return {
     blob,
@@ -8647,7 +8663,7 @@ function getSQLiteColumnBuilders() {
   };
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/table.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/table.js
 var InlineForeignKeys2 = Symbol.for("drizzle:SQLiteInlineForeignKeys");
 
 class SQLiteTable extends Table {
@@ -8681,7 +8697,7 @@ var sqliteTable = (name, columns, extraConfig) => {
   return sqliteTableBase(name, columns, extraConfig);
 };
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/indexes.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/indexes.js
 class IndexBuilderOn {
   constructor(name, unique) {
     this.name = name;
@@ -8724,7 +8740,7 @@ function uniqueIndex(name) {
   return new IndexBuilderOn(name, true);
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/primary-keys.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/primary-keys.js
 function primaryKey(...config) {
   if (config[0].columns) {
     return new PrimaryKeyBuilder2(config[0].columns, config[0].name);
@@ -8759,7 +8775,7 @@ class PrimaryKey2 {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/utils.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/utils.js
 function extractUsedTable(table) {
   if (is(table, SQLiteTable)) {
     return [`${table[Table.Symbol.BaseName]}`];
@@ -8773,7 +8789,7 @@ function extractUsedTable(table) {
   return [];
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/delete.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/delete.js
 class SQLiteDeleteBase extends QueryPromise {
   constructor(table, session, dialect, withList) {
     super();
@@ -8843,7 +8859,7 @@ class SQLiteDeleteBase extends QueryPromise {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/casing.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/casing.js
 function toSnakeCase(input) {
   const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
   return words.map((word) => word.toLowerCase()).join("_");
@@ -8896,7 +8912,7 @@ class CasingCache {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/errors.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/errors.js
 class DrizzleError extends Error {
   static [entityKind] = "DrizzleError";
   constructor({ message, cause }) {
@@ -8926,12 +8942,12 @@ class TransactionRollbackError extends DrizzleError {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/view-base.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/view-base.js
 class SQLiteViewBase extends View {
   static [entityKind] = "SQLiteViewBase";
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/dialect.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/dialect.js
 class SQLiteDialect {
   static [entityKind] = "SQLiteDialect";
   casing;
@@ -9508,7 +9524,7 @@ class SQLiteAsyncDialect extends SQLiteDialect {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/query-builders/query-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/query-builders/query-builder.js
 class TypedQueryBuilder {
   static [entityKind] = "TypedQueryBuilder";
   getSelectedFields() {
@@ -9516,7 +9532,7 @@ class TypedQueryBuilder {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/select.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/select.js
 class SQLiteSelectBuilder {
   static [entityKind] = "SQLiteSelectBuilder";
   fields;
@@ -9814,7 +9830,7 @@ var unionAll = createSetOperator("union", true);
 var intersect = createSetOperator("intersect", false);
 var except = createSetOperator("except", false);
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/query-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/query-builder.js
 class QueryBuilder {
   static [entityKind] = "SQLiteQueryBuilder";
   dialect;
@@ -9873,7 +9889,7 @@ class QueryBuilder {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/insert.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/insert.js
 class SQLiteInsertBuilder {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -9982,7 +9998,7 @@ class SQLiteInsertBase extends QueryPromise {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/update.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/update.js
 class SQLiteUpdateBuilder {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -10086,7 +10102,7 @@ class SQLiteUpdateBase extends QueryPromise {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/count.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/count.js
 class SQLiteCountBuilder extends SQL {
   constructor(params) {
     super(SQLiteCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
@@ -10121,7 +10137,7 @@ class SQLiteCountBuilder extends SQL {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/query.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/query.js
 class RelationalQueryBuilder {
   constructor(mode, fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
     this.mode = mode;
@@ -10215,7 +10231,7 @@ class SQLiteSyncRelationalQuery extends SQLiteRelationalQuery {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/query-builders/raw.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/query-builders/raw.js
 class SQLiteRaw extends QueryPromise {
   constructor(execute, getSQL, action, dialect, mapBatchResult) {
     super();
@@ -10241,7 +10257,7 @@ class SQLiteRaw extends QueryPromise {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/db.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/db.js
 class BaseSQLiteDatabase {
   constructor(resultKind, dialect, session, schema) {
     this.resultKind = resultKind;
@@ -10364,7 +10380,7 @@ class BaseSQLiteDatabase {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/cache/core/cache.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/cache/core/cache.js
 class Cache {
   static [entityKind] = "Cache";
 }
@@ -10390,7 +10406,7 @@ async function hashQuery(sql2, params) {
   return hashHex;
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/sqlite-core/session.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/sqlite-core/session.js
 class ExecuteResultSync extends QueryPromise {
   constructor(resultCb) {
     super();
@@ -10563,7 +10579,7 @@ class SQLiteTransaction extends BaseSQLiteDatabase {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/d1/session.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/d1/session.js
 class SQLiteD1Session extends SQLiteSession {
   constructor(client, dialect, schema, options = {}) {
     super(dialect);
@@ -10731,7 +10747,7 @@ class D1PreparedQuery extends SQLitePreparedQuery {
   }
 }
 
-// ../../node_modules/.bun/drizzle-orm@0.45.1+f9c7c359105f431c/node_modules/drizzle-orm/d1/driver.js
+// ../../node_modules/.bun/drizzle-orm@0.45.1+44c35430ad020a3b/node_modules/drizzle-orm/d1/driver.js
 class DrizzleD1Database extends BaseSQLiteDatabase {
   static [entityKind] = "D1Database";
   async batch(batch) {
@@ -10775,6 +10791,8 @@ __export(exports_schema, {
   getGenreId: () => getGenreId,
   genreRelations: () => genreRelations,
   genre: () => genre,
+  bookStockRelations: () => bookStockRelations,
+  bookStock: () => bookStock,
   bookRelations: () => bookRelations,
   bookGenreRelations: () => bookGenreRelations,
   bookGenre: () => bookGenre,
@@ -10809,6 +10827,13 @@ var book = sqliteTable("book", {
   isbnIdx: uniqueIndex("book_isbn_idx").on(t2.isbn),
   uniqueBookIdx: uniqueIndex("book_unique_idx").on(t2.title, t2.author, t2.isbn)
 }));
+var bookStock = sqliteTable("book_stock", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookId: integer("book_id").notNull().unique().references(() => book.id, { onDelete: "cascade" }),
+  bookshelf: text("bookshelf", { length: 100 }),
+  numberOfCopies: integer("number_of_copies").default(0).notNull(),
+  numberOfCopiesSold: integer("number_of_copies_sold").default(0).notNull()
+});
 var bookGenre = sqliteTable("book_genre", {
   bookId: integer("book_id").notNull().references(() => book.id, { onDelete: "cascade" }),
   genreId: integer("genre_id").notNull().references(getGenreId, { onDelete: "cascade" })
@@ -10820,7 +10845,14 @@ var bookRelations = relations(book, ({ one, many }) => ({
     fields: [book.publisherId],
     references: [publisher.id]
   }),
-  bookGenres: many(bookGenre)
+  bookGenres: many(bookGenre),
+  stock: one(bookStock)
+}));
+var bookStockRelations = relations(bookStock, ({ one }) => ({
+  book: one(book, {
+    fields: [bookStock.bookId],
+    references: [book.id]
+  })
 }));
 var genreRelations = relations(genre, ({ many }) => ({
   bookGenres: many(bookGenre)
@@ -12520,7 +12552,7 @@ class BookRepository {
   }
   async create(data) {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
-    const { genreIds, ...bookData } = data;
+    const { genreIds, stock, ...bookData } = data;
     const result = await this.db.insert(book).values(bookData).returning();
     const createdBook = result[0];
     if (genreIds && genreIds.length > 0) {
@@ -12529,6 +12561,12 @@ class BookRepository {
         genreId
       }));
       await this.db.insert(bookGenre).values(bookGenres);
+    }
+    if (stock) {
+      await this.db.insert(bookStock).values({
+        ...stock,
+        bookId: createdBook.id
+      });
     }
     layerLogger.info("Created book: {title} (ID: {id})", {
       title: createdBook.title,
@@ -12562,7 +12600,7 @@ class BookRepository {
     return result[0];
   }
   async findByIdWithRelations(id) {
-    return this.db.query.book.findFirst({
+    const bookData = await this.db.query.book.findFirst({
       where: eq(book.id, id),
       with: {
         bookGenres: {
@@ -12573,6 +12611,13 @@ class BookRepository {
         publisher: true
       }
     });
+    if (!bookData)
+      return;
+    const stockData = await this.db.select().from(bookStock).where(eq(bookStock.bookId, id));
+    return {
+      ...bookData,
+      stock: stockData[0] || null
+    };
   }
   async findAll() {
     return this.db.select().from(book);
@@ -12674,7 +12719,7 @@ class BookRepository {
   }
   async update(id, data) {
     layerLogger.debug("Updating book ID: {id}", { id });
-    const { genreIds, ...bookData } = data;
+    const { genreIds, stock, ...bookData } = data;
     const result = await this.db.update(book).set(bookData).where(eq(book.id, id)).returning();
     const updatedBook = result[0];
     if (updatedBook && genreIds !== undefined) {
@@ -12685,6 +12730,17 @@ class BookRepository {
           genreId
         }));
         await this.db.insert(bookGenre).values(bookGenres);
+      }
+    }
+    if (updatedBook && stock !== undefined) {
+      const existingStock = await this.db.select().from(bookStock).where(eq(bookStock.bookId, id));
+      if (existingStock.length > 0) {
+        await this.db.update(bookStock).set(stock).where(eq(bookStock.bookId, id));
+      } else {
+        await this.db.insert(bookStock).values({
+          ...stock,
+          bookId: id
+        });
       }
     }
     if (updatedBook) {
@@ -12698,6 +12754,63 @@ class BookRepository {
   }
   async count() {
     const result = await this.db.select().from(book);
+    return result.length;
+  }
+}
+// ../library-data-layer/src/repositories/book-stock.repository.ts
+class BookStockRepository {
+  db;
+  constructor(db) {
+    this.db = db;
+  }
+  async create(data) {
+    layerLogger.debug("Creating new book stock for book ID: {bookId}", {
+      bookId: data.bookId
+    });
+    const result = await this.db.insert(bookStock).values(data).returning();
+    const createdStock = result[0];
+    layerLogger.info("Created book stock for book ID: {bookId} (ID: {id})", {
+      bookId: createdStock.bookId,
+      id: createdStock.id
+    });
+    return createdStock;
+  }
+  async findById(id) {
+    const result = await this.db.select().from(bookStock).where(eq(bookStock.id, id));
+    return result[0];
+  }
+  async findByBookId(bookId) {
+    const result = await this.db.select().from(bookStock).where(eq(bookStock.bookId, bookId));
+    return result[0];
+  }
+  async update(id, data) {
+    layerLogger.debug("Updating book stock ID: {id}", { id });
+    const result = await this.db.update(bookStock).set(data).where(eq(bookStock.id, id)).returning();
+    const updatedStock = result[0];
+    if (updatedStock) {
+      layerLogger.info("Updated book stock ID: {id}", { id });
+    }
+    return updatedStock;
+  }
+  async updateByBookId(bookId, data) {
+    layerLogger.debug("Updating book stock for book ID: {bookId}", { bookId });
+    const result = await this.db.update(bookStock).set(data).where(eq(bookStock.bookId, bookId)).returning();
+    const updatedStock = result[0];
+    if (updatedStock) {
+      layerLogger.info("Updated book stock for book ID: {bookId}", { bookId });
+    }
+    return updatedStock;
+  }
+  async delete(id) {
+    const result = await this.db.delete(bookStock).where(eq(bookStock.id, id)).returning();
+    return result.length > 0;
+  }
+  async deleteByBookId(bookId) {
+    const result = await this.db.delete(bookStock).where(eq(bookStock.bookId, bookId)).returning();
+    return result.length > 0;
+  }
+  async count() {
+    const result = await this.db.select().from(bookStock);
     return result.length;
   }
 }
@@ -12893,6 +13006,7 @@ class UploadStatusRepository {
 function createRepositories(db) {
   return {
     books: new BookRepository(db),
+    bookStock: new BookStockRepository(db),
     genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db)
@@ -13027,7 +13141,27 @@ function honoLogger(options = {}) {
 var migrations = [
   {
     file: "0000_calm_ma_gnuci.sql",
-    content: "CREATE TABLE `book` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`title` text(500) NOT NULL,\n\t`author` text(300),\n\t`isbn` text(20),\n\t`barcode` text(50),\n\t`price` real,\n\t`language` text(50),\n\t`publisher_id` integer,\n\tFOREIGN KEY (`publisher_id`) REFERENCES `publisher`(`id`) ON UPDATE no action ON DELETE set null\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `book_isbn_idx` ON `book` (`isbn`);--> statement-breakpoint\nCREATE UNIQUE INDEX `book_unique_idx` ON `book` (`title`,`author`,`isbn`);--> statement-breakpoint\nCREATE TABLE `book_genre` (\n\t`book_id` integer NOT NULL,\n\t`genre_id` integer NOT NULL,\n\tPRIMARY KEY(`book_id`, `genre_id`),\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade,\n\tFOREIGN KEY (`genre_id`) REFERENCES `genre`(`id`) ON UPDATE no action ON DELETE cascade\n);\n--> statement-breakpoint\nCREATE TABLE `genre` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text(100) NOT NULL\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `genre_name_unique` ON `genre` (`name`);--> statement-breakpoint\nCREATE TABLE `publisher` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text(200) NOT NULL\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `publisher_name_unique` ON `publisher` (`name`);--> statement-breakpoint\nCREATE TABLE `upload_status` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`status` text NOT NULL,\n\t`filename` text,\n\t`books_count` integer DEFAULT 0,\n\t`processed_count` integer DEFAULT 0,\n\t`error` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);\n"
+    content: "CREATE TABLE `book` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`title` text(500) NOT NULL,\r\n\t`author` text(300),\r\n\t`isbn` text(20),\r\n\t`barcode` text(50),\r\n\t`price` real,\r\n\t`language` text(50),\r\n\t`publisher_id` integer,\r\n\tFOREIGN KEY (`publisher_id`) REFERENCES `publisher`(`id`) ON UPDATE no action ON DELETE set null\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_isbn_idx` ON `book` (`isbn`);--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_unique_idx` ON `book` (`title`,`author`,`isbn`);--> statement-breakpoint\r\nCREATE TABLE `book_genre` (\r\n\t`book_id` integer NOT NULL,\r\n\t`genre_id` integer NOT NULL,\r\n\tPRIMARY KEY(`book_id`, `genre_id`),\r\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade,\r\n\tFOREIGN KEY (`genre_id`) REFERENCES `genre`(`id`) ON UPDATE no action ON DELETE cascade\r\n);\r\n--> statement-breakpoint\r\nCREATE TABLE `genre` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(100) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `genre_name_unique` ON `genre` (`name`);--> statement-breakpoint\r\nCREATE TABLE `publisher` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(200) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `publisher_name_unique` ON `publisher` (`name`);--> statement-breakpoint\r\nCREATE TABLE `upload_status` (\r\n\t`key` text PRIMARY KEY NOT NULL,\r\n\t`status` text NOT NULL,\r\n\t`filename` text,\r\n\t`books_count` integer DEFAULT 0,\r\n\t`processed_count` integer DEFAULT 0,\r\n\t`error` text,\r\n\t`created_at` integer NOT NULL,\r\n\t`updated_at` integer NOT NULL\r\n);\r\n"
+  },
+  {
+    file: "0000_true_gladiator.sql",
+    content: "CREATE TABLE `book` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`title` text(500) NOT NULL,\r\n\t`author` text(300),\r\n\t`isbn` text(20),\r\n\t`barcode` text(50),\r\n\t`price` real,\r\n\t`language` text(50),\r\n\t`publisher_id` integer,\r\n\tFOREIGN KEY (`publisher_id`) REFERENCES `publisher`(`id`) ON UPDATE no action ON DELETE set null\r\n);\r\n--> statement-breakpoint\r\nCREATE TABLE `book_genre` (\r\n\t`book_id` integer NOT NULL,\r\n\t`genre_id` integer NOT NULL,\r\n\tPRIMARY KEY(`book_id`, `genre_id`),\r\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade,\r\n\tFOREIGN KEY (`genre_id`) REFERENCES `genre`(`id`) ON UPDATE no action ON DELETE cascade\r\n);\r\n--> statement-breakpoint\r\nCREATE TABLE `genre` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(100) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `genre_name_unique` ON `genre` (`name`);--> statement-breakpoint\r\nCREATE TABLE `publisher` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(200) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `publisher_name_unique` ON `publisher` (`name`);--> statement-breakpoint\r\nCREATE TABLE `upload_status` (\r\n\t`key` text PRIMARY KEY NOT NULL,\r\n\t`status` text NOT NULL,\r\n\t`filename` text,\r\n\t`books_count` integer DEFAULT 0,\r\n\t`processed_count` integer DEFAULT 0,\r\n\t`error` text,\r\n\t`created_at` integer NOT NULL,\r\n\t`updated_at` integer NOT NULL\r\n);\r\n"
+  },
+  {
+    file: "0000_yielding_magik.sql",
+    content: "CREATE TABLE `book` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`title` text(500) NOT NULL,\r\n\t`author` text(300),\r\n\t`isbn` text(20),\r\n\t`barcode` text(50),\r\n\t`price` real,\r\n\t`language` text(50),\r\n\t`publisher_id` integer,\r\n\tFOREIGN KEY (`publisher_id`) REFERENCES `publisher`(`id`) ON UPDATE no action ON DELETE set null\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_isbn_idx` ON `book` (`isbn`);--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_unique_idx` ON `book` (`title`,`author`,`isbn`);--> statement-breakpoint\r\nCREATE TABLE `book_genre` (\r\n\t`book_id` integer NOT NULL,\r\n\t`genre_id` integer NOT NULL,\r\n\tPRIMARY KEY(`book_id`, `genre_id`),\r\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade,\r\n\tFOREIGN KEY (`genre_id`) REFERENCES `genre`(`id`) ON UPDATE no action ON DELETE cascade\r\n);\r\n--> statement-breakpoint\r\nCREATE TABLE `genre` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(100) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `genre_name_unique` ON `genre` (`name`);--> statement-breakpoint\r\nCREATE TABLE `publisher` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text(200) NOT NULL\r\n);\r\n--> statement-breakpoint\r\nCREATE UNIQUE INDEX `publisher_name_unique` ON `publisher` (`name`);--> statement-breakpoint\r\nCREATE TABLE `upload_status` (\r\n\t`key` text PRIMARY KEY NOT NULL,\r\n\t`status` text NOT NULL,\r\n\t`filename` text,\r\n\t`books_count` integer DEFAULT 0,\r\n\t`processed_count` integer DEFAULT 0,\r\n\t`error` text,\r\n\t`created_at` integer NOT NULL,\r\n\t`updated_at` integer NOT NULL\r\n);\r\n"
+  },
+  {
+    file: "0001_cute_nocturne.sql",
+    content: "CREATE UNIQUE INDEX `book_isbn_unique` ON `book` (`isbn`);--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_dedupe_unique` ON `book` (`title`,`author`,`isbn`);"
+  },
+  {
+    file: "0002_yellow_lifeguard.sql",
+    content: "DROP INDEX `book_isbn_unique`;--> statement-breakpoint\r\nDROP INDEX `book_dedupe_unique`;--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_isbn_idx` ON `book` (`isbn`);--> statement-breakpoint\r\nCREATE UNIQUE INDEX `book_unique_idx` ON `book` (`title`,`author`,`isbn`);"
+  },
+  {
+    file: "0003_superb_expediter.sql",
+    content: "CREATE TABLE `book_stock` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`book_id` integer NOT NULL,\n\t`bookshelf` text(100),\n\t`number_of_copies` integer DEFAULT 0 NOT NULL,\n\t`number_of_copies_sold` integer DEFAULT 0 NOT NULL,\n\tFOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON UPDATE no action ON DELETE cascade\n);\n--> statement-breakpoint\nCREATE UNIQUE INDEX `book_stock_book_id_unique` ON `book_stock` (`book_id`);"
   }
 ];
 

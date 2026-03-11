@@ -20,3 +20,6 @@
 /packages/library-app/wrangler.toml
 /packages/library-cli/node_modules/
 /packages/library-trpc/node_modules/
+/packages/library-trpc/dist/
+/packages/library-app/dist/
+/packages/library-cli/dist/

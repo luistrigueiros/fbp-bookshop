@@ -1,4 +1,4 @@
-import { router, publicProcedure } from '@/trpc';
+import { router, publicProcedure } from '../trpc';
 import { booksRouter } from './books';
 import { genresRouter } from './genres';
 import { publishersRouter } from './publishers';

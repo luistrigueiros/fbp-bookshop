@@ -1,4 +1,4 @@
-import { createResource, For } from 'solid-js';
+import { createResource } from 'solid-js';
 import { trpc } from '@/frontend/trpc';
 
 const Dashboard = () => {

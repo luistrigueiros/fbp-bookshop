@@ -1,5 +1,5 @@
 import {Book} from "library-excel-extractor";
-import {TRPCClient} from "./utils";
+import {TRPCClient} from "library-cli/utils";
 
 export async function uploadBooks(
     client: TRPCClient,

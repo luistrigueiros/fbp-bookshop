@@ -157,7 +157,7 @@ const BookDetail = () => {
               <GenreSelector
                 allGenres={genres()}
                 selectedIds={selectedGenreIds()}
-                onChange={(ids) => setSelectedGenreIds(ids)}
+                onChange={(ids: number[]) => setSelectedGenreIds(ids)}
               />
             </div>
           </div>
