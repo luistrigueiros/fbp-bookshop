@@ -80,7 +80,8 @@ export async function uploadBooks(
 ) {
   console.log('Uploading books...');
   let bookCount = 0;
-  for (const book of books) {
+  for (let i = 0; i < books.length; i++) {
+    const book = books[i];
     try {
       const genreIds = book.genres
         .map((g: any) => genreMap.get(g.name.toLowerCase()))
@@ -105,7 +106,10 @@ export async function uploadBooks(
         console.log(`Uploaded ${bookCount}/${books.length} books...`);
       }
     } catch (err) {
-      console.error(`Failed to upload book ${book.title}:`, err);
+      console.error(`Error uploading book #${i + 1}:`);
+      console.error('Book object:', JSON.stringify(book, null, 2));
+      console.error('Error response:', err);
+      throw err;
     }
   }
   return bookCount;
