@@ -1,14 +1,9 @@
-import { sql } from "drizzle-orm";
-import { initDB, createRepositories, book, genre, publisher } from "library-data-layer";
-import { ExportAssembler, Env } from "./assembler";
+import {sql} from "drizzle-orm";
+import {createRepositories, genre, initDB, publisher} from "library-data-layer";
+import {Env, ExportAssembler} from "@/assembler";
+import {ExportBatch, QueueMessage} from "@/exportBatch";
 
 export { ExportAssembler };
-
-interface QueueMessage {
-  jobId: string;
-  type: "books" | "genres" | "publishers";
-  offset: number;
-}
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -75,8 +70,7 @@ export default {
 
     for (const msg of batch.messages) {
       const { jobId, type, offset } = msg.body;
-      let data: any[] = [];
-      let isLast = false;
+      let data: unknown[] = [];
       let totalCount = 0;
 
       if (type === "genres") {
@@ -85,14 +79,14 @@ export default {
           offset: offset,
         });
         const countResult = await db.select({ count: sql`count(*)` }).from(genre);
-        totalCount = Number((countResult[0] as any)?.count || 0);
+        totalCount = Number((countResult[0] as { count: unknown })?.count || 0);
       } else if (type === "publishers") {
         data = await db.query.publisher.findMany({
           limit: BATCH_SIZE,
           offset: offset,
         });
         const countResult = await db.select({ count: sql`count(*)` }).from(publisher);
-        totalCount = Number((countResult[0] as any)?.count || 0);
+        totalCount = Number((countResult[0] as { count: unknown })?.count || 0);
       } else if (type === "books") {
         const filterResult = await repositories.books.findWithFilters({
           limit: BATCH_SIZE,
@@ -102,11 +96,11 @@ export default {
         totalCount = filterResult.total;
       }
 
-      isLast = (offset + data.length) >= totalCount;
+      const isLast = (offset + data.length) >= totalCount;
 
       // Send to DO
       const id = env.EXPORT_ASSEMBLER.idFromName(jobId);
-      const stub = env.EXPORT_ASSEMBLER.get(id);
+      const stub = env.EXPORT_ASSEMBLER.get(id) as DurableObjectStub & { addChunk(batch: ExportBatch): Promise<void> };
       await stub.addChunk({ type, data, isLast });
 
       // Handle next step

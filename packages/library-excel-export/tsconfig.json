@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -6,11 +7,13 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["@cloudflare/workers-types", "@types/node"],
+    "types": ["@cloudflare/workers-types", "@types/node", "@types/bun"],
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"],
       "library-data-layer": ["../library-data-layer/src"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "test/**/*", "../library-data-layer/src/**/*", "../library-test-utils/src/**/*"]
 }

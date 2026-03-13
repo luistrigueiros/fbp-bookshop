@@ -25,3 +25,4 @@
 /packages/library-cli/dist/
 /packages/library-app/dist/
 /packages/library-excel-export/node_modules/
+/packages/library-excel-export/.wrangler/

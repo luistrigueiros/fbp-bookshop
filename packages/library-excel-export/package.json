@@ -10,7 +10,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "bunx eslint ."
   },
   "dependencies": {
     "@types/node": "catalog:",
@@ -21,6 +23,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
+    "@types/bun": "catalog:",
+    "library-test-utils": "workspace:*",
     "typescript": "catalog:",
     "wrangler": "catalog:"
   }
