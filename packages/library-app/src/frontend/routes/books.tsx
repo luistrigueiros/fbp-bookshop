@@ -120,7 +120,7 @@ const BooksList = () => {
           style={{ 
             position: 'absolute', 
             top: '4rem', 
-            right: 0, 
+            right: '1rem', 
             'z-index': 100, 
             width: 'calc(100vw - 2rem)', 
             'max-width': '400px',
