@@ -4,7 +4,7 @@ import { createRepositories, genre, publisher, book } from "library-data-layer";
 import { join } from "node:path";
 import worker from "@/index";
 import { ExportAssembler, Env } from "@/assembler";
-import {ExportBatch} from "@/exportBatch";
+import {ExportBatch} from "@/types";
 
 describe("Export Integration Tests", () => {
   let testEnv: TestEnv;

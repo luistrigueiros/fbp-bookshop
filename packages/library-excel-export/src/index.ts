@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {createRepositories, genre, initDB, publisher} from "library-data-layer";
 import {Env, ExportAssembler} from "@/assembler";
-import {ExportBatch, QueueMessage} from "@/exportBatch";
+import {ExportBatch, QueueMessage} from "@/types";
 
 export { ExportAssembler };
 

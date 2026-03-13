@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import {ExportBatch} from "@/exportBatch";
+import {ExportBatch} from "@/types";
 
 export class ExportAssembler {
   ctx: DurableObjectState;
