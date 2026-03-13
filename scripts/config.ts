@@ -29,7 +29,7 @@ const env = Object.fromEntries(
         })
 );
 
-let template = readFileSync(templatePath, 'utf8');
+const template = readFileSync(templatePath, 'utf8');
 
 // Replace ${VAR} with value from .dev.vars
 const output = template.replace(/\${(\w+)}/g, (_, key) => env[key] || '');

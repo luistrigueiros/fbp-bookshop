@@ -27,4 +27,5 @@ export const BookListQuerySchema = z.object({
   author: z.string().optional(),
   publisherId: z.number().optional(),
   genreId: z.number().optional(),
+  language: z.string().optional(),
 });

@@ -146,6 +146,7 @@ export class BookRepository {
     author?: string;
     publisherId?: number;
     genreId?: number;
+    language?: string;
   }): Promise<{ data: BookWithRelations[]; total: number }> {
     const filters = [];
 
@@ -157,6 +158,9 @@ export class BookRepository {
     }
     if (params.publisherId !== undefined) {
       filters.push(eq(book.publisherId, params.publisherId));
+    }
+    if (params.language !== undefined) {
+      filters.push(eq(book.language, params.language));
     }
 
     const whereClause = filters.length > 0 ? and(...filters) : undefined;

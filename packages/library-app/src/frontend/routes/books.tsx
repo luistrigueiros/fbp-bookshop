@@ -12,9 +12,10 @@ const BooksList = () => {
   const [filterAuthor, setFilterAuthor] = createSignal('');
   const [filterPubId, setFilterPubId] = createSignal(0);
   const [filterGenreId, setFilterGenreId] = createSignal(0);
+  const [filterLanguage, setFilterLanguage] = createSignal('');
   const [showFilters, setShowFilters] = createSignal(false);
 
-  const isFiltered = () => filterTitle() !== '' || filterAuthor() !== '' || filterPubId() !== 0 || filterGenreId() !== 0;
+  const isFiltered = () => filterTitle() !== '' || filterAuthor() !== '' || filterPubId() !== 0 || filterGenreId() !== 0 || filterLanguage() !== '';
 
   // Data fetching
   const [publishers] = createResource(async () => trpc.publishers.list.query());
@@ -28,6 +29,7 @@ const BooksList = () => {
       author: filterAuthor() || undefined,
       publisherId: filterPubId() || undefined,
       genreId: filterGenreId() || undefined,
+      language: filterLanguage() || undefined,
     }),
     async (params) => {
       return await trpc.books.list.query(params);
@@ -62,6 +64,7 @@ const BooksList = () => {
     setFilterAuthor('');
     setFilterPubId(0);
     setFilterGenreId(0);
+    setFilterLanguage('');
     setPage(1);
     refetch();
   };
@@ -119,7 +122,7 @@ const BooksList = () => {
             top: '4rem', 
             right: 0, 
             'z-index': 100, 
-            width: '100%', 
+            width: 'calc(100vw - 2rem)', 
             'max-width': '400px',
             background: 'var(--secondary-bg)',
             'box-shadow': '0 10px 25px rgba(0,0,0,0.1)',
@@ -163,6 +166,23 @@ const BooksList = () => {
                 <For each={genres()}>
                   {(gen) => <option value={gen.id}>{gen.name}</option>}
                 </For>
+              </select>
+            </div>
+            <div>
+              <label style={{ 'font-size': '0.85rem' }}>Language</label>
+              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px', background: 'var(--secondary-bg)', color: 'var(--text-primary)' }} value={filterLanguage()} onChange={(e) => setFilterLanguage(e.currentTarget.value)}>
+                <option value="">All Languages</option>
+                <option value="English">English</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+                <option value="German">German</option>
+                <option value="Italian">Italian</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Russian">Russian</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Other">Other</option>
               </select>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', 'margin-top': '0.5rem' }}>
