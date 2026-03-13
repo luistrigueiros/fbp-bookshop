@@ -1,0 +1,32 @@
+name = "library-excel-export"
+main = "src/index.ts"
+compatibility_date = "2026-03-05"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "library-db"
+database_id = "ea623636-0e07-409c-a0e7-3b314406832a"
+
+[[queues.consumers]]
+queue = "library-export-queue"
+max_batch_size = 1
+max_batch_timeout = 5
+
+[[queues.producers]]
+queue = "library-export-queue"
+binding = "EXPORT_QUEUE"
+
+[[durable_objects.bindings]]
+name = "EXPORT_ASSEMBLER"
+class_name = "ExportAssembler"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ExportAssembler"]
+
+[[r2_buckets]]
+binding = "EXPORT_BUCKET"
+bucket_name = "library-exports"
+
+[observability]
+enabled = true

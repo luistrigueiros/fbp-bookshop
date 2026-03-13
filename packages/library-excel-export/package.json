@@ -1,0 +1,26 @@
+{
+  "name": "library-excel-export",
+  "version": "1.0.0",
+  "description": "Excel export service for Library book shop using Cloudflare Workers, Queues, and Durable Objects",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/node": "catalog:",
+    "drizzle-orm": "catalog:",
+    "exceljs": "^4.4.0",
+    "library-data-layer": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  }
+}
