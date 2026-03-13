@@ -19,6 +19,8 @@ jobs:
   build:
     name: Build, Lint, and Test
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     defaults:
       run:
