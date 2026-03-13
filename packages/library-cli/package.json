@@ -9,12 +9,12 @@
     "library-app": "workspace:*",
     "library-trpc": "workspace:*",
     "library-excel-extractor": "workspace:*",
-    "@trpc/client": "^10.45.2",
-    "zod": "^3.23.8",
-    "commander": "^12.0.0"
+    "@trpc/client": "catalog:",
+    "zod": "catalog:",
+    "commander": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260310.1",
+    "@cloudflare/workers-types": "catalog:",
     "@types/bun": "catalog:",
     "typescript": "catalog:"
   },

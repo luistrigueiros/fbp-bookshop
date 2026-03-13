@@ -53,7 +53,7 @@
     "drizzle-kit": "catalog:",
     "library-test-utils": "workspace:*",
     "miniflare": "catalog:",
-    "tsx": "^4.21.0",
+    "tsx": "catalog:",
     "wrangler": "catalog:"
   },
   "peerDependencies": {

@@ -24,7 +24,17 @@
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.56.1",
     "wrangler": "^4.69.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@trpc/server": "^10.45.4",
+    "@trpc/client": "^10.45.4",
+    "zod": "^3.25.76",
+    "solid-js": "^1.9.11",
+    "@solidjs/router": "^0.15.4",
+    "vite": "^6.4.1",
+    "vite-plugin-pwa": "^1.2.0",
+    "vite-plugin-solid": "^2.11.10",
+    "commander": "^12.1.0",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "bun-types": "latest",

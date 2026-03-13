@@ -27,25 +27,25 @@
     },
     "dependencies": {
         "dotenv": "catalog:",
-        "hono": "^4.12.5",
-        "@logtape/logtape": "^2.0.4",
-        "@logtape/hono": "^2.0.4",
-        "@trpc/server": "^10.45.2",
-        "@trpc/client": "^10.45.2",
-        "zod": "^3.23.8",
-        "solid-js": "^1.9.3",
-        "@solidjs/router": "^0.15.2",
+        "hono": "catalog:",
+        "@logtape/logtape": "catalog:",
+        "@logtape/hono": "catalog:",
+        "@trpc/server": "catalog:",
+        "@trpc/client": "catalog:",
+        "zod": "catalog:",
+        "solid-js": "catalog:",
+        "@solidjs/router": "catalog:",
         "library-data-layer": "workspace:*",
         "library-trpc": "workspace:*"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260307.1",
-        "@types/bun": "^1.3.10",
+        "@cloudflare/workers-types": "catalog:",
+        "@types/bun": "catalog:",
         "library-test-utils": "workspace:*",
-        "miniflare": "^4.20260305.0",
-        "vite": "^6.1.1",
-        "vite-plugin-pwa": "^1.2.0",
-        "vite-plugin-solid": "^2.11.10",
-        "wrangler": "^4.71.0"
+        "miniflare": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-pwa": "catalog:",
+        "vite-plugin-solid": "catalog:",
+        "wrangler": "catalog:"
     }
 }

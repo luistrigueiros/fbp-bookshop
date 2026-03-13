@@ -11,8 +11,8 @@
     }
   },
   "dependencies": {
-    "zod": "^3.23.8",
-    "@trpc/server": "^10.45.2",
+    "zod": "catalog:",
+    "@trpc/server": "catalog:",
     "library-data-layer": "workspace:*"
   },
   "devDependencies": {
