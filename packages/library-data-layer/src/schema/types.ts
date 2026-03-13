@@ -44,3 +44,10 @@ export enum UploadStatus {
 
 export type UploadStatusRecord = InferSelectModel<typeof uploadStatus>;
 export type NewUploadStatus = InferInsertModel<typeof uploadStatus>;
+
+// Export Job types
+export { exportJob } from "./index";
+import { exportJob } from "./index";
+
+export type ExportJobRecord = InferSelectModel<typeof exportJob>;
+export type NewExportJob = InferInsertModel<typeof exportJob>;

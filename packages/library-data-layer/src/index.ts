@@ -25,6 +25,7 @@ import {
   GenreRepository,
   PublisherRepository,
   UploadStatusRepository,
+  ExportJobRepository,
 } from "./repositories";
 
 export interface LibraryRepositories {
@@ -33,6 +34,7 @@ export interface LibraryRepositories {
   genres: GenreRepository;
   publishers: PublisherRepository;
   uploads: UploadStatusRepository;
+  exports: ExportJobRepository;
 }
 
 /**
@@ -47,5 +49,6 @@ export function createRepositories(db: DB): LibraryRepositories {
     genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db),
+    exports: new ExportJobRepository(db),
   };
 }

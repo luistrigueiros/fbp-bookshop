@@ -129,3 +129,18 @@ export const uploadStatus = sqliteTable("upload_status", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+// Export Job table
+export const exportJob = sqliteTable("export_job", {
+  id: text("id").primaryKey(), // UUID
+  status: text("status", {
+    enum: ["pending", "processing", "completed", "failed"],
+  })
+    .notNull()
+    .default("pending"),
+  progress: integer("progress").default(0),
+  url: text("url"),
+  error: text("error"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});

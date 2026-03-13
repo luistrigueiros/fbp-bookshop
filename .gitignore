@@ -24,3 +24,4 @@
 /packages/library-app/dist/
 /packages/library-cli/dist/
 /packages/library-app/dist/
+/packages/library-excel-export/node_modules/
