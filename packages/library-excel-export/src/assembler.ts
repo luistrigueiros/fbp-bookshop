@@ -43,12 +43,7 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
     }
   }
 
-  async finalize(jobId: string) {
-    const doId = this.ctx.id.toString();
-    try {
-      logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });
-      const workbook = new ExcelJS.Workbook();
-
+  private setupSheets(workbook: ExcelJS.Workbook) {
     const booksSheet = workbook.addWorksheet("Books");
     const genresSheet = workbook.addWorksheet("Genres");
     const publishersSheet = workbook.addWorksheet("Publishers");
@@ -62,6 +57,9 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
       { header: "Language", key: "language", width: 12 },
       { header: "Publisher", key: "publisher", width: 25 },
       { header: "Genres", key: "genreList", width: 30 },
+      { header: "Stock", key: "stock", width: 10 },
+      { header: "Sold", key: "sold", width: 10 },
+      { header: "Shelf", key: "shelf", width: 15 },
     ];
 
     genresSheet.columns = [
@@ -74,14 +72,14 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
       { header: "Name", key: "name", width: 40 },
     ];
 
-    const genreRows = new Map<number, number>();
-    const publisherRows = new Map<number, number>();
+    return { booksSheet, genresSheet, publishersSheet };
+  }
 
+  private async populateGenres(genresSheet: ExcelJS.Worksheet, genreRows: Map<number, number>) {
     const genreIndexCount = (await this.ctx.storage.get<number>("index:genres")) || 0;
-    logger.debug("Populating Genres: {count} chunks", { count: genreIndexCount });
     let currentRow = 2;
     for (let i = 0; i < genreIndexCount; i++) {
-      const chunk = await this.ctx.storage.get<unknown[]>(`chunk:genres:${i}`) as { id: number }[];
+      const chunk = await this.ctx.storage.get<any[]>(`chunk:genres:${i}`);
       if (chunk) {
         chunk.forEach(item => {
           genresSheet.addRow(item);
@@ -89,12 +87,13 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
         });
       }
     }
+  }
 
+  private async populatePublishers(publishersSheet: ExcelJS.Worksheet, publisherRows: Map<number, number>) {
     const pubIndexCount = (await this.ctx.storage.get<number>("index:publishers")) || 0;
-    logger.debug("Populating Publishers: {count} chunks", { count: pubIndexCount });
-    currentRow = 2;
+    let currentRow = 2;
     for (let i = 0; i < pubIndexCount; i++) {
-      const chunk = await this.ctx.storage.get<unknown[]>(`chunk:publishers:${i}`) as { id: number }[];
+      const chunk = await this.ctx.storage.get<any[]>(`chunk:publishers:${i}`);
       if (chunk) {
         chunk.forEach(item => {
           publishersSheet.addRow(item);
@@ -102,41 +101,45 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
         });
       }
     }
+  }
 
+  private async populateBooks(booksSheet: ExcelJS.Worksheet, genreRows: Map<number, number>, publisherRows: Map<number, number>) {
     const bookIndexCount = (await this.ctx.storage.get<number>("index:books")) || 0;
-    logger.debug("Populating Books: {count} chunks", { count: bookIndexCount });
     for (let i = 0; i < bookIndexCount; i++) {
-      const chunk = await this.ctx.storage.get<unknown[]>(`chunk:books:${i}`) as Record<string, unknown>[];
+      const chunk = await this.ctx.storage.get<any[]>(`chunk:books:${i}`);
       if (chunk) {
         chunk.forEach(item => {
-          const genres = (item.bookGenres as { genre?: { name: string } }[] | undefined)
+          const genres = (item.bookGenres as any[] | undefined)
             ?.map((bg) => bg.genre?.name)
             .filter(Boolean)
             .join(", ") || "";
 
           const rowData = {
-            id: item.id as number,
-            title: item.title as string,
-            author: item.author as string,
-            isbn: item.isbn as string,
-            price: item.price as string,
-            language: item.language as string,
-            publisher: (item.publisher as { name: string } | undefined)?.name || "",
-            genreList: genres
+            id: item.id,
+            title: item.title,
+            author: item.author,
+            isbn: item.isbn,
+            price: item.price,
+            language: item.language,
+            publisher: item.publisher?.name || "",
+            genreList: genres,
+            stock: item.stock?.numberOfCopies ?? 0,
+            sold: item.stock?.numberOfCopiesSold ?? 0,
+            shelf: item.stock?.bookshelf || ""
           };
 
           const row = booksSheet.addRow(rowData);
 
-          if (item.publisherId && publisherRows.has(item.publisherId as number)) {
-            const destRow = publisherRows.get(item.publisherId as number);
+          if (item.publisherId && publisherRows.has(item.publisherId)) {
+            const destRow = publisherRows.get(item.publisherId);
             row.getCell("publisher").value = {
-              text: (item.publisher as { name: string } | undefined)?.name || "Publisher",
+              text: item.publisher?.name || "Publisher",
               hyperlink: `#Publishers!A${destRow}`
             };
           }
 
-          if (item.bookGenres && (item.bookGenres as { genreId: number }[]).length > 0) {
-            const firstGenreId = (item.bookGenres as { genreId: number }[])[0].genreId;
+          if (item.bookGenres && item.bookGenres.length > 0) {
+            const firstGenreId = item.bookGenres[0].genreId;
             if (genreRows.has(firstGenreId)) {
               const destRow = genreRows.get(firstGenreId);
               row.getCell("genreList").value = {
@@ -148,45 +151,56 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
         });
       }
     }
-
-    logger.info("Writing workbook to buffer for DO {doId}", { doId });
-    const buffer = await workbook.xlsx.writeBuffer();
-    const uint8Array = new Uint8Array(buffer);
-
-    logger.info("Uploading workbook to R2: exports/{jobId}.xlsx", { jobId });
-    await this.env.EXPORT_BUCKET.put(`exports/${jobId}.xlsx`, uint8Array, {
-      httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
-    });
-
-    // CRITICAL: Job must be marked as COMPLETED only AFTER upload is finished
-    logger.info("Export completed successfully and uploaded for jobId {jobId}", { jobId });
-    await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
-    
-    // Update job record with URL
-    const db = initDB(this.env.DB);
-    const { exports } = createRepositories(db);
-    await exports.update(jobId, {
-      status: ExportJobStatus.COMPLETED,
-      progress: 100,
-      url: `/download/${jobId}`,
-      errorMessage: null
-    });
-    logger.info("Marked jobId {jobId} as COMPLETED in DB", { jobId });
-  } catch (error) {
-    logger.error("Error finalizing workbook for jobId {jobId}: {error}", { jobId, error });
-    const db = initDB(this.env.DB);
-    const { exports } = createRepositories(db);
-    await exports.update(jobId, {
-      status: ExportJobStatus.FAILED,
-      errorMessage: error instanceof Error ? error.message : String(error)
-    });
-    await this.ctx.storage.put("status", ExportJobStatus.FAILED);
-    throw error;
   }
-}
+
+  async finalize(jobId: string) {
+    const doId = this.ctx.id.toString();
+    try {
+      logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });
+      const workbook = new ExcelJS.Workbook();
+      const { booksSheet, genresSheet, publishersSheet } = this.setupSheets(workbook);
+
+      const genreRows = new Map<number, number>();
+      const publisherRows = new Map<number, number>();
+
+      await this.populateGenres(genresSheet, genreRows);
+      await this.populatePublishers(publishersSheet, publisherRows);
+      await this.populateBooks(booksSheet, genreRows, publisherRows);
+
+      logger.info("Writing workbook to buffer for DO {doId}", { doId });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const uint8Array = new Uint8Array(buffer);
+
+      logger.info("Uploading workbook to R2: exports/{jobId}.xlsx", { jobId });
+      await this.env.EXPORT_BUCKET.put(`exports/${jobId}.xlsx`, uint8Array, {
+        httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+      });
+
+      await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
+      
+      const db = initDB(this.env.DB);
+      const { exports } = createRepositories(db);
+      await exports.update(jobId, {
+        status: ExportJobStatus.COMPLETED,
+        progress: 100,
+        url: `/download/${jobId}`,
+        errorMessage: null
+      });
+      logger.info("Marked jobId {jobId} as COMPLETED in DB", { jobId });
+    } catch (error) {
+      logger.error("Error finalizing workbook for jobId {jobId}: {error}", { jobId, error });
+      const db = initDB(this.env.DB);
+      const { exports } = createRepositories(db);
+      await exports.update(jobId, {
+        status: ExportJobStatus.FAILED,
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
+      await this.ctx.storage.put("status", ExportJobStatus.FAILED);
+      throw error;
+    }
+  }
 
   async getStatus() {
     return await this.ctx.storage.get("status");
   }
 }
-
