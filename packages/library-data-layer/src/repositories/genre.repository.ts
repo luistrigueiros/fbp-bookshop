@@ -1,7 +1,7 @@
-import { eq, like } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import type { DB } from "../db";
-import { genre } from "../schema";
-import type {Book, Genre, GenreWithBooks, NewGenre} from "../schema/types";
+import { genre, bookGenre } from "../schema";
+import type {Book, Genre, GenreWithBooks, NewGenre, CategoryWithCount} from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class GenreRepository {
@@ -149,5 +149,51 @@ export class GenreRepository {
   async count(): Promise<number> {
     const result = await this.db.select().from(genre);
     return result.length;
+  }
+
+  /**
+   * Get genres with book counts, paginated and filtered
+   */
+  async findWithBookCounts(params: {
+    limit: number;
+    offset: number;
+    name?: string;
+  }): Promise<{ items: CategoryWithCount[]; total: number }> {
+    const { limit, offset, name } = params;
+
+    const whereClause = name ? like(genre.name, `%${name}%`) : undefined;
+
+    const countsQuery = this.db
+      .select({
+        id: genre.id,
+        name: genre.name,
+        bookCount: sql<number>`count(${bookGenre.bookId})`.as("bookCount"),
+      })
+      .from(genre)
+      .leftJoin(bookGenre, eq(genre.id, bookGenre.genreId))
+      .where(whereClause)
+      .groupBy(genre.id)
+      .limit(limit)
+      .offset(offset);
+
+    const totalQuery = this.db
+      .select({
+        count: sql<number>`count(distinct ${genre.id})`,
+      })
+      .from(genre)
+      .where(whereClause);
+
+    const [items, totalResult] = await Promise.all([
+      countsQuery,
+      totalQuery,
+    ]);
+
+    return {
+      items: items.map(item => ({
+        ...item,
+        bookCount: Number(item.bookCount)
+      })),
+      total: Number(totalResult[0]?.count ?? 0),
+    };
   }
 }

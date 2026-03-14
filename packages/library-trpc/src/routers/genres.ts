@@ -1,12 +1,18 @@
 import { z } from 'zod';
-import { NamePayloadSchema } from '../schemas';
+import { NamePayloadSchema, CategoryListQuerySchema } from '../schemas';
 import { router, publicProcedure } from '../trpc';
 
 export const genresRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.repositories.genres.findAll();
   }),
-  
+
+  listWithCounts: publicProcedure
+    .input(CategoryListQuerySchema)
+    .query(async ({ ctx, input }) => {
+      return ctx.repositories.genres.findWithBookCounts(input);
+    }),
+
   create: publicProcedure
     .input(NamePayloadSchema)
     .mutation(async ({ ctx, input }) => {

@@ -31,6 +31,12 @@ export type PublisherWithBooks = Publisher & {
   books?: Book[];
 };
 
+export type CategoryWithCount = {
+  id: number;
+  name: string;
+  bookCount: number;
+};
+
 // Upload Status types
 export { uploadStatus } from "./index";
 import { uploadStatus } from "./index";

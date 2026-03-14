@@ -29,3 +29,9 @@ export const BookListQuerySchema = z.object({
   genreId: z.number().optional(),
   language: z.string().optional(),
 });
+
+export const CategoryListQuerySchema = z.object({
+  limit: z.number().min(1).max(100).optional().default(10),
+  offset: z.number().min(0).optional().default(0),
+  name: z.string().optional(),
+});
