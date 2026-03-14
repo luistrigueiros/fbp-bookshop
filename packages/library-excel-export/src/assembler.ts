@@ -158,7 +158,8 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
       httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
     });
 
-    logger.info("Export completed successfully for jobId {jobId}", { jobId });
+    // CRITICAL: Job must be marked as COMPLETED only AFTER upload is finished
+    logger.info("Export completed successfully and uploaded for jobId {jobId}", { jobId });
     await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
     
     // Update job record with URL
@@ -170,6 +171,7 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
       url: `/download/${jobId}`,
       errorMessage: null
     });
+    logger.info("Marked jobId {jobId} as COMPLETED in DB", { jobId });
   } catch (error) {
     logger.error("Error finalizing workbook for jobId {jobId}: {error}", { jobId, error });
     const db = initDB(this.env.DB);

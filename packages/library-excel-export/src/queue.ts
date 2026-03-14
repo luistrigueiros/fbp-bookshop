@@ -67,13 +67,8 @@ export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Export
         } else if (type === "publishers") {
           await env.EXPORT_QUEUE.send({ jobId, type: "books", offset: 0 });
         } else if (type === "books") {
-          // All finished! Update job status.
-          logger.info("All types finished for jobId {jobId}. Updating status to completed.", { jobId });
-          await repositories.exports.update(jobId, {
-            status: ExportJobStatus.COMPLETED,
-            progress: 100,
-            url: `/download/${jobId}`
-          });
+          // All finished! Wait for DO to finalize.
+          logger.info("All types finished for jobId {jobId}. Waiting for Durable Object to finalize.", { jobId });
         }
       }
       
@@ -85,7 +80,7 @@ export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Export
       
       logger.debug("Updating progress for jobId {jobId}: {progress}%", { jobId, progress });
       await repositories.exports.update(jobId, { 
-        status: isLast && type === "books" ? ExportJobStatus.COMPLETED : ExportJobStatus.PROCESSING,
+        status: ExportJobStatus.PROCESSING,
         progress,
         errorMessage: null // Clear any previous error if we are progressing
       });
