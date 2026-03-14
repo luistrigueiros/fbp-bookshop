@@ -1,14 +1,15 @@
 import { Hono } from 'hono';
 import { honoLogger } from '@logtape/hono';
 import { setupLogging } from "library-data-layer";
-import { ExportAssembler, type Env } from "@/assembler";
+import { ExportAssembler } from "@/assembler";
 import { landingPage } from "@/handlers/landingPage";
 import { handleDownload, handleGetStatus, handleGetStatusById, handlePostExport } from "@/handlers/export";
 import { handleQueue } from "@/queue";
+import {ExportEnv} from "@/types";
 
 export { ExportAssembler };
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: ExportEnv }>();
 
 app.use('*', honoLogger());
 app.use('*', async (c, next) => {

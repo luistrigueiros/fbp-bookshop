@@ -9,3 +9,11 @@ export interface QueueMessage {
   type: "books" | "genres" | "publishers";
   offset: number;
 }
+
+export interface ExportEnv {
+    ENVIRONMENT: string;
+    DB: D1Database;
+    EXPORT_QUEUE: Queue;
+    EXPORT_ASSEMBLER: DurableObjectNamespace;
+    EXPORT_BUCKET: R2Bucket;
+}

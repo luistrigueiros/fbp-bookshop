@@ -1,13 +1,13 @@
 import ExcelJS from "exceljs";
-import {ExportBatch} from "@/types";
-import { getLibraryLogger, setupLogging } from "library-data-layer";
+import {ExportEnv, ExportBatch} from "@/types";
+import {getLibraryLogger, setupLogging} from "library-data-layer";
 
 const logger = getLibraryLogger(["library", "excel-export", "assembler"]);
 
 export class ExportAssembler {
   ctx: DurableObjectState;
-  env: Env;
-  constructor(state: DurableObjectState, env: Env) {
+  env: ExportEnv;
+  constructor(state: DurableObjectState, env: ExportEnv) {
     this.ctx = state;
     this.env = env;
   }
@@ -184,10 +184,3 @@ export class ExportAssembler {
   }
 }
 
-export interface Env {
-  ENVIRONMENT: string;
-  DB: D1Database;
-  EXPORT_QUEUE: Queue;
-  EXPORT_ASSEMBLER: DurableObjectNamespace;
-  EXPORT_BUCKET: R2Bucket;
-}

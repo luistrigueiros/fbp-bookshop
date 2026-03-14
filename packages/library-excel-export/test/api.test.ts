@@ -3,7 +3,8 @@ import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-ut
 import { createRepositories } from "library-data-layer";
 import { join } from "node:path";
 import worker from "@/index";
-import { Env } from "@/assembler";
+
+import {ExportEnv} from "@/types";
 
 describe("Export API Tests", () => {
   let testEnv: TestEnv;
@@ -24,7 +25,7 @@ describe("Export API Tests", () => {
   it("should trigger an export and return a jobId", async () => {
     const res = await worker.fetch(
       new Request("http://localhost/export", { method: "POST" }),
-      testEnv.env as unknown as Env
+      testEnv.env as unknown as ExportEnv
     );
 
     expect(res.status).toBe(200);
@@ -41,7 +42,7 @@ describe("Export API Tests", () => {
   it("should return 404 for unknown job", async () => {
     const res = await worker.fetch(
       new Request("http://localhost/status/non-existent-job"),
-      testEnv.env as unknown as Env
+      testEnv.env as unknown as ExportEnv
     );
     expect(res.status).toBe(404);
   });
@@ -59,7 +60,7 @@ describe("Export API Tests", () => {
 
     const res = await worker.fetch(
       new Request(`http://localhost/status/${jobId}`),
-      testEnv.env as unknown as Env
+      testEnv.env as unknown as ExportEnv
     );
 
     expect(res.status).toBe(200);

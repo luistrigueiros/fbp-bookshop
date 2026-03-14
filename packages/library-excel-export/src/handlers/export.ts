@@ -1,8 +1,9 @@
 import { type Context } from 'hono';
 import { createRepositories, initDB } from "library-data-layer";
-import { type Env } from "@/assembler";
 
-export const handlePostExport = async (c: Context<{ Bindings: Env }>) => {
+import {ExportEnv} from "@/types";
+
+export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
   const jobId = crypto.randomUUID();
   const db = initDB(c.env.DB);
   const repositories = createRepositories(db);
@@ -26,7 +27,7 @@ export const handlePostExport = async (c: Context<{ Bindings: Env }>) => {
   return c.json({ jobId, status: "processing" });
 };
 
-export const handleGetStatusById = async (c: Context<{ Bindings: Env }>) => {
+export const handleGetStatusById = async (c: Context<{ Bindings: ExportEnv }>) => {
   const jobId = c.req.param('jobId');
   if (!jobId) return c.text("Job ID is required", 400);
   const db = initDB(c.env.DB);
@@ -37,14 +38,14 @@ export const handleGetStatusById = async (c: Context<{ Bindings: Env }>) => {
   return c.json(job);
 };
 
-export const handleGetStatus = async (c: Context<{ Bindings: Env }>) => {
+export const handleGetStatus = async (c: Context<{ Bindings: ExportEnv }>) => {
   const db = initDB(c.env.DB);
   const repositories = createRepositories(db);
   const jobs = await repositories.exports.findAll();
   return c.json(jobs);
 };
 
-export const handleDownload = async (c: Context<{ Bindings: Env }>) => {
+export const handleDownload = async (c: Context<{ Bindings: ExportEnv }>) => {
   const jobId = c.req.param('jobId');
   if (!jobId) return c.text("Job ID is required", 400);
   const blob = await c.env.EXPORT_BUCKET.get(`exports/${jobId}.xlsx`);

@@ -1,5 +1,6 @@
 import type {Context} from "hono";
-import type {Env} from "@/assembler";
+
+import {ExportEnv} from "@/types";
 
 const htmlContent = `
 <!DOCTYPE html>
@@ -104,7 +105,7 @@ setInterval(loadJobs, 5000);
 </html>
 `;
 
-export const landingPage = async (_: Context<{ Bindings: Env }>) => {
+export const landingPage = async (_: Context<{ Bindings: ExportEnv }>) => {
     const headers = new Headers();
     headers.set("Content-Type", "text/html");
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");

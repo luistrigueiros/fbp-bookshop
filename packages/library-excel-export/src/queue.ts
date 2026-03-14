@@ -1,11 +1,10 @@
 import { sql } from "drizzle-orm";
 import { createRepositories, genre, getLibraryLogger, initDB, publisher, setupLogging } from "library-data-layer";
-import { type Env } from "@/assembler";
-import { type QueueMessage } from "@/types";
+import {ExportEnv, type QueueMessage} from "@/types";
 
 const logger = getLibraryLogger(["library", "excel-export", "queue"]);
 
-export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Env) => {
+export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: ExportEnv) => {
   await setupLogging({ environment: env.ENVIRONMENT });
   logger.info("Processing queue batch with {count} messages", { count: batch.messages.length });
   

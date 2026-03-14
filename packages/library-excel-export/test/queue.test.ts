@@ -3,8 +3,8 @@ import { createD1TestEnv, disposeD1TestEnv, type TestEnv } from "library-test-ut
 import { createRepositories, genre, publisher, book } from "library-data-layer";
 import { join } from "node:path";
 import worker from "@/index";
-import { ExportAssembler, Env } from "@/assembler";
-import { ExportBatch } from "@/types";
+import { ExportAssembler } from "@/assembler";
+import {ExportEnv, ExportBatch} from "@/types";
 
 describe("Export Queue Tests", () => {
   let testEnv: TestEnv;
@@ -56,7 +56,7 @@ describe("Export Queue Tests", () => {
       },
       id: { toString: () => jobId }
     };
-    const assembler = new ExportAssembler(mockDOState as unknown as DurableObjectState, testEnv.env as unknown as Env);
+    const assembler = new ExportAssembler(mockDOState as unknown as DurableObjectState, testEnv.env as unknown as ExportEnv);
     
     const mockDOStub = {
       addChunk: async (batch: { type: "books" | "genres" | "publishers"; data: unknown[]; isLast: boolean }) => {
@@ -113,7 +113,7 @@ describe("Export Queue Tests", () => {
     // Verify Job Status via API
     const res = await worker.fetch(
       new Request(`http://localhost/status/${jobId}`),
-      envWithMock as unknown as Env
+      envWithMock as unknown as ExportEnv
     );
     const statusData = (await res.json()) as any;
     expect(statusData.status).toBe("completed");
@@ -122,7 +122,7 @@ describe("Export Queue Tests", () => {
     // Verify Download via API
     const downloadRes = await worker.fetch(
       new Request(`http://localhost/download/${jobId}`),
-      envWithMock as unknown as Env
+      envWithMock as unknown as ExportEnv
     );
     expect(downloadRes.status).toBe(200);
     expect(downloadRes.headers.get("Content-Type")).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
