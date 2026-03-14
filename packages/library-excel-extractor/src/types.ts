@@ -17,6 +17,9 @@ export interface Book {
   language: string | null;
   genres: Genre[];
   publisher: Publisher | null;
+  bookshelf: string | null;
+  numberOfCopies: number | null;
+  numberOfSoldCopies: number | null;
 }
 
 export interface ExtractionError {

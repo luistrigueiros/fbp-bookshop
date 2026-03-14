@@ -23,6 +23,9 @@ const COLUMNS = {
   LANGUAGE: "lingua",
   GENRE: "género",
   PUBLISHER: "editora",
+  BOOKSHELF: "estante",
+  NUMBER_OF_COPIES: "copias existentes",
+  NUMBER_OF_SOLD_COPIES: "copias vendidas",
 } as const;
 
 /**
@@ -80,6 +83,9 @@ export function extractBook(
     language: headerMap.get(COLUMNS.LANGUAGE),
     genre: headerMap.get(COLUMNS.GENRE),
     publisher: headerMap.get(COLUMNS.PUBLISHER),
+    bookshelf: headerMap.get(COLUMNS.BOOKSHELF),
+    numberOfCopies: headerMap.get(COLUMNS.NUMBER_OF_COPIES),
+    numberOfSoldCopies: headerMap.get(COLUMNS.NUMBER_OF_SOLD_COPIES),
   };
 
   if (col.title === undefined) {
@@ -168,6 +174,15 @@ export function extractBook(
           : null,
         genres,
         publisher,
+        bookshelf: col.bookshelf !== undefined
+          ? getCellTrimmed(sheet, row, col.bookshelf) || null
+          : null,
+        numberOfCopies: col.numberOfCopies !== undefined
+          ? getCellAsNumber(sheet, row, col.numberOfCopies)
+          : null,
+        numberOfSoldCopies: col.numberOfSoldCopies !== undefined
+          ? getCellAsNumber(sheet, row, col.numberOfSoldCopies)
+          : null,
       };
 
       books.push(book);

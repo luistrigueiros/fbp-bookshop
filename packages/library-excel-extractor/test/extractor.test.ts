@@ -117,4 +117,21 @@ describe("extractBook", () => {
       }
     }
   });
+
+  it("extracts stock information when columns are present", () => {
+    if (!hasFixture) return;
+    const { items } = extractBook(FIXTURE);
+    // At least some books should have stock info if the fixture has it
+    const booksWithStock = items.filter(b => b.bookshelf !== null || b.numberOfCopies !== null || b.numberOfSoldCopies !== null);
+    expect(booksWithStock.length).toBeGreaterThan(0);
+    
+    for (const book of booksWithStock) {
+      if (book.numberOfCopies !== null) {
+        expect(typeof book.numberOfCopies).toBe("number");
+      }
+      if (book.numberOfSoldCopies !== null) {
+        expect(typeof book.numberOfSoldCopies).toBe("number");
+      }
+    }
+  });
 });
