@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 import { DurableObject } from "cloudflare:workers";
 import { ExportEnv, ExportBatch, ExportJobStatus } from "@/types";
-import { getLibraryLogger, setupLogging } from "library-data-layer";
+import { getLibraryLogger, setupLogging, initDB, createRepositories } from "library-data-layer";
 
 const logger = getLibraryLogger(["library", "excel-export", "assembler"]);
 
