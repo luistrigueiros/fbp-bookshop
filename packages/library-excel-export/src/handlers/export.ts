@@ -28,6 +28,7 @@ export const handlePostExport = async (c: Context<{ Bindings: Env }>) => {
 
 export const handleGetStatusById = async (c: Context<{ Bindings: Env }>) => {
   const jobId = c.req.param('jobId');
+  if (!jobId) return c.text("Job ID is required", 400);
   const db = initDB(c.env.DB);
   const repositories = createRepositories(db);
   const job = await repositories.exports.findById(jobId);
@@ -45,6 +46,7 @@ export const handleGetStatus = async (c: Context<{ Bindings: Env }>) => {
 
 export const handleDownload = async (c: Context<{ Bindings: Env }>) => {
   const jobId = c.req.param('jobId');
+  if (!jobId) return c.text("Job ID is required", 400);
   const blob = await c.env.EXPORT_BUCKET.get(`exports/${jobId}.xlsx`);
   if (!blob) return c.text("File not found", 404);
   

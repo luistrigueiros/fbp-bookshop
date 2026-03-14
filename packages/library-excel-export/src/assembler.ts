@@ -164,6 +164,7 @@ export class ExportAssembler {
 }
 
 export interface Env {
+  ENVIRONMENT: string;
   DB: D1Database;
   EXPORT_QUEUE: Queue;
   EXPORT_ASSEMBLER: DurableObjectNamespace;
