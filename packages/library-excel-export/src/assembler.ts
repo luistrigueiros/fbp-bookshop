@@ -12,10 +12,11 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
 
   async addChunk(batch: ExportBatch) {
     await setupLogging({ environment: this.env.ENVIRONMENT });
-    const { type, data, isLast } = batch;
+    const { jobId, type, data, isLast } = batch;
     const doId = this.ctx.id.toString();
 
-    logger.debug("addChunk: type={type}, dataLength={dataLength}, isLast={isLast}, doId={doId}", {
+    logger.debug("addChunk: jobId={jobId}, type={type}, dataLength={dataLength}, isLast={isLast}, doId={doId}", {
+      jobId,
       type,
       dataLength: data.length,
       isLast,
@@ -38,13 +39,13 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
 
     if (booksFinished && genresFinished && publishersFinished) {
       logger.info("All types finished for DO {doId}. Finalizing workbook.", { doId });
-      await this.finalize();
+      await this.finalize(jobId);
     }
   }
 
-  async finalize() {
+  async finalize(jobId: string) {
     const doId = this.ctx.id.toString();
-    logger.info("Finalizing workbook for DO {doId}", { doId });
+    logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });
     const workbook = new ExcelJS.Workbook();
 
     const booksSheet = workbook.addWorksheet("Books");
@@ -151,12 +152,12 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
     const buffer = await workbook.xlsx.writeBuffer();
     const uint8Array = new Uint8Array(buffer);
 
-    logger.info("Uploading workbook to R2: exports/{doId}.xlsx", { doId });
-    await this.env.EXPORT_BUCKET.put(`exports/${doId}.xlsx`, uint8Array, {
+    logger.info("Uploading workbook to R2: exports/{jobId}.xlsx", { jobId });
+    await this.env.EXPORT_BUCKET.put(`exports/${jobId}.xlsx`, uint8Array, {
       httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
     });
 
-    logger.info("Export completed successfully for DO {doId}", { doId });
+    logger.info("Export completed successfully for jobId {jobId}", { jobId });
     await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
   }
 

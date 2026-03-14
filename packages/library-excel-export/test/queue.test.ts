@@ -59,8 +59,8 @@ describe("Export Queue Tests", () => {
     const assembler = new ExportAssembler(mockDOState as unknown as DurableObjectState, testEnv.env as unknown as ExportEnv);
     
     const mockDOStub = {
-      addChunk: async (batch: { type: "books" | "genres" | "publishers"; data: unknown[]; isLast: boolean }) => {
-        await assembler.addChunk(batch as ExportBatch);
+      addChunk: async (batch: any) => {
+        await assembler.addChunk(batch);
       }
     };
     

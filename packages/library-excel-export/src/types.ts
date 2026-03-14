@@ -6,9 +6,10 @@ export enum ExportJobStatus {
 }
 
 export interface ExportBatch {
-    type: "books" | "genres" | "publishers";
-    data: unknown[];
-    isLast: boolean;
+  jobId: string;
+  type: "books" | "genres" | "publishers";
+  data: unknown[];
+  isLast: boolean;
 }
 
 export interface QueueMessage {

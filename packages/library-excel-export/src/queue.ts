@@ -51,7 +51,7 @@ export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Export
       logger.debug("Sending chunk to Durable Object: jobId={jobId}, isLast={isLast}", { jobId, isLast });
       const id = env.EXPORT_ASSEMBLER.idFromName(jobId);
       const stub = env.EXPORT_ASSEMBLER.get(id) as DurableObjectStub & { addChunk(batch: any): Promise<void> };
-      await stub.addChunk({ type, data, isLast });
+      await stub.addChunk({ jobId, type, data, isLast });
 
       // Handle next step
       if (!isLast) {
