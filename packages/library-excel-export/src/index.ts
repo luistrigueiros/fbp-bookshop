@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { honoLogger } from '@logtape/hono';
 import { setupLogging } from "library-data-layer";
 import { ExportAssembler, type Env } from "@/assembler";
-import { indexHtml } from "@/views/index.html";
+import { landingPage } from "@/handlers/landingPage";
 import { handleDownload, handleGetStatus, handleGetStatusById, handlePostExport } from "@/handlers/export";
 import { handleQueue } from "@/queue";
 
@@ -20,7 +20,7 @@ app.post('/export', handlePostExport);
 app.get('/status/:jobId', handleGetStatusById);
 app.get('/status', handleGetStatus);
 app.get('/download/:jobId', handleDownload);
-app.get('/', async (c) => c.html(indexHtml));
+app.get('/', landingPage);
 
 export default {
   fetch: app.fetch,
