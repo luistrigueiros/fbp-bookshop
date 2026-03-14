@@ -45,8 +45,9 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
 
   async finalize(jobId: string) {
     const doId = this.ctx.id.toString();
-    logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });
-    const workbook = new ExcelJS.Workbook();
+    try {
+      logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });
+      const workbook = new ExcelJS.Workbook();
 
     const booksSheet = workbook.addWorksheet("Books");
     const genresSheet = workbook.addWorksheet("Genres");
@@ -159,7 +160,28 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
 
     logger.info("Export completed successfully for jobId {jobId}", { jobId });
     await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
+    
+    // Update job record with URL
+    const db = initDB(this.env.DB);
+    const { exports } = createRepositories(db);
+    await exports.update(jobId, {
+      status: ExportJobStatus.COMPLETED,
+      progress: 100,
+      url: `/download/${jobId}`,
+      errorMessage: null
+    });
+  } catch (error) {
+    logger.error("Error finalizing workbook for jobId {jobId}: {error}", { jobId, error });
+    const db = initDB(this.env.DB);
+    const { exports } = createRepositories(db);
+    await exports.update(jobId, {
+      status: ExportJobStatus.FAILED,
+      errorMessage: error instanceof Error ? error.message : String(error)
+    });
+    await this.ctx.storage.put("status", ExportJobStatus.FAILED);
+    throw error;
   }
+}
 
   async getStatus() {
     return await this.ctx.storage.get("status");

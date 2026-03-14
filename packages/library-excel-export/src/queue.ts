@@ -86,13 +86,14 @@ export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Export
       logger.debug("Updating progress for jobId {jobId}: {progress}%", { jobId, progress });
       await repositories.exports.update(jobId, { 
         status: isLast && type === "books" ? ExportJobStatus.COMPLETED : ExportJobStatus.PROCESSING,
-        progress 
+        progress,
+        errorMessage: null // Clear any previous error if we are progressing
       });
     } catch (error) {
       logger.error("Error processing queue message for jobId {jobId}: {error}", { jobId, error });
       await repositories.exports.update(jobId, {
         status: ExportJobStatus.FAILED,
-        error: error instanceof Error ? error.message : String(error)
+        errorMessage: error instanceof Error ? error.message : String(error)
       });
       // Optionally rethrow if you want the queue to retry, but requirement says "always updated in the table"
       // and usually for export failures we want to mark it as failed and not retry indefinitely.

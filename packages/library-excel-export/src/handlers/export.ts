@@ -8,23 +8,39 @@ export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
   const db = initDB(c.env.DB);
   const repositories = createRepositories(db);
   
-  // Create job record
-  await repositories.exports.create({
-    id: jobId,
-    status: ExportJobStatus.PENDING,
-    progress: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-  
-  // Start queue chain with genres
-  await c.env.EXPORT_QUEUE.send({
-    jobId,
-    type: "genres",
-    offset: 0
-  });
-  
-  return c.json({ jobId, status: ExportJobStatus.PROCESSING });
+  try {
+    // Create job record
+    await repositories.exports.create({
+      id: jobId,
+      status: ExportJobStatus.PENDING,
+      progress: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    
+    // Start queue chain with genres
+    await c.env.EXPORT_QUEUE.send({
+      jobId,
+      type: "genres",
+      offset: 0
+    });
+    
+    return c.json({ jobId, status: ExportJobStatus.PROCESSING });
+  } catch (error) {
+    // If something fails before queue starts, mark as failed if record exists
+    const existingJob = await repositories.exports.findById(jobId);
+    if (existingJob) {
+      await repositories.exports.update(jobId, {
+        status: ExportJobStatus.FAILED,
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
+    }
+    return c.json({ 
+      jobId, 
+      status: ExportJobStatus.FAILED, 
+      error: error instanceof Error ? error.message : String(error) 
+    }, 500);
+  }
 };
 
 export const handleGetStatusById = async (c: Context<{ Bindings: ExportEnv }>) => {
