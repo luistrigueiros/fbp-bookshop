@@ -38,7 +38,7 @@ export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
     return c.json({ 
       jobId, 
       status: ExportJobStatus.FAILED, 
-      error: error instanceof Error ? error.message : String(error) 
+      errorMessage: error instanceof Error ? error.message : String(error) 
     }, 500);
   }
 };

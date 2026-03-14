@@ -173,6 +173,7 @@ export class GenreRepository {
       .leftJoin(bookGenre, eq(genre.id, bookGenre.genreId))
       .where(whereClause)
       .groupBy(genre.id)
+      .orderBy(sql`bookCount DESC`)
       .limit(limit)
       .offset(offset);
 

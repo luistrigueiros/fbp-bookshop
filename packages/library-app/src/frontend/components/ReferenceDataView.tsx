@@ -1,6 +1,6 @@
 import { createSignal, createResource, For, Show, createMemo } from 'solid-js';
 import { trpc } from '@/frontend/trpc';
-import { A } from '@solidjs/router';
+import { A, useNavigate } from '@solidjs/router';
 
 interface ReferenceDataViewProps {
   title: string;
@@ -15,6 +15,7 @@ interface ReferenceDataViewProps {
 }
 
 const ReferenceDataView = (props: ReferenceDataViewProps) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = createSignal(0);
   
   // Tab 1 state
@@ -27,8 +28,6 @@ const ReferenceDataView = (props: ReferenceDataViewProps) => {
   const [drillFilter, setDrillFilter] = createSignal('');
   const [page, setPage] = createSignal(0);
   const pageSize = 10;
-  const [selectedCategoryId, setSelectedCategoryId] = createSignal<number | null>(null);
-  const [selectedCategoryName, setSelectedCategoryName] = createSignal<string | null>(null);
 
   // Resources
   const filteredList = createMemo(() => {
@@ -45,14 +44,6 @@ const ReferenceDataView = (props: ReferenceDataViewProps) => {
     async (params) => await props.listWithCountsResource.query(params)
   );
 
-  const [categoryBooks] = createResource(
-    () => selectedCategoryId(),
-    async (id) => {
-      if (id === null) return { data: [], total: 0 };
-      const filter = { [props.filterKey]: id };
-      return await trpc.books.list.query(filter);
-    }
-  );
 
   const handleSave = async (e: Event) => {
     e.preventDefault();
@@ -87,8 +78,7 @@ const ReferenceDataView = (props: ReferenceDataViewProps) => {
   };
 
   const handleRowClick = (item: any) => {
-    setSelectedCategoryId(item.id);
-    setSelectedCategoryName(item.name);
+    navigate(`/books?${props.filterKey}=${item.id}`);
   };
 
   return (
@@ -231,8 +221,7 @@ const ReferenceDataView = (props: ReferenceDataViewProps) => {
                     <tr 
                       style={{ 
                         'border-bottom': '1px solid var(--border-color)', 
-                        cursor: 'pointer',
-                        background: selectedCategoryId() === item.id ? 'var(--secondary-bg)' : 'transparent'
+                        cursor: 'pointer'
                       }} 
                       onClick={() => handleRowClick(item)}
                     >
@@ -269,48 +258,6 @@ const ReferenceDataView = (props: ReferenceDataViewProps) => {
           </div>
         </div>
 
-        <Show when={selectedCategoryId() !== null}>
-          <div class="glass-panel" style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '1rem' }}>
-              <h3 style={{ margin: 0 }}>Books in {selectedCategoryName()}</h3>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }} onClick={() => setSelectedCategoryId(null)}>Close</button>
-            </div>
-            
-            <Show when={categoryBooks.loading}>
-              <p>Loading books...</p>
-            </Show>
-            
-            <div class="table-responsive">
-              <table style={{ width: '100%', 'border-collapse': 'collapse' }}>
-                <thead>
-                  <tr style={{ 'text-align': 'left', 'border-bottom': '2px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.5rem' }}>Title</th>
-                    <th style={{ padding: '0.5rem' }}>Author</th>
-                    <th style={{ padding: '0.5rem', 'text-align': 'right' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <For each={categoryBooks()?.data}>
-                    {(book: any) => (
-                      <tr style={{ 'border-bottom': '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '0.5rem' }}>{book.title}</td>
-                        <td style={{ padding: '0.5rem' }}>{book.author}</td>
-                        <td style={{ padding: '0.5rem', 'text-align': 'right' }}>
-                          <A href={`/books/${book.id}`} style={{ color: 'var(--accent-color)', 'text-decoration': 'none' }}>View</A>
-                        </td>
-                      </tr>
-                    )}
-                  </For>
-                  <Show when={!categoryBooks.loading && categoryBooks()?.data.length === 0}>
-                    <tr>
-                      <td colspan="3" style={{ padding: '1rem', 'text-align': 'center' }}>No books found for this category.</td>
-                    </tr>
-                  </Show>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </Show>
       </Show>
     </div>
   );

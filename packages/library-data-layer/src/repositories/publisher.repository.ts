@@ -163,6 +163,7 @@ export class PublisherRepository {
       .leftJoin(book, eq(publisher.id, book.publisherId))
       .where(whereClause)
       .groupBy(publisher.id)
+      .orderBy(sql`bookCount DESC`)
       .limit(limit)
       .offset(offset);
 
