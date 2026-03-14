@@ -101,6 +101,8 @@ export async function createD1TestEnv(options?: {
 /**
  * Disposes of the Miniflare environment.
  */
-export async function disposeD1TestEnv(testEnv: TestEnv) {
-  await testEnv.mf.dispose();
+export async function disposeD1TestEnv(testEnv: TestEnv | undefined) {
+  if (testEnv?.mf) {
+    await testEnv.mf.dispose();
+  }
 }
