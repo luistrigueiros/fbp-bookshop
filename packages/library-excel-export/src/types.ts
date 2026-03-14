@@ -1,3 +1,10 @@
+export enum ExportJobStatus {
+  PENDING = "pending",
+  PROCESSING = "processing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+}
+
 export interface ExportBatch {
     type: "books" | "genres" | "publishers";
     data: unknown[];

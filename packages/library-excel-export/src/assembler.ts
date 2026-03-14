@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { DurableObject } from "cloudflare:workers";
-import { ExportEnv, ExportBatch } from "@/types";
+import { ExportEnv, ExportBatch, ExportJobStatus } from "@/types";
 import { getLibraryLogger, setupLogging } from "library-data-layer";
 
 const logger = getLibraryLogger(["library", "excel-export", "assembler"]);
@@ -157,7 +157,7 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
     });
 
     logger.info("Export completed successfully for DO {doId}", { doId });
-    await this.ctx.storage.put("status", "completed");
+    await this.ctx.storage.put("status", ExportJobStatus.COMPLETED);
   }
 
   async getStatus() {

@@ -1,7 +1,7 @@
 import { type Context } from 'hono';
 import { createRepositories, initDB } from "library-data-layer";
 
-import {ExportEnv} from "@/types";
+import {ExportEnv, ExportJobStatus} from "@/types";
 
 export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
   const jobId = crypto.randomUUID();
@@ -11,7 +11,7 @@ export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
   // Create job record
   await repositories.exports.create({
     id: jobId,
-    status: "pending",
+    status: ExportJobStatus.PENDING,
     progress: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -24,7 +24,7 @@ export const handlePostExport = async (c: Context<{ Bindings: ExportEnv }>) => {
     offset: 0
   });
   
-  return c.json({ jobId, status: "processing" });
+  return c.json({ jobId, status: ExportJobStatus.PROCESSING });
 };
 
 export const handleGetStatusById = async (c: Context<{ Bindings: ExportEnv }>) => {
