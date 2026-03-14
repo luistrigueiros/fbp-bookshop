@@ -22,7 +22,7 @@ class_name = "ExportAssembler"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["ExportAssembler"]
+new_sqlite_classes = ["ExportAssembler"]
 
 [[r2_buckets]]
 binding = "EXPORT_BUCKET"

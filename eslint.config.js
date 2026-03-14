@@ -27,8 +27,11 @@ export default tseslint.config(
         ],
     },
     {
-        // Specific override for library-excel-extractor
-        files: ["packages/library-excel-extractor/**/*.ts"],
+        // Specific override for library-excel-export and library-excel-extractor
+        files: [
+            "packages/library-excel-export/**/*.ts",
+            "packages/library-excel-extractor/**/*.ts"
+        ],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
         },

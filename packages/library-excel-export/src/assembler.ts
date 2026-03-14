@@ -143,12 +143,15 @@ export class ExportAssembler {
 
     // Export to R2
     const buffer = await workbook.xlsx.writeBuffer();
+    // Use Uint8Array to ensure compatibility with Cloudflare R2 and common environments
+    const uint8Array = new Uint8Array(buffer);
+    
     // const jobId = Math.random().toString(36).substring(7); // Simplified for now
     // In finalize, we don't have the original jobId easily unless we store it.
     // Actually, DO ID can be used as key.
     const doId = this.ctx.id.toString();
     
-    await this.env.EXPORT_BUCKET.put(`exports/${doId}.xlsx`, buffer, {
+    await this.env.EXPORT_BUCKET.put(`exports/${doId}.xlsx`, uint8Array, {
       httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
     });
     

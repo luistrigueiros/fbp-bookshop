@@ -50,3 +50,13 @@ jobs:
 
       - name: Run tests
         run: bun run test
+      - name: Create wrangler.toml
+        run: envsubst < wrangler.toml.template > wrangler.toml
+        env:
+          DATABASE_ID: ${{ secrets.DATABASE_ID }}
+
+      - name: Deploy to production
+        run: bun run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

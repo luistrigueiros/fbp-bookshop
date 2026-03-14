@@ -86,9 +86,11 @@
       "name": "library-excel-export",
       "version": "1.0.0",
       "dependencies": {
+        "@logtape/hono": "^2.0.4",
         "@types/node": "catalog:",
         "drizzle-orm": "catalog:",
         "exceljs": "^4.4.0",
+        "hono": "^4.12.7",
         "library-data-layer": "workspace:*",
         "zod": "catalog:",
       },
