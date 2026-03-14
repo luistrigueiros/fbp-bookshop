@@ -35,6 +35,11 @@ export async function uploadBooks(
                 language: book.language,
                 genreIds,
                 publisherId: publisherId ?? null,
+                stock: {
+                    bookshelf: book.bookshelf,
+                    numberOfCopies: book.numberOfCopies ?? 0,
+                    numberOfCopiesSold: book.numberOfSoldCopies ?? 0,
+                },
             });
             bookCount++;
             if (bookCount % 10 === 0) {
