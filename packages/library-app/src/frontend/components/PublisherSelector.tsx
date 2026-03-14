@@ -1,38 +1,51 @@
 import { createSignal, For, Show } from 'solid-js';
 
-export interface Genre {
+export interface Publisher {
   id: number;
   name: string;
 }
 
-interface GenreSelectorProps {
-  allGenres: Genre[] | undefined;
-  selectedIds: number[];
-  onChange: (ids: number[]) => void;
+interface PublisherSelectorProps {
+  allPublishers: Publisher[] | undefined;
+  selectedId: number | null | undefined;
+  onChange: (id: number | null) => void;
 }
 
-const GenreSelector = (props: GenreSelectorProps) => {
+const PublisherSelector = (props: PublisherSelectorProps) => {
   const [query, setQuery] = createSignal('');
   const [open, setOpen] = createSignal(false);
 
-  const selectedGenres = () =>
-    (props.allGenres ?? []).filter((g) => props.selectedIds.includes(g.id));
+  const selectedPublisher = () =>
+    (props.allPublishers ?? []).find((p) => p.id === props.selectedId);
 
   const suggestions = () => {
     const q = query().toLowerCase().trim();
-    return (props.allGenres ?? []).filter(
-      (g) => !props.selectedIds.includes(g.id) && (q === '' || g.name.toLowerCase().includes(q))
+    return (props.allPublishers ?? []).filter(
+      (p) => p.id !== props.selectedId && (q === '' || p.name.toLowerCase().includes(q))
     );
   };
 
-  const addGenre = (genre: Genre) => {
-    props.onChange([...props.selectedIds, genre.id]);
+  const selectPublisher = (publisher: Publisher) => {
+    const currentPublisher = selectedPublisher();
+    
+    if (currentPublisher) {
+      const confirmed = window.confirm(
+        `The current book will be associated with the new publisher "${publisher.name}" and it moving from the previous publisher "${currentPublisher.name}".\n\nDo you want to continue?`
+      );
+      if (!confirmed) {
+        setQuery('');
+        setOpen(false);
+        return;
+      }
+    }
+
+    props.onChange(publisher.id);
     setQuery('');
     setOpen(false);
   };
 
-  const removeGenre = (id: number) => {
-    props.onChange(props.selectedIds.filter((gid) => gid !== id));
+  const removePublisher = () => {
+    props.onChange(null);
   };
 
   const handleInput = (e: InputEvent & { target: HTMLInputElement }) => {
@@ -49,23 +62,23 @@ const GenreSelector = (props: GenreSelectorProps) => {
 
   return (
     <div class="entity-selector-wrapper">
-      {/* Selected genre chips */}
+      {/* Selected publisher chip */}
       <div class="entity-chips-row">
-        <For each={selectedGenres()}>
-          {(genre) => (
+        <Show when={selectedPublisher()}>
+          {(pub) => (
             <span class="entity-tag">
-              {genre.name}
+              {pub().name}
               <button
                 type="button"
                 class="entity-tag-remove"
-                onClick={() => removeGenre(genre.id)}
-                aria-label={`Remove ${genre.name}`}
+                onClick={removePublisher}
+                aria-label={`Remove ${pub().name}`}
               >
                 ×
               </button>
             </span>
           )}
-        </For>
+        </Show>
       </div>
 
       {/* Typeahead input */}
@@ -73,7 +86,7 @@ const GenreSelector = (props: GenreSelectorProps) => {
         <input
           class="entity-typeahead"
           type="text"
-          placeholder="Search genres to add…"
+          placeholder="Search publishers..."
           value={query()}
           onInput={handleInput}
           onFocus={() => setOpen(true)}
@@ -83,25 +96,25 @@ const GenreSelector = (props: GenreSelectorProps) => {
         <Show when={open() && suggestions().length > 0}>
           <ul class="entity-dropdown" role="listbox">
             <For each={suggestions()}>
-              {(genre) => (
+              {(pub) => (
                 <li
                   class="entity-dropdown-item"
                   role="option"
-                  onMouseDown={() => addGenre(genre)}
+                  onMouseDown={() => selectPublisher(pub)}
                 >
                   <span class="entity-dropdown-item-icon">+</span>
-                  {genre.name}
+                  {pub.name}
                 </li>
               )}
             </For>
           </ul>
         </Show>
         <Show when={open() && suggestions().length === 0 && query().length > 0}>
-          <div class="entity-dropdown entity-dropdown-empty">No genres match "{query()}"</div>
+          <div class="entity-dropdown entity-dropdown-empty">No publishers match "{query()}"</div>
         </Show>
       </div>
     </div>
   );
 };
 
-export default GenreSelector;
+export default PublisherSelector;
