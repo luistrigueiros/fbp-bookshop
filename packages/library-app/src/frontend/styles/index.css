@@ -148,22 +148,22 @@ main {
   -webkit-overflow-scrolling: touch;
 }
 
-/* ── Genre Selector ──────────────────────────────────────────────────── */
-.genre-selector-wrapper {
+/* ── Entity Selector (Genre, Publisher, etc.) ──────────────────────────── */
+.entity-selector-wrapper {
   margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.genre-chips-row {
+.entity-chips-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   min-height: 1.5rem;
 }
 
-.genre-tag {
+.entity-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -177,11 +177,11 @@ main {
   transition: background 0.15s;
 }
 
-.genre-tag:hover {
+.entity-tag:hover {
   background: var(--accent-hover);
 }
 
-.genre-tag-remove {
+.entity-tag-remove {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.85);
@@ -193,15 +193,15 @@ main {
   transition: color 0.1s;
 }
 
-.genre-tag-remove:hover {
+.entity-tag-remove:hover {
   color: #fff;
 }
 
-.genre-typeahead-wrapper {
+.entity-typeahead-wrapper {
   position: relative;
 }
 
-.genre-typeahead {
+.entity-typeahead {
   width: 100%;
   padding: 0.45rem 0.75rem;
   background: var(--secondary-bg);
@@ -214,12 +214,12 @@ main {
   box-sizing: border-box;
 }
 
-.genre-typeahead:focus {
+.entity-typeahead:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.genre-dropdown {
+.entity-dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -236,7 +236,7 @@ main {
   padding: 0.3rem 0;
 }
 
-.genre-dropdown-item {
+.entity-dropdown-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -247,20 +247,21 @@ main {
   transition: background 0.12s;
 }
 
-.genre-dropdown-item:hover {
+.entity-dropdown-item:hover {
   background: rgba(99, 102, 241, 0.1);
 }
 
-.genre-dropdown-item-icon {
+.entity-dropdown-item-icon {
   color: var(--accent-color);
   font-weight: 700;
   font-size: 1rem;
   line-height: 1;
 }
 
-.genre-dropdown-empty {
+.entity-dropdown-empty {
   padding: 0.6rem 0.85rem;
   color: var(--text-secondary);
   font-size: 0.85rem;
   font-style: italic;
 }
+

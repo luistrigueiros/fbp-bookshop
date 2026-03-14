@@ -2,6 +2,7 @@ import { createSignal, createResource, For, Show, onMount, createEffect } from '
 import { useParams, useNavigate } from '@solidjs/router';
 import { trpc } from '@/frontend/trpc';
 import GenreSelector from '@/frontend/components/GenreSelector';
+import PublisherSelector from '@/frontend/components/PublisherSelector';
 
 const BookDetail = () => {
   const params = useParams();
@@ -23,7 +24,7 @@ const BookDetail = () => {
   const [title, setTitle] = createSignal('');
   const [author, setAuthor] = createSignal('');
   const [price, setPrice] = createSignal(0);
-  const [pubId, setPubId] = createSignal(0);
+  const [pubId, setPubId] = createSignal<number | null>(null);
   const [selectedGenreIds, setSelectedGenreIds] = createSignal<number[]>([]);
   const [isbn, setIsbn] = createSignal('');
   const [language, setLanguage] = createSignal('');
@@ -44,7 +45,7 @@ const BookDetail = () => {
     setTitle(book.title || '');
     setAuthor(book.author || '');
     setPrice(book.price || 0);
-    setPubId(book.publisherId || 0);
+    setPubId(book.publisherId || null);
     const genreIds = book.bookGenres?.map((bg: any) => bg.genreId) || [];
     setSelectedGenreIds(genreIds);
     setIsbn(book.isbn || '');
@@ -171,12 +172,11 @@ const BookDetail = () => {
               </div>
               <div>
                 <label>Publisher</label>
-                <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.5rem' }} value={pubId()} onChange={(e) => setPubId(parseInt(e.target.value))}>
-                  <option value={0}>No Publisher</option>
-                  <For each={publishers()}>
-                    {(pub) => <option value={pub.id} selected={pub.id === pubId()}>{pub.name}</option>}
-                  </For>
-                </select>
+                <PublisherSelector
+                  allPublishers={publishers()}
+                  selectedId={pubId()}
+                  onChange={(id) => setPubId(id)}
+                />
               </div>
               <div style={{ 'grid-column': '1 / -1' }}>
                 <label>Genres</label>
