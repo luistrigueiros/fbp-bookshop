@@ -154,6 +154,13 @@ export class ExportAssembler extends DurableObject<ExportEnv> {
   }
 
   async finalize(jobId: string) {
+    const status = await this.ctx.storage.get<string>("status");
+    if (status === "processing" || status === "completed" || status === "failed") {
+      logger.debug("finalize: already in progress or finished for jobId {jobId}, status={status}", { jobId, status });
+      return;
+    }
+    await this.ctx.storage.put("status", "processing");
+
     const doId = this.ctx.id.toString();
     try {
       logger.info("Finalizing workbook for jobId {jobId} (DO {doId})", { jobId, doId });

@@ -1,17 +1,18 @@
 import { createSignal, onMount, For, Show } from 'solid-js';
 import { trpc } from './trpc';
+import type { ExportJobRecord } from 'library-data-layer';
 
 export default function App() {
-  const [jobs, setJobs] = createSignal<any[]>([]);
+  const [jobs, setJobs] = createSignal<ExportJobRecord[]>([]);
   const [isRequesting, setIsRequesting] = createSignal(false);
   const [errorDetails, setErrorDetails] = createSignal<string | null>(null);
 
   const loadJobs = async () => {
     try {
-      const result = await trpc.exports.list.query();
-      setJobs(result.sort((a: any, b: any) => 
+      const result = await trpc.exports.list.query() as unknown as (Omit<ExportJobRecord, 'createdAt' | 'updatedAt'> & { createdAt: string, updatedAt: string })[];
+      setJobs(result.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      ));
+      ) as unknown as ExportJobRecord[]);
     } catch (error) {
       console.error('Failed to load jobs:', error);
     }
@@ -82,7 +83,7 @@ export default function App() {
                           </span>
                           <Show when={job.status === 'failed' && job.errorMessage}>
                             <div class="mt-1 text-xs text-red-600 italic">
-                              {job.errorMessage.length > 30 ? job.errorMessage.substring(0, 30) + '...' : job.errorMessage}
+                              {(job.errorMessage as string).length > 30 ? (job.errorMessage as string).substring(0, 30) + '...' : job.errorMessage}
                               <button 
                                 onClick={() => setErrorDetails(job.errorMessage)}
                                 class="text-blue-600 hover:underline ml-1 font-normal"

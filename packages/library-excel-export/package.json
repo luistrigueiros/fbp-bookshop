@@ -13,7 +13,7 @@
     "build:worker": "bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types --external cloudflare:workers",
     "build": "rm -rf dist && bun run build:frontend && bun run build:worker",
     "typecheck": "tsc --noEmit",
-    "test": "bun test --preload ./test/setup.ts",
+    "test": "bun test",
     "lint": "bunx eslint ."
   },
   "dependencies": {

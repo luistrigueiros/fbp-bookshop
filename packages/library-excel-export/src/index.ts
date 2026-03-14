@@ -2,7 +2,8 @@ import { Hono } from 'hono';
 import { honoLogger } from '@logtape/hono';
 import { setupLogging, initDB, createRepositories } from "library-data-layer";
 import { ExportAssembler } from "@/assembler";
-import { handleDownload } from "@/handlers/export";
+import { handleDownload, handleGetStatus, handleGetStatusById, handlePostExport } from "@/handlers/export";
+import { landingPage } from "@/handlers/landingPage";
 import { handleQueue } from "@/queue";
 import { ExportEnv } from "@/types";
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
@@ -37,6 +38,11 @@ app.all('/api/*', (c) => {
 });
 
 app.get('/download/:jobId', handleDownload);
+app.post('/export', handlePostExport);
+app.get('/status', handleGetStatus);
+app.get('/status/:jobId', handleGetStatusById);
+
+app.get('/', landingPage);
 
 // SPA fallback: Serve index.html or assets
 app.get('*', async (c) => {
