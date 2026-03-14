@@ -1,5 +1,8 @@
 import ExcelJS from "exceljs";
 import {ExportBatch} from "@/types";
+import { getLibraryLogger, setupLogging } from "library-data-layer";
+
+const logger = getLibraryLogger(["library", "excel-export", "assembler"]);
 
 export class ExportAssembler {
   ctx: DurableObjectState;
@@ -10,7 +13,16 @@ export class ExportAssembler {
   }
 
   async addChunk(batch: ExportBatch) {
+    await setupLogging({ environment: this.env.ENVIRONMENT });
     const { type, data, isLast } = batch;
+    const doId = this.ctx.id.toString();
+    
+    logger.debug("addChunk: type={type}, dataLength={dataLength}, isLast={isLast}, doId={doId}", { 
+      type, 
+      dataLength: data.length, 
+      isLast,
+      doId
+    });
     
     // Get current index for this type
     const index = (await this.ctx.storage.get<number>(`index:${type}`)) || 0;
@@ -22,6 +34,7 @@ export class ExportAssembler {
     await this.ctx.storage.put(`index:${type}`, index + 1);
     
     if (isLast) {
+      logger.info("Type {type} finished for DO {doId}", { type, doId });
       await this.ctx.storage.put(`last:${type}`, true);
     }
     
@@ -31,11 +44,14 @@ export class ExportAssembler {
     const publishersFinished = await this.ctx.storage.get<boolean>("last:publishers");
     
     if (booksFinished && genresFinished && publishersFinished) {
+      logger.info("All types finished for DO {doId}. Finalizing workbook.", { doId });
       await this.finalize();
     }
   }
 
   async finalize() {
+    const doId = this.ctx.id.toString();
+    logger.info("Finalizing workbook for DO {doId}", { doId });
     const workbook = new ExcelJS.Workbook();
     
     // Add Sheets
@@ -71,6 +87,7 @@ export class ExportAssembler {
 
     // 1. Populate Genres
     const genreIndexCount = (await this.ctx.storage.get<number>("index:genres")) || 0;
+    logger.debug("Populating Genres: {count} chunks", { count: genreIndexCount });
     let currentRow = 2; // Header is row 1
     for (let i = 0; i < genreIndexCount; i++) {
       const chunk = await this.ctx.storage.get<unknown[]>(`chunk:genres:${i}`) as { id: number }[];
@@ -84,6 +101,7 @@ export class ExportAssembler {
 
     // 2. Populate Publishers
     const pubIndexCount = (await this.ctx.storage.get<number>("index:publishers")) || 0;
+    logger.debug("Populating Publishers: {count} chunks", { count: pubIndexCount });
     currentRow = 2;
     for (let i = 0; i < pubIndexCount; i++) {
       const chunk = await this.ctx.storage.get<unknown[]>(`chunk:publishers:${i}`) as { id: number }[];
@@ -97,6 +115,7 @@ export class ExportAssembler {
 
     // 3. Populate Books with links
     const bookIndexCount = (await this.ctx.storage.get<number>("index:books")) || 0;
+    logger.debug("Populating Books: {count} chunks", { count: bookIndexCount });
     for (let i = 0; i < bookIndexCount; i++) {
       const chunk = await this.ctx.storage.get<unknown[]>(`chunk:books:${i}`) as Record<string, unknown>[];
       if (chunk) {
@@ -142,6 +161,7 @@ export class ExportAssembler {
     }
 
     // Export to R2
+    logger.info("Writing workbook to buffer for DO {doId}", { doId });
     const buffer = await workbook.xlsx.writeBuffer();
     // Use Uint8Array to ensure compatibility with Cloudflare R2 and common environments
     const uint8Array = new Uint8Array(buffer);
@@ -149,12 +169,13 @@ export class ExportAssembler {
     // const jobId = Math.random().toString(36).substring(7); // Simplified for now
     // In finalize, we don't have the original jobId easily unless we store it.
     // Actually, DO ID can be used as key.
-    const doId = this.ctx.id.toString();
     
+    logger.info("Uploading workbook to R2: exports/{doId}.xlsx", { doId });
     await this.env.EXPORT_BUCKET.put(`exports/${doId}.xlsx`, uint8Array, {
       httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
     });
     
+    logger.info("Export completed successfully for DO {doId}", { doId });
     await this.ctx.storage.put("status", "completed");
   }
 
