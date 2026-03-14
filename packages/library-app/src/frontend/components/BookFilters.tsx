@@ -97,9 +97,9 @@ const BookFilters = (props: BookFiltersProps) => {
           style={{ 
             position: 'absolute', 
             top: '4rem', 
-            right: '1rem', 
+            right: '0', 
             'z-index': 100, 
-            width: 'calc(100vw - 2rem)', 
+            width: '100%', 
             'max-width': '400px',
             background: 'var(--secondary-bg)',
             'box-shadow': '0 10px 25px rgba(0,0,0,0.1)',
