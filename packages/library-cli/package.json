@@ -21,6 +21,8 @@
   "scripts": {
     "typecheck": "bunx tsc --noEmit",
     "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap",
-    "lint": "bunx eslint ."
+    "lint": "bunx eslint .",
+    "upload:data:remote": "bun run src/index.ts -u https://library-app-worker.luistrigueiros.workers.dev/api FBP-DB2.xlsx",
+    "upload:data:local": "bun run src/index.ts -u http://localhost:8787/api FBP-DB2.xlsx"
   }
 }
