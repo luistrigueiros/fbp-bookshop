@@ -11,7 +11,7 @@
     "deploy": "bun run build && bun run config && bunx wrangler deploy --minify",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
+    "test": "bun test --preload ./test/setup.ts",
     "lint": "bunx eslint ."
   },
   "dependencies": {

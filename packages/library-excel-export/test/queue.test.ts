@@ -101,6 +101,12 @@ describe("Export Queue Tests", () => {
     // Finalize should have run
     expect(doStorage.get("status")).toBe("completed");
 
+    // Re-acquire job from DB to check status
+    const repositoriesAfter = createRepositories(testEnv.db);
+    const jobAfter = await repositoriesAfter.exports.findById(jobId);
+    expect(jobAfter?.status).toBe("completed");
+    expect(jobAfter?.progress).toBe(100);
+
     // Check if file is in R2
     const bucket = testEnv.env.EXPORT_BUCKET as R2Bucket;
     const file = await bucket.get(`exports/${jobId}.xlsx`);

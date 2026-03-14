@@ -85,7 +85,7 @@ export const handleQueue = async (batch: MessageBatch<QueueMessage>, env: Export
       
       logger.debug("Updating progress for jobId {jobId}: {progress}%", { jobId, progress });
       await repositories.exports.update(jobId, { 
-        status: ExportJobStatus.PROCESSING,
+        status: isLast && type === "books" ? ExportJobStatus.COMPLETED : ExportJobStatus.PROCESSING,
         progress 
       });
     } catch (error) {
