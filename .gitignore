@@ -27,3 +27,4 @@
 /packages/library-excel-export/node_modules/
 /packages/library-excel-export/.wrangler/
 /packages/library-excel-export/wrangler.toml
+/packages/library-excel-export/dist/

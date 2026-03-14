@@ -35,3 +35,12 @@ export const CategoryListQuerySchema = z.object({
   offset: z.number().min(0).optional().default(0),
   name: z.string().optional(),
 });
+
+export const ExportJobSchema = z.object({
+  id: z.string(),
+  status: z.enum(['pending', 'processing', 'completed', 'failed']),
+  progress: z.number().min(0).max(100),
+  errorMessage: z.string().nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});

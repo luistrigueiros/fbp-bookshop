@@ -7,20 +7,27 @@
   "types": "src/index.ts",
   "scripts": {
     "config": "bun ../../scripts/config.ts",
-    "dev": "wrangler dev",
+    "dev": "bun run config && bunx wrangler dev",
     "deploy": "bun run build && bun run config && bunx wrangler deploy --minify",
-    "build": "tsc --noEmit",
+    "build:frontend": "bunx vite build",
+    "build:worker": "bun build src/index.ts --target=browser --outfile=dist/index.js --external @cloudflare/workers-types --external cloudflare:workers",
+    "build": "rm -rf dist && bun run build:frontend && bun run build:worker",
     "typecheck": "tsc --noEmit",
     "test": "bun test --preload ./test/setup.ts",
     "lint": "bunx eslint ."
   },
   "dependencies": {
     "@logtape/hono": "^2.0.4",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
     "@types/node": "catalog:",
     "drizzle-orm": "catalog:",
     "exceljs": "^4.4.0",
     "hono": "^4.12.7",
     "library-data-layer": "workspace:*",
+    "library-trpc": "workspace:*",
+    "solid-js": "catalog:",
+    "@solidjs/router": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -28,6 +35,8 @@
     "@types/bun": "catalog:",
     "library-test-utils": "workspace:*",
     "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-solid": "catalog:",
     "wrangler": "catalog:"
   }
 }
