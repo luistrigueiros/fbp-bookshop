@@ -103,7 +103,7 @@ async function loadJobs() {
         const progress = job.progress || 0;
         const isCompleted = job.status === 'completed';
         const isFailed = job.status === 'failed';
-        const errorMsg = job.errorMessage || job.error;
+        const errorMsg = job.errorMessage;
         
         let statusHtml = \`
             <span class="px-2 py-1 rounded text-xs font-semibold \${

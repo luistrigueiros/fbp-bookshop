@@ -1,1 +1,0 @@
-ALTER TABLE `export_job` ADD `error_message` text;

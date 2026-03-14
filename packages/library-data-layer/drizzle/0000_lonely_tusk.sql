@@ -30,6 +30,16 @@ CREATE TABLE `book_stock` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `book_stock_book_id_unique` ON `book_stock` (`book_id`);--> statement-breakpoint
+CREATE TABLE `export_job` (
+	`id` text PRIMARY KEY NOT NULL,
+	`status` text DEFAULT 'pending' NOT NULL,
+	`progress` integer DEFAULT 0,
+	`url` text,
+	`error_message` text,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `genre` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text(100) NOT NULL

@@ -140,7 +140,6 @@ export const exportJob = sqliteTable("export_job", {
     .default("pending"),
   progress: integer("progress").default(0),
   url: text("url"),
-  error: text("error"),
   errorMessage: text("error_message"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
