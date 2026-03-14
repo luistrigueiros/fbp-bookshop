@@ -10,6 +10,11 @@ export const booksRouter = router({
       return ctx.repositories.books.findWithFilters(input);
     }),
   
+  getLanguages: publicProcedure
+    .query(async ({ ctx }) => {
+      return ctx.repositories.books.getLanguages();
+    }),
+  
   getById: publicProcedure
     .input(z.number())
     .query(async ({ ctx, input }) => {

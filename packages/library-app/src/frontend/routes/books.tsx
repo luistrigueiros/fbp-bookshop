@@ -1,35 +1,34 @@
 import { createSignal, createResource, For, Show } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 import { trpc } from '@/frontend/trpc';
+import BookFilters, { BookFilterValues } from '@/frontend/components/BookFilters';
 
 const BooksList = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Pagination & Filters State
   const [page, setPage] = createSignal(1);
   const [limit] = createSignal(10);
-  const [filterTitle, setFilterTitle] = createSignal('');
-  const [filterAuthor, setFilterAuthor] = createSignal('');
-  const [filterPubId, setFilterPubId] = createSignal(0);
-  const [filterGenreId, setFilterGenreId] = createSignal(0);
-  const [filterLanguage, setFilterLanguage] = createSignal('');
-  const [showFilters, setShowFilters] = createSignal(false);
-
-  const isFiltered = () => filterTitle() !== '' || filterAuthor() !== '' || filterPubId() !== 0 || filterGenreId() !== 0 || filterLanguage() !== '';
+  
+  const [filters, setFilters] = createSignal<BookFilterValues>({
+    title: (Array.isArray(searchParams.title) ? searchParams.title[0] : searchParams.title) || '',
+    author: (Array.isArray(searchParams.author) ? searchParams.author[0] : searchParams.author) || '',
+    publisherId: searchParams.publisherId ? parseInt(Array.isArray(searchParams.publisherId) ? searchParams.publisherId[0] : searchParams.publisherId) : 0,
+    genreId: searchParams.genreId ? parseInt(Array.isArray(searchParams.genreId) ? searchParams.genreId[0] : searchParams.genreId) : 0,
+    language: (Array.isArray(searchParams.language) ? searchParams.language[0] : searchParams.language) || '',
+  });
 
   // Data fetching
-  const [publishers] = createResource(async () => trpc.publishers.list.query());
-  const [genres] = createResource(async () => trpc.genres.list.query());
-  
   const [booksData, { refetch }] = createResource(
     () => ({
       limit: limit(),
       offset: (page() - 1) * limit(),
-      title: filterTitle() || undefined,
-      author: filterAuthor() || undefined,
-      publisherId: filterPubId() || undefined,
-      genreId: filterGenreId() || undefined,
-      language: filterLanguage() || undefined,
+      title: filters().title || undefined,
+      author: filters().author || undefined,
+      publisherId: filters().publisherId || undefined,
+      genreId: filters().genreId || undefined,
+      language: filters().language || undefined,
     }),
     async (params) => {
       return await trpc.books.list.query(params);
@@ -52,19 +51,20 @@ const BooksList = () => {
     }
   };
 
-  const handleFilter = (e: Event) => {
-    e.preventDefault();
+  const handleApplyFilters = (newFilters: BookFilterValues) => {
+    setFilters(newFilters);
     setPage(1);
     refetch();
-    setShowFilters(false);
   };
 
-  const clearFilters = () => {
-    setFilterTitle('');
-    setFilterAuthor('');
-    setFilterPubId(0);
-    setFilterGenreId(0);
-    setFilterLanguage('');
+  const handleClearFilters = () => {
+    setFilters({
+      title: '',
+      author: '',
+      publisherId: 0,
+      genreId: 0,
+      language: '',
+    });
     setPage(1);
     refetch();
   };
@@ -74,124 +74,16 @@ const BooksList = () => {
       <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '2rem', gap: '1rem', 'flex-wrap': 'wrap' }}>
         <h2>Books Directory</h2>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button 
-            class="glass-panel" 
-            style={{ 
-              padding: '0.5rem 1rem', 
-              cursor: 'pointer',
-              background: isFiltered() ? 'var(--accent-color)' : 'var(--glass-bg)',
-              color: isFiltered() ? 'white' : 'var(--text-primary)',
-              border: isFiltered() ? 'none' : '1px solid var(--glass-border)',
-              display: 'flex',
-              'align-items': 'center',
-              gap: '0.5rem'
-            }} 
-            onClick={() => setShowFilters(!showFilters())}
-          >
-            <span>{isFiltered() ? 'Filter Applied' : 'Filter/Search'}</span>
-            <Show when={isFiltered()}>
-              <span 
-                onClick={(e) => { e.stopPropagation(); clearFilters(); }}
-                style={{ 
-                  'margin-left': '0.5rem', 
-                  background: 'rgba(255,255,255,0.2)', 
-                  'border-radius': '50%', 
-                  width: '18px', 
-                  height: '18px', 
-                  display: 'inline-flex', 
-                  'align-items': 'center', 
-                  'justify-content': 'center',
-                  'font-size': '12px'
-                }}
-              >
-                ✕
-              </span>
-            </Show>
-          </button>
+          <BookFilters 
+            initialFilters={filters()} 
+            onApply={handleApplyFilters} 
+            onClear={handleClearFilters} 
+          />
           <button class="glass-panel" style={{ padding: '0.5rem 1rem', cursor: 'pointer' }} onClick={openAdd}>
             Add New Book
           </button>
         </div>
       </div>
-
-      {/* FILTERING SECTION (Popup) */}
-      <Show when={showFilters()}>
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: '4rem', 
-            right: '1rem', 
-            'z-index': 100, 
-            width: 'calc(100vw - 2rem)', 
-            'max-width': '400px',
-            background: 'var(--secondary-bg)',
-            'box-shadow': '0 10px 25px rgba(0,0,0,0.1)',
-            'border-radius': '8px',
-            border: '1px solid var(--border-color)',
-            padding: '1.5rem'
-          }}
-          class="glass-panel"
-        >
-          <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'margin-bottom': '1rem' }}>
-            <h4 style={{ margin: 0 }}>Search & Filters</h4>
-            <button 
-              onClick={() => setShowFilters(false)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', 'font-size': '1.2rem' }}
-            >
-              ✕
-            </button>
-          </div>
-          <form onSubmit={handleFilter} style={{ display: 'flex', 'flex-direction': 'column', gap: '1rem' }}>
-            <div>
-              <label style={{ 'font-size': '0.85rem' }}>Title</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px' }} value={filterTitle()} onInput={(e) => setFilterTitle(e.currentTarget.value)} placeholder="Search title..." />
-            </div>
-            <div>
-              <label style={{ 'font-size': '0.85rem' }}>Author</label>
-              <input style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px' }} value={filterAuthor()} onInput={(e) => setFilterAuthor(e.currentTarget.value)} placeholder="Search author..." />
-            </div>
-            <div>
-              <label style={{ 'font-size': '0.85rem' }}>Publisher</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px', background: 'var(--secondary-bg)', color: 'var(--text-primary)' }} value={filterPubId()} onChange={(e) => setFilterPubId(parseInt(e.currentTarget.value))}>
-                <option value={0}>All Publishers</option>
-                <For each={publishers()}>
-                  {(pub) => <option value={pub.id}>{pub.name}</option>}
-                </For>
-              </select>
-            </div>
-            <div>
-              <label style={{ 'font-size': '0.85rem' }}>Genre</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px', background: 'var(--secondary-bg)', color: 'var(--text-primary)' }} value={filterGenreId()} onChange={(e) => setFilterGenreId(parseInt(e.currentTarget.value))}>
-                <option value={0}>All Genres</option>
-                <For each={genres()}>
-                  {(gen) => <option value={gen.id}>{gen.name}</option>}
-                </For>
-              </select>
-            </div>
-            <div>
-              <label style={{ 'font-size': '0.85rem' }}>Language</label>
-              <select style={{ width: '100%', padding: '0.5rem', 'margin-top': '0.25rem', border: '1px solid var(--border-color)', 'border-radius': '4px', background: 'var(--secondary-bg)', color: 'var(--text-primary)' }} value={filterLanguage()} onChange={(e) => setFilterLanguage(e.currentTarget.value)}>
-                <option value="">All Languages</option>
-                <option value="English">English</option>
-                <option value="French">French</option>
-                <option value="Spanish">Spanish</option>
-                <option value="German">German</option>
-                <option value="Italian">Italian</option>
-                <option value="Portuguese">Portuguese</option>
-                <option value="Russian">Russian</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', 'margin-top': '0.5rem' }}>
-              <button type="submit" style={{ flex: 1, padding: '0.5rem 1rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>Apply Filters</button>
-              <button type="button" onClick={clearFilters} style={{ flex: 1, padding: '0.5rem 1rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: 'pointer' }}>Clear All</button>
-            </div>
-          </form>
-        </div>
-      </Show>
 
       {/* DATA TABLE SECTION */}
       <div class="glass-panel" style={{ overflow: 'hidden' }}>

@@ -381,6 +381,20 @@ export class BookRepository {
   }
 
   /**
+   * Get all unique languages from the book table
+   */
+  async getLanguages(): Promise<string[]> {
+    const result = await this.db
+      .select({ language: book.language })
+      .from(book)
+      .groupBy(book.language);
+    
+    return result
+      .map(r => r.language)
+      .filter((l): l is string => l !== null && l !== "");
+  }
+
+  /**
    * Count total books
    */
   async count(): Promise<number> {
