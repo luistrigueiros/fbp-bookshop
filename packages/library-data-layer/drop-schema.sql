@@ -5,3 +5,5 @@ drop table if exists export_job;
 drop table if exists genre;
 drop table if exists publisher;
 drop table if exists d1_migrations;
+drop table if exists book_media;
+drop table if exists upload_status;
