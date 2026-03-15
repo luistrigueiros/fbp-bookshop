@@ -174,15 +174,12 @@ export class PublisherRepository {
       .from(publisher)
       .where(whereClause);
 
-    const [items, totalResult] = await Promise.all([
-      countsQuery,
-      totalQuery,
-    ]);
+    const [items, totalResult] = await Promise.all([countsQuery, totalQuery]);
 
     return {
-      items: items.map(item => ({
+      items: items.map((item) => ({
         ...item,
-        bookCount: Number(item.bookCount)
+        bookCount: Number(item.bookCount),
       })),
       total: Number(totalResult[0]?.count ?? 0),
     };

@@ -10,5 +10,10 @@ database_name = "library-db"
 database_id = "${DATABASE_ID}"
 migrations_dir = "drizzle"
 
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "library-media"
+
+
 [observability]
 enabled = true

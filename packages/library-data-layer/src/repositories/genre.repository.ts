@@ -1,7 +1,13 @@
 import { eq, like, sql } from "drizzle-orm";
 import type { DB } from "../db";
 import { genre, bookGenre } from "../schema";
-import type {Book, Genre, GenreWithBooks, NewGenre, CategoryWithCount} from "../schema/types";
+import type {
+  Book,
+  Genre,
+  GenreWithBooks,
+  NewGenre,
+  CategoryWithCount,
+} from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class GenreRepository {
@@ -106,10 +112,7 @@ export class GenreRepository {
    */
   async search(query: string): Promise<Genre[]> {
     const searchPattern = `%${query}%`;
-    return this.db
-      .select()
-      .from(genre)
-      .where(like(genre.name, searchPattern));
+    return this.db.select().from(genre).where(like(genre.name, searchPattern));
   }
 
   /**
@@ -184,15 +187,12 @@ export class GenreRepository {
       .from(genre)
       .where(whereClause);
 
-    const [items, totalResult] = await Promise.all([
-      countsQuery,
-      totalQuery,
-    ]);
+    const [items, totalResult] = await Promise.all([countsQuery, totalQuery]);
 
     return {
-      items: items.map(item => ({
+      items: items.map((item) => ({
         ...item,
-        bookCount: Number(item.bookCount)
+        bookCount: Number(item.bookCount),
       })),
       total: Number(totalResult[0]?.count ?? 0),
     };

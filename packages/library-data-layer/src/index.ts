@@ -22,6 +22,7 @@ import type { DB } from "./db";
 import {
   BookRepository,
   BookStockRepository,
+  BookMediaRepository,
   GenreRepository,
   PublisherRepository,
   UploadStatusRepository,
@@ -31,6 +32,7 @@ import {
 export interface LibraryRepositories {
   books: BookRepository;
   bookStock: BookStockRepository;
+  bookMedia: BookMediaRepository;
   genres: GenreRepository;
   publishers: PublisherRepository;
   uploads: UploadStatusRepository;
@@ -46,6 +48,7 @@ export function createRepositories(db: DB): LibraryRepositories {
   return {
     books: new BookRepository(db),
     bookStock: new BookStockRepository(db),
+    bookMedia: new BookMediaRepository(db),
     genres: new GenreRepository(db),
     publishers: new PublisherRepository(db),
     uploads: new UploadStatusRepository(db),
