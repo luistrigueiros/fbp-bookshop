@@ -2,6 +2,7 @@ import { createSignal, createResource, For, Show } from 'solid-js';
 import { useNavigate, useSearchParams } from '@solidjs/router';
 import { trpc } from '@/frontend/trpc';
 import BookFilters, { BookFilterValues } from '@/frontend/components/BookFilters';
+import DataPagination from '@/frontend/components/DataPagination';
 
 const BooksList = () => {
   const navigate = useNavigate();
@@ -146,28 +147,16 @@ const BooksList = () => {
         </div>
 
         {/* PAGINATION CONTROLS */}
-        <div style={{ padding: '1rem', display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', 'border-top': '1px solid var(--border-color)' }}>
-          <div style={{ color: 'var(--text-secondary)', 'font-size': '0.9rem' }}>
-            Showing {booksData()?.data.length || 0} of {booksData()?.total || 0} books
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', 'align-items': 'center' }}>
-            <button 
-              disabled={page() === 1}
-              onClick={() => setPage(page() - 1)}
-              style={{ padding: '0.5rem 1rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: page() === 1 ? 'not-allowed' : 'pointer', opacity: page() === 1 ? 0.5 : 1 }}
-            >
-              Previous
-            </button>
-            <span style={{ padding: '0 0.5rem', 'font-weight': 'bold' }}>Page {page()}</span>
-            <button 
-              disabled={!booksData() || booksData()!.data.length < limit()}
-              onClick={() => setPage(page() + 1)}
-              style={{ padding: '0.5rem 1rem', background: 'var(--secondary-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 'border-radius': '4px', cursor: (!booksData() || booksData()!.data.length < limit()) ? 'not-allowed' : 'pointer', opacity: (!booksData() || booksData()!.data.length < limit()) ? 0.5 : 1 }}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <DataPagination
+          page={page}
+          pageBase={1}
+          onPrevious={() => setPage(page() - 1)}
+          onNext={() => setPage(page() + 1)}
+          showing={() => booksData()?.data.length || 0}
+          total={() => booksData()?.total || 0}
+          totalPages={() => Math.ceil((booksData()?.total || 0) / limit()) || 1}
+          itemLabel="books"
+        />
       </div>
 
     </div>

@@ -1,4 +1,5 @@
 import { createSignal, createMemo, Show, For } from 'solid-js';
+import DataPagination from './DataPagination';
 
 interface ReferenceDataListProps {
   itemName: string;
@@ -141,23 +142,15 @@ const ReferenceDataList = (props: ReferenceDataListProps) => {
           </table>
         </div>
 
-        <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', padding: '1rem', background: 'var(--secondary-bg)' }}>
-          <button 
-            disabled={page() === 0} 
-            onClick={() => setPage(p => p - 1)}
-            style={{ padding: '0.5rem 1rem', cursor: page() === 0 ? 'not-allowed' : 'pointer' }}
-          >
-            Previous
-          </button>
-          <span>Page {page() + 1} of {totalPages()}</span>
-          <button 
-            disabled={page() >= totalPages() - 1} 
-            onClick={() => setPage(p => p + 1)}
-            style={{ padding: '0.5rem 1rem', cursor: page() >= totalPages() - 1 ? 'not-allowed' : 'pointer' }}
-          >
-            Next
-          </button>
-        </div>
+        <DataPagination
+          page={page}
+          totalPages={totalPages}
+          onPrevious={() => setPage(p => p - 1)}
+          onNext={() => setPage(p => p + 1)}
+          showing={() => paginatedList().length}
+          total={() => filteredList().length}
+          itemLabel={props.itemName.toLowerCase() + 's'}
+        />
       </div>
     </div>
   );

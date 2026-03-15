@@ -1,5 +1,6 @@
 import { createSignal, createResource, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import DataPagination from './DataPagination';
 
 interface ReferenceDataDrillDownProps {
   itemName: string;
@@ -72,23 +73,15 @@ const ReferenceDataDrillDown = (props: ReferenceDataDrillDownProps) => {
           </table>
         </div>
         
-        <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', padding: '1rem', background: 'var(--secondary-bg)' }}>
-          <button 
-            disabled={page() === 0} 
-            onClick={() => setPage(p => p - 1)}
-            style={{ padding: '0.5rem 1rem', cursor: page() === 0 ? 'not-allowed' : 'pointer' }}
-          >
-            Previous
-          </button>
-          <span>Page {page() + 1} of {Math.ceil((drillData()?.total || 0) / pageSize) || 1}</span>
-          <button 
-            disabled={(page() + 1) * pageSize >= (drillData()?.total || 0)} 
-            onClick={() => setPage(p => p + 1)}
-            style={{ padding: '0.5rem 1rem', cursor: (page() + 1) * pageSize >= (drillData()?.total || 0) ? 'not-allowed' : 'pointer' }}
-          >
-            Next
-          </button>
-        </div>
+        <DataPagination
+          page={page}
+          totalPages={() => Math.ceil((drillData()?.total || 0) / pageSize) || 1}
+          onPrevious={() => setPage(p => p - 1)}
+          onNext={() => setPage(p => p + 1)}
+          showing={() => drillData()?.items.length || 0}
+          total={() => drillData()?.total || 0}
+          itemLabel={props.itemName.toLowerCase() + 's'}
+        />
       </div>
     </div>
   );
