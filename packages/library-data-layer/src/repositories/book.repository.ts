@@ -1,7 +1,12 @@
 import { eq, like, or, and, sql, inArray, isNull } from "drizzle-orm";
 import type { DB } from "../db";
 import { book, bookGenre, bookStock } from "../schema";
-import type { Book, BookWithRelations, NewBook, NewBookStock } from "../schema/types";
+import type {
+  Book,
+  BookWithRelations,
+  NewBook,
+  NewBookStock,
+} from "../schema/types";
 import { layerLogger } from "../logging";
 
 export class BookRepository {
@@ -388,9 +393,9 @@ export class BookRepository {
       .select({ language: book.language })
       .from(book)
       .groupBy(book.language);
-    
+
     return result
-      .map(r => r.language)
+      .map((r) => r.language)
       .filter((l): l is string => l !== null && l !== "");
   }
 

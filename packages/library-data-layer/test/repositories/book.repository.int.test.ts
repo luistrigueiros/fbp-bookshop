@@ -105,8 +105,16 @@ describe("BookRepository (integration, Miniflare D1)", () => {
   });
 
   it("Find with language filter", async () => {
-    await books.create({ title: "English Book", author: "A1", language: "English" });
-    await books.create({ title: "French Book", author: "A2", language: "French" });
+    await books.create({
+      title: "English Book",
+      author: "A1",
+      language: "English",
+    });
+    await books.create({
+      title: "French Book",
+      author: "A2",
+      language: "French",
+    });
 
     const englishBooks = await books.findWithFilters({ language: "English" });
     expect(englishBooks.data.length).toBe(1);

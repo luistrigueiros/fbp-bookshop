@@ -3,6 +3,8 @@ import { useParams, useNavigate } from '@solidjs/router';
 import { trpc } from '@/frontend/trpc';
 import GenreSelector from '@/frontend/components/GenreSelector';
 import PublisherSelector from '@/frontend/components/PublisherSelector';
+import BookMediaGallery from '@/frontend/components/BookMediaGallery';
+import BookMediaUpload from '@/frontend/components/BookMediaUpload';
 
 const BookDetail = () => {
   const params = useParams();
@@ -31,7 +33,11 @@ const BookDetail = () => {
   const [bookshelf, setBookshelf] = createSignal('');
   const [numberOfCopies, setNumberOfCopies] = createSignal(0);
   const [numberOfCopiesSold, setNumberOfCopiesSold] = createSignal(0);
-  const [activeTab, setActiveTab] = createSignal<'info' | 'stock'>('info');
+  const [activeTab, setActiveTab] = createSignal<'info' | 'stock' | 'media'>('info');
+  const [refreshCounter, setRefreshCounter] = createSignal(0);
+
+  const refreshGallery = () => setRefreshCounter((c) => c + 1);
+  const handleDeleted = () => setRefreshCounter((c) => c + 1);
 
   // Update signals when bookData is loaded
   onMount(() => {
@@ -145,6 +151,24 @@ const BookDetail = () => {
           >
             Stock Information
           </button>
+          <Show when={id() !== null}>
+            <button 
+              onClick={() => setActiveTab('media')} 
+              type="button"
+              style={{ 
+                padding: '0.75rem 0.5rem', 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                color: activeTab() === 'media' ? 'var(--accent-color)' : 'var(--text-secondary)',
+                'border-bottom': activeTab() === 'media' ? '2px solid var(--accent-color)' : '2px solid transparent',
+                'font-weight': activeTab() === 'media' ? '600' : '400',
+                'transition': 'all 0.2s ease'
+              }}
+            >
+              Media
+            </button>
+          </Show>
         </div>
 
         <form onSubmit={handleSave}>
@@ -203,6 +227,22 @@ const BookDetail = () => {
               </div>
             </Show>
           </div>
+
+          <Show when={activeTab() === 'media' && id() !== null}>
+            <div style={{ 'margin-top': '1rem' }}>
+              <BookMediaGallery
+                refreshKey={refreshCounter()}
+                bookId={id()!}
+                editMode={true}
+                onDeleted={handleDeleted}
+              />
+              <div style={{ 'margin-top': '1.5rem', 'padding-top': '1.5rem', 'border-top': '1px solid var(--border-color)' }}>
+                <h3 style={{ margin: '0 0 1rem' }}>Upload Media</h3>
+                <BookMediaUpload bookId={id()!} onUploaded={refreshGallery} />
+              </div>
+            </div>
+          </Show>
+
           <div style={{ 'margin-top': '1.5rem', display: 'flex', gap: '1rem' }}>
             <button type="submit" style={{ padding: '0.5rem 2rem', background: 'var(--accent-color)', color: 'white', border: 'none', 'border-radius': '4px', cursor: 'pointer' }}>
               Save

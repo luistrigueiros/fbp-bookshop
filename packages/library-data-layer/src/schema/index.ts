@@ -5,6 +5,7 @@ import {
   real,
   primaryKey,
   uniqueIndex,
+  index,
 } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
@@ -75,6 +76,36 @@ export const bookGenre = sqliteTable(
   }),
 );
 
+// Book Media table
+export const bookMedia = sqliteTable(
+  "book_media",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    bookId: integer("book_id")
+      .notNull()
+      .references(() => book.id, { onDelete: "cascade" }),
+    mediaType: text("media_type", { length: 20 }).notNull(),
+    mediaCategory: text("media_category", { length: 30 }).notNull(),
+    r2Key: text("r2_key", { length: 255 }).notNull(),
+    fileName: text("file_name", { length: 255 }).notNull(),
+    fileSize: integer("file_size"),
+    mimeType: text("mime_type", { length: 100 }),
+    width: integer("width"),
+    height: integer("height"),
+    thumbnailKey: text("thumbnail_key", { length: 255 }),
+    displayOrder: integer("display_order").default(0),
+    isPrimary: integer("is_primary", { mode: "boolean" }).default(false),
+    description: text("description"),
+    uploadedAt: integer("uploaded_at", { mode: "timestamp" }).notNull(),
+    duration: integer("duration"),
+  },
+  (t) => ({
+    bookIdx: index("book_media_book_idx").on(t.bookId),
+    r2KeyIdx: uniqueIndex("book_media_r2key_idx").on(t.r2Key),
+    primaryIdx: index("book_media_primary_idx").on(t.bookId, t.isPrimary),
+  }),
+);
+
 // Define relations for better TypeScript support and joins
 export const bookRelations = relations(book, ({ one, many }) => ({
   publisher: one(publisher, {
@@ -83,6 +114,7 @@ export const bookRelations = relations(book, ({ one, many }) => ({
   }),
   bookGenres: many(bookGenre),
   stock: one(bookStock),
+  media: many(bookMedia),
 }));
 
 export const bookStockRelations = relations(bookStock, ({ one }) => ({
@@ -109,6 +141,10 @@ export const bookGenreRelations = relations(bookGenre, ({ one }) => ({
     fields: [bookGenre.genreId],
     references: [genre.id],
   }),
+}));
+
+export const bookMediaRelations = relations(bookMedia, ({ one }) => ({
+  book: one(book, { fields: [bookMedia.bookId], references: [book.id] }),
 }));
 
 // Upload Status table

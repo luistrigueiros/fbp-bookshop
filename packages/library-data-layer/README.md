@@ -115,13 +115,13 @@ const book = await repos.books.findByIdWithRelations(1);
 // Search books with filters
 const searchResults = await repos.books.findWithFilters({
   title: "Gatsby",
-  genreId: 1
+  genreId: 1,
 });
 
 // Update book and its genres
-await repos.books.update(1, { 
+await repos.books.update(1, {
   price: 12.99,
-  genreIds: [1, 3] 
+  genreIds: [1, 3],
 });
 ```
 

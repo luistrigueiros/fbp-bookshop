@@ -16,6 +16,7 @@
     "library-data-layer": "workspace:*"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
     "typescript": "catalog:"
   },
   "scripts": {

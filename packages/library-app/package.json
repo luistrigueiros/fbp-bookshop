@@ -26,17 +26,20 @@
         "lint:fix": "bunx eslint . --ext .ts --fix"
     },
     "dependencies": {
+        "@jsquash/jpeg": "^1.6.0",
+        "@jsquash/png": "^3.1.1",
+        "@jsquash/resize": "^2.1.1",
+        "@logtape/hono": "catalog:",
+        "@logtape/logtape": "catalog:",
+        "@solidjs/router": "catalog:",
+        "@trpc/client": "catalog:",
+        "@trpc/server": "catalog:",
         "dotenv": "catalog:",
         "hono": "catalog:",
-        "@logtape/logtape": "catalog:",
-        "@logtape/hono": "catalog:",
-        "@trpc/server": "catalog:",
-        "@trpc/client": "catalog:",
-        "zod": "catalog:",
-        "solid-js": "catalog:",
-        "@solidjs/router": "catalog:",
         "library-data-layer": "workspace:*",
-        "library-trpc": "workspace:*"
+        "library-trpc": "workspace:*",
+        "solid-js": "catalog:",
+        "zod": "catalog:"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
