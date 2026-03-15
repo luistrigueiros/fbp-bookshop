@@ -94,6 +94,11 @@ const BookMediaGallery = (props: BookMediaGalleryProps) => {
                 }}
                 onClick={() => setLightboxUrl(cover().url)}
               />
+              <Show when={cover().description}>
+                <p style={{ margin: '0.5rem 0 0', 'font-size': '0.85rem', color: 'var(--text-secondary)' }}>
+                  {cover().description}
+                </p>
+              </Show>
               <Show when={props.editMode}>
                 <button
                   onClick={() => handleDelete(cover().id)}
@@ -121,13 +126,13 @@ const BookMediaGallery = (props: BookMediaGalleryProps) => {
         <div
           style={{
             display: 'grid',
-            'grid-template-columns': 'repeat(auto-fill, minmax(120px, 1fr))',
+            'grid-template-columns': 'repeat(auto-fill, minmax(160px, 1fr))',
             gap: '0.75rem',
           }}
         >
           <For each={remainingItems()}>
             {(item) => (
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', display: 'flex', 'flex-direction': 'column', gap: '0.35rem' }}>
                 <Show when={item.mediaType === 'image'}>
                   <img
                     src={item.thumbnailUrl ?? item.url}
@@ -153,6 +158,11 @@ const BookMediaGallery = (props: BookMediaGalleryProps) => {
                       border: '1px solid var(--border-color)',
                     }}
                   />
+                </Show>
+                <Show when={item.description}>
+                  <p style={{ margin: 0, 'font-size': '0.8rem', color: 'var(--text-secondary)', 'line-height': '1.3' }}>
+                    {item.description}
+                  </p>
                 </Show>
                 <Show when={props.editMode}>
                   <button
