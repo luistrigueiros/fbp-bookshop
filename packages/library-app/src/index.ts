@@ -16,7 +16,7 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-let migrationsApplied = false;
+const migratedDbs = new WeakSet<object>();
 
 app.use('*', honoLogger());
 app.use('*', async (c, next) => {
@@ -25,10 +25,10 @@ app.use('*', async (c, next) => {
 });
 
 app.use('/api/*', async (c, next) => {
-  if (!migrationsApplied) {
+  if (!migratedDbs.has(c.env.DB as object)) {
     const allStatements = migrations.flatMap((m: { content: string }) => splitMigrationStatements(m.content));
     await runMigrations(c.env.DB, allStatements);
-    migrationsApplied = true;
+    migratedDbs.add(c.env.DB as object);
   }
   await next();
 });

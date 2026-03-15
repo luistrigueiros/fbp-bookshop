@@ -7,36 +7,36 @@ export function sanitiseFilename(name: string): string {
 
 /**
  * Build the R2 key for a media file.
- * Format: books/{bookId}/{category}/{timestamp}-{sanitisedFilename}
+ * Format: books/{mediaFolderId}/{category}/{timestamp}-{sanitisedFilename}
  */
 export function buildMediaKey(
-  bookId: number,
+  mediaFolderId: string,
   category: string,
   timestamp: number,
   filename: string,
 ): string {
   const sanitised = sanitiseFilename(filename);
-  return `books/${bookId}/${category}/${timestamp}-${sanitised}`;
+  return `books/${mediaFolderId}/${category}/${timestamp}-${sanitised}`;
 }
 
 /**
  * Build the R2 key for a thumbnail file.
- * Format: books/{bookId}/{category}/{timestamp}-thumb-{sanitisedFilename}
+ * Format: books/{mediaFolderId}/{category}/{timestamp}-thumb-{sanitisedFilename}
  */
 export function buildThumbnailKey(
-  bookId: number,
+  mediaFolderId: string,
   category: string,
   timestamp: number,
   filename: string,
 ): string {
   const sanitised = sanitiseFilename(filename);
-  return `books/${bookId}/${category}/${timestamp}-thumb-${sanitised}`;
+  return `books/${mediaFolderId}/${category}/${timestamp}-thumb-${sanitised}`;
 }
 
 /**
  * Build the R2 key for a book's manifest file.
- * Format: books/{bookId}/manifest.json
+ * Format: books/{mediaFolderId}/manifest.json
  */
-export function buildManifestKey(bookId: number): string {
-  return `books/${bookId}/manifest.json`;
+export function buildManifestKey(mediaFolderId: string): string {
+  return `books/${mediaFolderId}/manifest.json`;
 }

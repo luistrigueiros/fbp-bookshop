@@ -52,7 +52,7 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
   const mimeType = file.type || 'application/octet-stream';
   const filename = file.name || 'upload';
   const timestamp = Date.now();
-  const r2Key = buildMediaKey(bookId, mediaCategory, timestamp, filename);
+  const r2Key = buildMediaKey(bookRecord.mediaFolderId, mediaCategory, timestamp, filename);
   const fileBuffer = await file.arrayBuffer();
 
   // For images, optimise before storing — use the optimised buffer as the primary file
@@ -67,7 +67,7 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
       const { optimised, thumbnail, width: w, height: h } = await processImage(fileBuffer, mimeType);
       storedBuffer = optimised;
       storedMimeType = 'image/jpeg';
-      thumbnailKey = buildThumbnailKey(bookId, mediaCategory, timestamp, filename);
+      thumbnailKey = buildThumbnailKey(bookRecord.mediaFolderId, mediaCategory, timestamp, filename);
       await c.env.MEDIA_BUCKET.put(thumbnailKey, thumbnail, {
         httpMetadata: { contentType: 'image/jpeg' },
       });
@@ -111,7 +111,7 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
 
   const created = await repositories.bookMedia.create(record);
 
-  await writeManifest(c.env.MEDIA_BUCKET, bookId, bookRecord);
+  await writeManifest(c.env.MEDIA_BUCKET, bookRecord);
 
   return c.json({
     id: created.id,

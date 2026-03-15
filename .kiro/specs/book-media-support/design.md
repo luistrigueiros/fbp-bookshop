@@ -9,13 +9,18 @@ The feature spans three packages:
 - `library-trpc` — `bookMediaRouter` with `getByBook` and `delete` procedures
 - `library-app` — Hono multipart upload route, Worker proxy for media serving, SolidJS components
 
+Handler functions are extracted into `src/handlers/` to keep `src/index.ts` focused on route wiring and middleware only:
+- `src/handlers/mediaUpload.ts` — `POST /api/books/:bookId/media` logic
+- `src/handlers/mediaProxy.ts` — `GET /api/media/*` R2 proxy logic
+- `src/handlers/trpc.ts` — tRPC fetch handler
+
 ### Key Design Decisions
 
 1. **Upload via Hono, not tRPC**: tRPC uses JSON serialisation, which cannot handle binary file payloads efficiently. The upload endpoint is a dedicated Hono route handling `multipart/form-data`. tRPC handles `getByBook` and `delete`.
 
 2. **Media serving via Worker proxy, not signed URLs**: The R2 Workers binding does not expose `createSignedUrl`. Instead, a Hono route at `/api/media/:r2Key` streams objects directly from R2, acting as a proxy. This keeps media private while avoiding the S3-compatible API complexity.
 
-3. **Image optimisation with `@jsquash`**: WASM-based libraries (`@jsquash/jpeg`, `@jsquash/png`, `@jsquash/resize`) run inside Cloudflare Workers for thumbnail generation and dimension extraction.
+3. **Image optimisation with `@jsquash`**: WASM-based libraries (`@jsquash/jpeg`, `@jsquash/png`, `@jsquash/resize`) run inside Cloudflare Workers for lossy JPEG re-encoding (quality 82 for the primary file, quality 75 for thumbnails), thumbnail generation, and dimension extraction. The optimised buffer — not the raw upload — is what gets stored in R2, reducing storage by 40–70% for typical images.
 
 4. **R2 binding threaded through tRPC context**: The `tRPCContext` interface gains an optional `r2: R2Bucket` field. The `createContext` function in `library-app` reads the R2 binding from Hono's env and passes it through.
 
@@ -26,9 +31,9 @@ The feature spans three packages:
 ```mermaid
 graph TD
     subgraph library-app [library-app - Cloudflare Worker]
-        HonoUpload["POST /api/books/:bookId/media\n(multipart/form-data)"]
-        HonoProxy["GET /api/media/*\n(R2 proxy)"]
-        tRPCHandler["tRPC handler /api/*"]
+        HonoUpload["POST /api/books/:bookId/media\n(multipart/form-data)\nsrc/handlers/mediaUpload.ts"]
+        HonoProxy["GET /api/media/*\n(R2 proxy)\nsrc/handlers/mediaProxy.ts"]
+        tRPCHandler["tRPC handler /api/*\nsrc/handlers/trpc.ts"]
         SolidJS["SolidJS Frontend\nBookMediaGallery\nBookMediaUpload"]
     end
 
@@ -69,15 +74,17 @@ graph TD
 
 ### 1. Hono Upload Route (`library-app`)
 
+Implemented in `src/handlers/mediaUpload.ts`.
+
 ```
 POST /api/books/:bookId/media
 Content-Type: multipart/form-data
 
 Fields:
-  file         - File (required)
+  file          - File (required)
   mediaCategory - string (required): cover | back_cover | promotional | interview | event
-  isPrimary    - string "true"|"false" (optional, default false)
-  description  - string (optional)
+  isPrimary     - string "true"|"false" (optional, default false)
+  description   - string (optional)
 
 Response 200: { id, r2Key, thumbnailKey?, url }
 Response 400: { error: string }
@@ -85,6 +92,8 @@ Response 404: { error: "Book not found" }
 Response 413: { error: "File too large" }
 Response 500: { error: string }
 ```
+
+For image uploads, the file is decoded, lossy-compressed to JPEG (quality 82), and the optimised buffer is stored in R2. The `mimeType` stored in the DB record is `image/jpeg` and `fileSize` reflects the compressed byte length. If image processing fails, the original file is stored as a fallback.
 
 ### 2. Hono Media Proxy Route (`library-app`)
 
@@ -128,14 +137,14 @@ class BookMediaRepository {
 ```typescript
 // src/media/imageProcessor.ts
 processImage(buffer: ArrayBuffer, mimeType: string): Promise<{
-  optimised: ArrayBuffer,
-  thumbnail: ArrayBuffer,
+  optimised: ArrayBuffer,  // lossy JPEG re-encode at quality 82
+  thumbnail: ArrayBuffer,  // resized to max 200px, JPEG at quality 75
   width: number,
   height: number,
 }>
 ```
 
-Uses `@jsquash/jpeg`, `@jsquash/png`, `@jsquash/resize` for WASM-based processing inside the Worker.
+Uses `@jsquash/jpeg`, `@jsquash/png`, `@jsquash/resize` for WASM-based processing inside the Worker. The `optimised` buffer is stored as the primary R2 object (replacing the raw upload). Both JPEG and PNG inputs are supported; all output is JPEG.
 
 ### 6. Manifest Service (`library-app`)
 
@@ -355,14 +364,12 @@ sequenceDiagram
         Hono-->>FE: 413
     end
     Hono->>Hono: sanitiseFilename, buildMediaKey
-    Hono->>R2: r2.put(mediaKey, fileBuffer, { httpMetadata })
+    Hono->>Hono: processImage → optimised (q82) + thumbnail (q75) + dimensions
+    Hono->>R2: r2.put(mediaKey, optimisedBuffer, { httpMetadata: { contentType: image/jpeg } })
     alt R2 put fails
         Hono-->>FE: 500
     end
-    alt file is image
-        Hono->>Hono: processImage → optimised + thumbnail + dimensions
-        Hono->>R2: r2.put(thumbnailKey, thumbnailBuffer)
-    end
+    Hono->>R2: r2.put(thumbnailKey, thumbnailBuffer)
     alt isPrimary = true
         Hono->>DB: bookMedia.clearPrimary(bookId, category)
     end
@@ -443,15 +450,16 @@ interface BookMediaGalleryProps {
   bookId: number;
   editMode?: boolean;
   onDeleted?: (id: number) => void;
+  refreshKey?: number;  // increment to trigger a re-fetch
 }
 ```
 
 Behaviour:
-- Calls `trpc.bookMedia.getByBook.query({ bookId })` on mount
-- Renders primary cover image prominently if present
-- Renders thumbnail grid for remaining images
+- Calls `trpc.bookMedia.getByBook.query({ bookId })` on mount; re-fetches when `refreshKey` prop changes
+- Renders primary cover image prominently if present, with description shown below if set
+- Renders thumbnail grid for remaining images; description shown below each thumbnail if set
 - Clicking a thumbnail opens a lightbox with the full-size `url`
-- Renders `<video>` elements for video media using `url` as `src`
+- Renders `<video>` elements for video media using `url` as `src`, with description below if set
 - Shows a placeholder when the media array is empty
 - In `editMode`, shows a delete button per item that calls `trpc.bookMedia.delete.mutate`
 

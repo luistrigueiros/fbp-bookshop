@@ -42,10 +42,12 @@ export const book = sqliteTable(
     publisherId: integer("publisher_id").references(getPublisherId, {
       onDelete: "set null",
     }),
+    mediaFolderId: text("media_folder_id").notNull().default(""),
   },
   (t) => ({
     isbnIdx: uniqueIndex("book_isbn_idx").on(t.isbn),
     uniqueBookIdx: uniqueIndex("book_unique_idx").on(t.title, t.author, t.isbn),
+    mediaFolderIdIdx: uniqueIndex("book_media_folder_id_idx").on(t.mediaFolderId),
   }),
 );
 

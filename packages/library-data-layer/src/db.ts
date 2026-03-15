@@ -84,7 +84,7 @@ export async function runMigrations(
       } catch (err) {
         // Ignore "table already exists" errors during auto-migration in dev
         const message = err instanceof Error ? err.message : String(err);
-        if (message.includes("already exists")) {
+        if (message.includes("already exists") || message.includes("duplicate column name")) {
           layerLogger.info(
             `[DEV] Skipping statement (already exists): ${statement.substring(0, 50)}...`,
           );
