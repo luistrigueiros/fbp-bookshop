@@ -42,9 +42,9 @@ export async function processImage(
   // Generate thumbnail
   const thumbnailData = await resize(imageData, { width: thumbWidth, height: thumbHeight });
 
-  // Re-encode both as JPEG
-  const optimised = await jpeg.encode(imageData);
-  const thumbnail = await jpeg.encode(thumbnailData);
+  // Re-encode both as JPEG with lossy compression (quality 0–100)
+  const optimised = await jpeg.encode(imageData, { quality: 82 });
+  const thumbnail = await jpeg.encode(thumbnailData, { quality: 75 });
 
   return { optimised, thumbnail, width, height };
 }

@@ -55,21 +55,18 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
   const r2Key = buildMediaKey(bookId, mediaCategory, timestamp, filename);
   const fileBuffer = await file.arrayBuffer();
 
-  try {
-    await c.env.MEDIA_BUCKET.put(r2Key, fileBuffer, {
-      httpMetadata: { contentType: mimeType },
-    });
-  } catch {
-    return c.json({ error: 'Failed to upload file to storage' }, 500);
-  }
-
+  // For images, optimise before storing — use the optimised buffer as the primary file
+  let storedBuffer: ArrayBuffer = fileBuffer;
+  let storedMimeType = mimeType;
   let thumbnailKey: string | null = null;
   let width: number | null = null;
   let height: number | null = null;
 
   if (mimeType.startsWith('image/')) {
     try {
-      const { thumbnail, width: w, height: h } = await processImage(fileBuffer, mimeType);
+      const { optimised, thumbnail, width: w, height: h } = await processImage(fileBuffer, mimeType);
+      storedBuffer = optimised;
+      storedMimeType = 'image/jpeg';
       thumbnailKey = buildThumbnailKey(bookId, mediaCategory, timestamp, filename);
       await c.env.MEDIA_BUCKET.put(thumbnailKey, thumbnail, {
         httpMetadata: { contentType: 'image/jpeg' },
@@ -77,8 +74,16 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
       width = w;
       height = h;
     } catch {
-      // Image processing failure is non-fatal; continue without thumbnail
+      // Image processing failure is non-fatal; fall back to original
     }
+  }
+
+  try {
+    await c.env.MEDIA_BUCKET.put(r2Key, storedBuffer, {
+      httpMetadata: { contentType: storedMimeType },
+    });
+  } catch {
+    return c.json({ error: 'Failed to upload file to storage' }, 500);
   }
 
   if (isPrimary === 'true') {
@@ -93,8 +98,8 @@ export async function handleMediaUpload(c: Context<{ Bindings: Bindings }>) {
     mediaCategory,
     r2Key,
     fileName: filename,
-    fileSize: file.size,
-    mimeType,
+    fileSize: storedBuffer.byteLength,
+    mimeType: storedMimeType,
     width,
     height,
     thumbnailKey,
