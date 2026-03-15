@@ -5,14 +5,16 @@ import { buildManifestKey } from './r2Keys';
 /**
  * Write a book manifest JSON file to R2.
  * Serialises the core book fields needed for database reconstruction.
+ * The manifest is stored under the book's mediaFolderId so the R2 folder
+ * can be linked back to the book record even if the database is rebuilt.
  */
 export async function writeManifest(
   r2: R2Bucket,
-  bookId: number,
   bookRecord: Book,
 ): Promise<void> {
   const json = JSON.stringify({
     id: bookRecord.id,
+    mediaFolderId: bookRecord.mediaFolderId,
     title: bookRecord.title,
     author: bookRecord.author,
     isbn: bookRecord.isbn,
@@ -21,7 +23,7 @@ export async function writeManifest(
     publisherId: bookRecord.publisherId,
   });
 
-  await r2.put(buildManifestKey(bookId), json, {
+  await r2.put(buildManifestKey(bookRecord.mediaFolderId), json, {
     httpMetadata: { contentType: 'application/json' },
   });
 }
@@ -29,6 +31,6 @@ export async function writeManifest(
 /**
  * Delete the book manifest JSON file from R2.
  */
-export async function deleteManifest(r2: R2Bucket, bookId: number): Promise<void> {
-  await r2.delete(buildManifestKey(bookId));
+export async function deleteManifest(r2: R2Bucket, mediaFolderId: string): Promise<void> {
+  await r2.delete(buildManifestKey(mediaFolderId));
 }

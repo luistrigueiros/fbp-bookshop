@@ -20,6 +20,12 @@ export class BookRepository {
   ): Promise<Book> {
     layerLogger.debug("Creating new book: {title}", { title: data.title });
     const { genreIds, stock, ...bookData } = data;
+
+    // Auto-generate mediaFolderId if not provided
+    if (!bookData.mediaFolderId) {
+      bookData.mediaFolderId = crypto.randomUUID();
+    }
+
     const result = await this.db.insert(book).values(bookData).returning();
     const createdBook = result[0]!;
 
@@ -54,7 +60,12 @@ export class BookRepository {
     if (data.length === 0) return [];
     layerLogger.debug("Creating {count} new books", { count: data.length });
 
-    const booksToInsert = data.map(({ genreIds, ...bookData }) => bookData);
+    const booksToInsert = data.map(({ genreIds, ...bookData }) => {
+      if (!bookData.mediaFolderId) {
+        bookData.mediaFolderId = crypto.randomUUID();
+      }
+      return bookData;
+    });
     const createdBooks = await this.db
       .insert(book)
       .values(booksToInsert)

@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1773496150746,
-      "tag": "0000_lonely_tusk",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1773496150747,
-      "tag": "0001_book_media",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1773580382137,
-      "tag": "0002_normal_gunslinger",
+      "when": 1773587434406,
+      "tag": "0000_amazing_nova",
       "breakpoints": true
     }
   ]

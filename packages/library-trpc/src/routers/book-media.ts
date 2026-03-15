@@ -58,10 +58,13 @@ export const bookMediaRouter = router({
 
       const remaining = await ctx.repositories.bookMedia.findByBookId(record.bookId);
       if (remaining.length === 0) {
-        try {
-          await ctx.r2.delete(`books/${record.bookId}/manifest.json`);
-        } catch {
-          // best-effort manifest deletion
+        const bookRecord = await ctx.repositories.books.findById(record.bookId);
+        if (bookRecord) {
+          try {
+            await ctx.r2.delete(`books/${bookRecord.mediaFolderId}/manifest.json`);
+          } catch {
+            // best-effort manifest deletion
+          }
         }
       }
     }),

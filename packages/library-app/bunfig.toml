@@ -1,0 +1,3 @@
+[test]
+# Run test files serially to avoid Miniflare D1 conflicts between test suites
+smol = true
